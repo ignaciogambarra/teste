@@ -468,47 +468,41 @@
     .fin-card-featured .card-value { font-size: 34px; font-weight: 800; letter-spacing: -.04em; }
     .fin-card-featured .card-sub   { font-size: 11px; }
 
-    /* Card "Saldo Total + Bancos" expandido permanentemente */
+    /* Card Bancos expandido permanentemente (sem cabeçalho de saldo) */
     .fin-card-banks {
       flex: 1;
       min-height: 0;
       display: flex;
       flex-direction: column;
-      gap: 10px;
       overflow: hidden;
-      padding: 14px 14px 12px;
+      padding: 12px;
     }
-    .fin-banks-head { flex-shrink: 0; }
-    .fin-banks-head .card-label { font-size: 11px; }
-    .fin-banks-head .card-value { font-size: 22px; font-weight: 700; }
-    .fin-banks-head .card-sub   { font-size: 10px; }
-    .fin-banks-divider { height: 1px; background: var(--border); flex-shrink: 0; }
     .fin-banks-grid {
       flex: 1;
       min-height: 0;
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 8px;
+      gap: 10px;
       align-content: start;
     }
     .fin-banks-grid .card {
       flex-shrink: 0;
-      padding: 9px 11px;
-      gap: 2px;
+      padding: 14px 14px;
+      gap: 4px;
     }
     .fin-banks-grid .bank-icon {
-      width: 22px; height: 22px;
-      border-radius: 6px;
+      width: 26px; height: 26px;
+      border-radius: 7px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: .5rem;
+      font-size: .55rem;
       font-weight: 800;
       flex-shrink: 0;
-      margin-bottom: 4px;
+      margin-bottom: 6px;
     }
-    .fin-banks-grid .card-label { font-size: 10px; letter-spacing: .02em; }
-    .fin-banks-grid .card-value { font-size: 15px; font-weight: 700; }
+    .fin-banks-grid .card-label { font-size: 11px; letter-spacing: .02em; }
+    .fin-banks-grid .card-value { font-size: 18px; font-weight: 700; }
 
     /* ── BANK EXPAND ─────────────────────────────────────── */
     .bank-expand-btn {
@@ -784,26 +778,16 @@
 
     <div id="dashboard">
 
-      <!-- Card 1: Saldo Hoje — destaque principal -->
-      <div class="card fin-card-featured">
-        <div class="card-label">Saldo Hoje</div>
-        <div class="card-value neutral" id="card-hoje">—</div>
-        <div class="card-sub">Posição do dia atual</div>
-      </div>
-
-      <!-- Card 2: Saldo Total + Bancos sempre visíveis -->
+      <!-- Bancos sempre visíveis (saldo total já está no hero strip) -->
       <div class="card fin-card-banks">
-        <div class="fin-banks-head">
-          <div class="card-label">Saldo Total em Conta</div>
-          <div class="card-value neutral" id="card-total">—</div>
-          <div class="card-sub" id="card-total-sub">Soma de todas as contas</div>
-        </div>
-        <div class="fin-banks-divider"></div>
         <div class="fin-banks-grid" id="cards-banks"></div>
       </div>
 
       <!-- Elementos ocultos para compatibilidade JS -->
       <div style="display:none;position:absolute;">
+        <div id="card-hoje"></div>
+        <div id="card-total"></div>
+        <div id="card-total-sub"></div>
         <div id="card-fim-mes"></div>
         <div id="bank-expand-content"><div id="bank-arrow"></div></div>
       </div>
@@ -866,16 +850,17 @@
         </div>
       </div>
 
-      <!-- Charts row 2: Consultores + Vendas por Dia -->
-      <div class="tv-charts-row">
-        <div class="card chart-card">
-          <div class="chart-card-title">Top Consultores</div>
-          <div class="bar-canvas-side"><canvas id="chart-consultor"></canvas></div>
-        </div>
+      <!-- Chart: Vendas por Dia (full-width) -->
+      <div class="tv-charts-row tv-charts-row-solo">
         <div class="card chart-card">
           <div class="chart-card-title">Vendas por Dia</div>
           <div class="bar-canvas-side"><canvas id="chart-vendas-dia"></canvas></div>
         </div>
+      </div>
+
+      <!-- Canvas oculto Top Consultores (mantido para compatibilidade JS) -->
+      <div style="display:none;position:absolute;">
+        <canvas id="chart-consultor"></canvas>
       </div>
 
     </div><!-- /#comercial-section -->
@@ -935,16 +920,17 @@
         <div id="ranking-acor-uf"></div>
       </div>
 
-      <!-- Charts row 2: Assessores + Acordos por Dia -->
-      <div class="tv-charts-row">
-        <div class="card chart-card">
-          <div class="chart-card-title">Top Assessores</div>
-          <div class="bar-canvas-side"><canvas id="chart-acor-assessores"></canvas></div>
-        </div>
+      <!-- Chart: Acordos por Dia (full-width) -->
+      <div class="tv-charts-row tv-charts-row-solo">
         <div class="card chart-card">
           <div class="chart-card-title">Acordos por Dia</div>
           <div class="bar-canvas-side"><canvas id="chart-acor-dias"></canvas></div>
         </div>
+      </div>
+
+      <!-- Canvas oculto Top Assessores (mantido para compatibilidade JS) -->
+      <div style="display:none;position:absolute;">
+        <canvas id="chart-acor-assessores"></canvas>
       </div>
 
 
