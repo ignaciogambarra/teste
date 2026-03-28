@@ -136,25 +136,25 @@
 
     /* ── HERO KPI STRIP ──────────────────────────────────── */
     .hero-strip {
-      height: 90px;
+      height: 106px;
       flex-shrink: 0;
       display: flex;
       gap: 8px;
-      padding: 0 10px 8px;
+      padding: 8px 10px;
     }
     .hero-kpi {
       flex: 1;
       background: #FFFFFF;
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 9px 14px 9px 17px;
+      padding: 10px 16px 10px 20px;
       display: flex;
       flex-direction: column;
       justify-content: center;
-      gap: 2px;
+      gap: 3px;
       position: relative;
       overflow: hidden;
-      box-shadow: 0 1px 6px rgba(0,0,0,.07);
+      box-shadow: 0 1px 8px rgba(0,0,0,.08);
       min-width: 0;
     }
     .hero-kpi::before {
@@ -168,8 +168,8 @@
     .hero-kpi.com::before  { background: #0CAF60; }
     .hero-kpi.acor::before { background: #3B82F6; }
     .hero-kpi-label {
-      font-size: 9px;
-      font-weight: 600;
+      font-size: 10px;
+      font-weight: 700;
       text-transform: uppercase;
       letter-spacing: .09em;
       color: var(--text-muted);
@@ -178,18 +178,20 @@
       text-overflow: ellipsis;
     }
     .hero-kpi-value {
-      font-size: 26px;
+      font-size: 24px;
       font-weight: 800;
       font-variant-numeric: tabular-nums;
       letter-spacing: -.04em;
       line-height: 1;
       color: var(--text);
       white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     .hero-kpi-value.positive { color: var(--success); }
     .hero-kpi-value.negative { color: var(--danger); }
     .hero-kpi-sub {
-      font-size: 9px;
+      font-size: 10px;
       color: var(--text-muted);
       white-space: nowrap;
       overflow: hidden;
@@ -202,64 +204,65 @@
       display: flex;
       flex-direction: column;
       overflow: hidden;
-      margin-top: 7px;
+      margin-top: 8px;
       gap: 0;
       justify-content: space-around;
     }
     .ranking-item {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
       flex-shrink: 0;
-      padding: 2px 0;
+      padding: 3px 0;
     }
     .ranking-pos {
-      font-size: 9px;
+      font-size: 11px;
       font-weight: 700;
       color: var(--text-muted);
-      width: 13px;
+      width: 16px;
       text-align: center;
       flex-shrink: 0;
     }
     .ranking-name {
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 500;
       color: var(--text);
-      flex: 0 0 88px;
+      flex: 1;
+      min-width: 80px;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
     .ranking-bar-wrap {
-      flex: 1;
-      height: 13px;
-      background: #F0F1F8;
-      border-radius: 3px;
+      flex: 1.4;
+      height: 14px;
+      background: #EDEEF6;
+      border-radius: 4px;
       overflow: hidden;
-      min-width: 0;
+      min-width: 40px;
     }
     .ranking-bar {
       height: 100%;
-      border-radius: 3px;
+      border-radius: 4px;
       background: linear-gradient(90deg, #5B4FE8 0%, #7C6AF7 100%);
       transition: width .4s ease;
-      min-width: 3px;
+      min-width: 4px;
     }
     .ranking-bar.green { background: linear-gradient(90deg, #0CAF60 0%, #34D399 100%); }
     .ranking-bar.blue  { background: linear-gradient(90deg, #3B82F6 0%, #60A5FA 100%); }
     .ranking-val {
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 700;
       color: var(--text);
       font-variant-numeric: tabular-nums;
-      flex: 0 0 68px;
+      flex: 0 0 82px;
       text-align: right;
       white-space: nowrap;
     }
     .ranking-pct {
-      font-size: 10px;
+      font-size: 11px;
       color: var(--text-muted);
-      flex: 0 0 34px;
+      flex: 0 0 38px;
       text-align: right;
       font-variant-numeric: tabular-nums;
     }
@@ -267,7 +270,7 @@
     /* ── MAIN — TV 3-column layout ──────────────────────── */
     main {
       flex: 1;
-      height: calc(1080px - 40px - 90px);
+      height: calc(1080px - 40px - 106px);
       display: flex;
       flex-direction: row;
       gap: 10px;
@@ -367,12 +370,12 @@
     .section-header {
       display: flex;
       align-items: center;
-      gap: 7px;
+      gap: 8px;
       flex-shrink: 0;
-      min-height: 16px;
+      min-height: 20px;
     }
     .section-header-title {
-      font-size: 9px;
+      font-size: 11px;
       font-weight: 700;
       letter-spacing: .12em;
       text-transform: uppercase;
@@ -382,9 +385,9 @@
     }
     .section-header-line { flex: 1; height: 1px; background: var(--border); }
     .section-header-badge {
-      font-size: 9px;
+      font-size: 10px;
       font-weight: 600;
-      padding: 2px 7px;
+      padding: 2px 8px;
       border-radius: 99px;
       background: rgba(91,79,232,.08);
       color: var(--accent);
@@ -399,23 +402,23 @@
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 9px 11px;
+      padding: 11px 14px;
       display: flex;
       flex-direction: column;
-      gap: 3px;
+      gap: 4px;
       transition: background .15s;
       flex-shrink: 0;
     }
     .card:hover { background: var(--surface-h); }
     .card-label {
-      font-size: 9px;
+      font-size: 11px;
       font-weight: 600;
       text-transform: uppercase;
-      letter-spacing: .08em;
+      letter-spacing: .07em;
       color: var(--text-muted);
     }
     .card-value {
-      font-size: 18px;
+      font-size: 20px;
       font-weight: 700;
       font-variant-numeric: tabular-nums;
       letter-spacing: -.02em;
@@ -425,26 +428,74 @@
     .card-value.positive { color: var(--success); }
     .card-value.negative { color: var(--danger); }
     .card-value.neutral  { color: var(--text); }
-    .card-sub { font-size: 9px; color: var(--text-muted); }
+    .card-sub { font-size: 10px; color: var(--text-muted); }
 
     .card-total {
       background: linear-gradient(135deg, #FFFFFF 0%, #EEF0FF 100%);
       border-color: rgba(91,79,232,.2);
     }
     .card-total:hover { background: #EDE9FF; border-color: rgba(91,79,232,.38); }
-    .card-total .card-value { font-size: 20px; }
+    .card-total .card-value { font-size: 22px; }
 
     /* ── METRIC CARDS — fixed height ────────────────────── */
-    .com-cards-grid .card { height: 90px; justify-content: center; }
+    .com-cards-grid .card { height: 96px; justify-content: center; }
 
     /* ── FINANCEIRO LAYOUT ───────────────────────────────── */
     #dashboard { display: none; flex-direction: column; gap: 10px; flex: 1; min-height: 0; }
-    .cards-highlight { display: flex; flex-direction: column; gap: 10px; flex: 1; min-height: 0; }
-    .cards-highlight .card { flex: 1; justify-content: center; min-height: 0; }
-    .cards-highlight .card-label { font-size: 10px; }
-    .cards-highlight .card-value { font-size: 28px; font-weight: 800; letter-spacing: -.04em; }
-    .cards-highlight .card-total .card-value { font-size: 26px; }
-    .cards-highlight .card-sub { font-size: 10px; }
+
+    /* Card "Saldo Hoje" featured */
+    .fin-card-featured {
+      flex-shrink: 0;
+      background: linear-gradient(135deg, #FFFFFF 0%, #EEF0FF 100%);
+      border-color: rgba(91,79,232,.22);
+      box-shadow: 0 2px 10px rgba(91,79,232,.08);
+      padding: 16px 18px;
+    }
+    .fin-card-featured .card-label { font-size: 11px; }
+    .fin-card-featured .card-value { font-size: 34px; font-weight: 800; letter-spacing: -.04em; }
+    .fin-card-featured .card-sub   { font-size: 11px; }
+
+    /* Card "Saldo Total + Bancos" expandido permanentemente */
+    .fin-card-banks {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      overflow: hidden;
+      padding: 14px 14px 12px;
+    }
+    .fin-banks-head { flex-shrink: 0; }
+    .fin-banks-head .card-label { font-size: 11px; }
+    .fin-banks-head .card-value { font-size: 22px; font-weight: 700; }
+    .fin-banks-head .card-sub   { font-size: 10px; }
+    .fin-banks-divider { height: 1px; background: var(--border); flex-shrink: 0; }
+    .fin-banks-grid {
+      flex: 1;
+      min-height: 0;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      align-content: start;
+    }
+    .fin-banks-grid .card {
+      flex-shrink: 0;
+      padding: 9px 11px;
+      gap: 2px;
+    }
+    .fin-banks-grid .bank-icon {
+      width: 22px; height: 22px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: .5rem;
+      font-weight: 800;
+      flex-shrink: 0;
+      margin-bottom: 4px;
+    }
+    .fin-banks-grid .card-label { font-size: 10px; letter-spacing: .02em; }
+    .fin-banks-grid .card-value { font-size: 15px; font-weight: 700; }
 
     /* ── BANK EXPAND ─────────────────────────────────────── */
     .bank-expand-btn {
@@ -493,39 +544,41 @@
     .com-cards-grid { display: grid; gap: 10px; flex-shrink: 0; }
     .com-cards-grid-4 { grid-template-columns: repeat(4, 1fr); }
     .com-cards-grid-3 { grid-template-columns: repeat(3, 1fr); }
+    .com-cards-grid-2 { grid-template-columns: repeat(2, 1fr); }
+    .com-cards-grid-1 { grid-template-columns: 1fr; }
     .com-card-icon {
       display: flex;
       align-items: center;
-      gap: 4px;
-      font-size: 9px;
+      gap: 5px;
+      font-size: 11px;
       font-weight: 600;
       text-transform: uppercase;
-      letter-spacing: .06em;
+      letter-spacing: .05em;
       color: var(--text-muted);
-      margin-bottom: 2px;
+      margin-bottom: 3px;
     }
     .com-card-icon svg { flex-shrink: 0; opacity: .55; }
-    .com-cards-grid .card-value { font-size: 16px; }
-    .com-cards-grid .card-total .card-value { font-size: 18px; }
+    .com-cards-grid .card-value { font-size: 20px; }
+    .com-cards-grid .card-total .card-value { font-size: 22px; }
 
     /* ── CHART CARDS ─────────────────────────────────────── */
     .chart-card {
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 7px 9px;
+      padding: 10px 12px;
       display: flex;
       flex-direction: column;
       overflow: hidden;
       min-height: 0;
     }
     .chart-card-title {
-      font-size: 9px;
+      font-size: 11px;
       font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: .1em;
+      letter-spacing: .09em;
       color: var(--text-muted);
-      padding-bottom: 5px;
+      padding-bottom: 7px;
       border-bottom: 1px solid var(--border);
       flex-shrink: 0;
     }
@@ -717,31 +770,31 @@
     <div id="empty-state">Nenhum dado encontrado na aba <strong>Fluxo Diário</strong>.</div>
 
     <div id="dashboard">
-      <div class="cards-highlight">
-        <div class="card card-total">
-          <button class="bank-expand-btn" onclick="toggleBanks()">
-            <div>
-              <div class="card-label">Saldo Total em Conta</div>
-              <div class="card-value neutral" id="card-total">—</div>
-              <div class="card-sub" id="card-total-sub">Soma de todas as contas</div>
-            </div>
-            <span class="bank-expand-arrow" id="bank-arrow">▼</span>
-          </button>
-          <div class="bank-expand-content" id="bank-expand-content">
-            <div class="cards-banks" id="cards-banks"></div>
-          </div>
-        </div>
-        <div class="card">
-          <div class="card-label">Saldo Hoje*</div>
-          <div class="card-value neutral" id="card-hoje">—</div>
-          <div class="card-sub">Posição do dia atual</div>
-        </div>
-        <div class="card">
-          <div class="card-label">Resultado Projetado*</div>
-          <div class="card-value neutral" id="card-fim-mes">—</div>
-          <div class="card-sub">Projeção de fechamento</div>
-        </div>
+
+      <!-- Card 1: Saldo Hoje — destaque principal -->
+      <div class="card fin-card-featured">
+        <div class="card-label">Saldo Hoje</div>
+        <div class="card-value neutral" id="card-hoje">—</div>
+        <div class="card-sub">Posição do dia atual</div>
       </div>
+
+      <!-- Card 2: Saldo Total + Bancos sempre visíveis -->
+      <div class="card fin-card-banks">
+        <div class="fin-banks-head">
+          <div class="card-label">Saldo Total em Conta</div>
+          <div class="card-value neutral" id="card-total">—</div>
+          <div class="card-sub" id="card-total-sub">Soma de todas as contas</div>
+        </div>
+        <div class="fin-banks-divider"></div>
+        <div class="fin-banks-grid" id="cards-banks"></div>
+      </div>
+
+      <!-- Elementos ocultos para compatibilidade JS -->
+      <div style="display:none;position:absolute;">
+        <div id="card-fim-mes"></div>
+        <div id="bank-expand-content"><div id="bank-arrow"></div></div>
+      </div>
+
     </div>
 
   </div><!-- /.tv-col-fin -->
@@ -760,40 +813,32 @@
     <div id="comercial-section" style="display:none;">
       <span id="comercial-title" style="display:none;"></span>
 
-      <!-- 4 metric cards -->
-      <div class="com-cards-grid com-cards-grid-4">
-        <div class="card card-total">
-          <div class="com-card-icon">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-            VGV
-          </div>
-          <div class="card-value positive" id="com-card-honorarios">—</div>
-          <div class="card-sub" id="com-card-hon-sub">Soma do mês</div>
-        </div>
+      <!-- 2 metric cards secundários (VGV e Vidas já estão no hero strip) -->
+      <div class="com-cards-grid com-cards-grid-2">
         <div class="card">
           <div class="com-card-icon">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-            Vidas Administradas
-          </div>
-          <div class="card-value neutral" id="com-card-clientes">—</div>
-          <div class="card-sub" id="com-card-vidas-sub">Vidas no mês</div>
-        </div>
-        <div class="card">
-          <div class="com-card-icon">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
             Média por Contrato
           </div>
           <div class="card-value neutral" id="com-card-media">—</div>
-          <div class="card-sub">Total ÷ Clientes</div>
+          <div class="card-sub">VGV ÷ Vidas</div>
         </div>
         <div class="card">
           <div class="com-card-icon">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
             Parcela Média
           </div>
           <div class="card-value neutral" id="com-card-parcela">—</div>
           <div class="card-sub">Média da parcela</div>
         </div>
+      </div>
+
+      <!-- Elementos ocultos para compatibilidade JS -->
+      <div style="display:none;position:absolute;">
+        <div id="com-card-honorarios"></div>
+        <div id="com-card-clientes"></div>
+        <div id="com-card-hon-sub"></div>
+        <div id="com-card-vidas-sub"></div>
       </div>
 
       <!-- Charts row 1: Canal + UF Rankings -->
@@ -844,32 +889,24 @@
     <div id="acordos-section" style="display:none;">
       <span id="acordos-title" style="display:none;"></span>
 
-      <!-- 3 metric cards -->
-      <div class="com-cards-grid com-cards-grid-3">
+      <!-- 1 metric card secundário (Total Entrada e Acordos já estão no hero strip) -->
+      <div class="com-cards-grid com-cards-grid-1">
         <div class="card card-total">
           <div class="com-card-icon">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-            Total de Entrada
-          </div>
-          <div class="card-value positive" id="acor-card-total">—</div>
-          <div class="card-sub" id="acor-card-total-sub">Soma ENTRADA do mês</div>
-        </div>
-        <div class="card">
-          <div class="com-card-icon">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-            Acordos Fechados
-          </div>
-          <div class="card-value neutral" id="acor-card-contratos">—</div>
-          <div class="card-sub" id="acor-card-contratos-sub">Registros no mês</div>
-        </div>
-        <div class="card">
-          <div class="com-card-icon">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
             Média por Acordo
           </div>
           <div class="card-value neutral" id="acor-card-media">—</div>
-          <div class="card-sub">Entrada ÷ Acordos</div>
+          <div class="card-sub">Entrada total ÷ Acordos fechados</div>
         </div>
+      </div>
+
+      <!-- Elementos ocultos para compatibilidade JS -->
+      <div style="display:none;position:absolute;">
+        <div id="acor-card-total"></div>
+        <div id="acor-card-contratos"></div>
+        <div id="acor-card-total-sub"></div>
+        <div id="acor-card-contratos-sub"></div>
       </div>
 
       <!-- Charts row 1: Credor + UF Rankings -->
@@ -1712,7 +1749,7 @@
           indexAxis: 'y',
           responsive: true,
           maintainAspectRatio: false,
-          layout: { padding: { right: 90 } },
+          layout: { padding: { right: 80 } },
           plugins: {
             legend: { display: false },
             tooltip: {
@@ -1729,7 +1766,7 @@
               border: { display: false },
               ticks: {
                 color: '#6B7280',
-                font: { size: 10 },
+                font: { size: 11 },
                 callback: v => isCurrency
                   ? 'R$\u00a0' + (v >= 1000 ? (v / 1000).toFixed(0) + 'k' : v)
                   : v,
@@ -1738,7 +1775,7 @@
             y: {
               grid: { display: false },
               border: { display: false },
-              ticks: { color: '#0F1117', font: { size: 11 }, padding: 6 }
+              ticks: { color: '#0F1117', font: { size: 12 }, padding: 6 }
             }
           }
         }
@@ -1796,7 +1833,7 @@
           indexAxis: 'y',
           responsive: true,
           maintainAspectRatio: false,
-          layout: { padding: { right: 195 } },
+          layout: { padding: { right: 120 } },
           plugins: {
             legend: { display: false },
             tooltip: {
@@ -1811,14 +1848,14 @@
               border: { display: false },
               ticks: {
                 color: '#6B7280',
-                font: { size: 10 },
+                font: { size: 11 },
                 callback: v => 'R$\u00a0' + (v >= 1000 ? Math.round(v / 1000) + 'k' : v),
               }
             },
             y: {
               grid: { display: false },
               border: { display: false },
-              ticks: { color: '#0F1117', font: { size: 11 }, padding: 6 }
+              ticks: { color: '#0F1117', font: { size: 12 }, padding: 6 }
             }
           }
         }
@@ -2136,7 +2173,7 @@
           indexAxis: 'y',
           responsive: true,
           maintainAspectRatio: false,
-          layout: { padding: { right: 130 } },
+          layout: { padding: { right: 90 } },
           plugins: {
             legend: { display: false },
             tooltip: {
@@ -2151,14 +2188,14 @@
               border: { display: false },
               ticks: {
                 color: '#6B7280',
-                font: { size: 10 },
+                font: { size: 11 },
                 callback: v => Number.isInteger(v) ? v : null,
               }
             },
             y: {
               grid: { display: false },
               border: { display: false },
-              ticks: { color: '#0F1117', font: { size: 11 }, padding: 6 }
+              ticks: { color: '#0F1117', font: { size: 12 }, padding: 6 }
             }
           }
         }
@@ -2289,7 +2326,7 @@
           x: {
             grid: { color: '#E8EAF0' },
             border: { display: false },
-            ticks: { color: '#6B7280', font: { size: 10 } }
+            ticks: { color: '#6B7280', font: { size: 11 } }
           },
           y: {
             grid: { color: '#E8EAF0' },
@@ -2297,7 +2334,7 @@
             beginAtZero: true,
             ticks: {
               color: '#6B7280',
-              font: { size: 10 },
+              font: { size: 11 },
               stepSize: 1,
               callback: v => Number.isInteger(v) ? v : null
             }
