@@ -1,0 +1,2221 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=1920, initial-scale=1.0" />
+  <title>Visualizador Executivo — Fluxo Diário</title>
+
+  <!-- Chart.js e D3.js para o módulo Comercial -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --bg:        #F8F9FC;
+      --surface:   #FFFFFF;
+      --surface-h: #F3F4F8;
+      --border:    #E8EAF0;
+      --accent:    #5B4FE8;
+      --accent-h:  #4A3FD9;
+      --text:      #0F1117;
+      --text-muted:#6B7280;
+      --success:   #0CAF60;
+      --danger:    #E53E3E;
+      --radius:    8px;
+    }
+
+    /* ── RESET & BASE — TV 1920×1080 ─────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      width: 1920px;
+      height: 1080px;
+      overflow: hidden;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+    }
+    body { display: flex; flex-direction: column; }
+
+    /* ── NAVBAR ──────────────────────────────────────────── */
+    header {
+      height: 40px;
+      flex-shrink: 0;
+      background: #FFFFFF;
+      border-bottom: 1px solid #E8EAF0;
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      z-index: 200;
+      box-shadow: 0 1px 4px rgba(0,0,0,.06);
+    }
+
+    .logo {
+      font-size: .78rem;
+      font-weight: 800;
+      letter-spacing: .1em;
+      color: var(--accent);
+      flex-shrink: 0;
+      margin-right: 20px;
+    }
+
+    .nav-pills { display: flex; gap: 2px; flex: 1; justify-content: center; }
+
+    .nav-pill {
+      padding: 3px 10px;
+      border-radius: 99px;
+      font-size: .62rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      cursor: default;
+      border: none;
+      background: transparent;
+      letter-spacing: .02em;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .header-right { display: flex; align-items: center; gap: 8px; margin-left: 20px; flex-shrink: 0; }
+
+    #header-clock {
+      font-size: .6rem;
+      color: var(--text-muted);
+      font-variant-numeric: tabular-nums;
+      min-width: 80px;
+      text-align: right;
+      letter-spacing: .02em;
+    }
+
+    /* ── BUTTONS ─────────────────────────────────────────── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: .62rem;
+      font-weight: 500;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-muted);
+      transition: background .15s, color .15s;
+      font-family: inherit;
+    }
+    .btn svg { flex-shrink: 0; }
+    .btn:hover { background: var(--surface-h); color: var(--text); }
+    .btn:disabled { opacity: .38; cursor: not-allowed; }
+
+    .btn-danger { color: var(--danger); border-color: rgba(229,62,62,.2); }
+    .btn-danger:hover { background: rgba(229,62,62,.07); border-color: rgba(229,62,62,.35); color: var(--danger); }
+
+    .btn-google {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 5px 12px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      color: var(--text);
+      font-size: .7rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background .15s;
+      white-space: nowrap;
+      font-family: inherit;
+    }
+    .btn-google:hover { background: var(--surface-h); }
+    .btn-google img { width: 13px; height: 13px; }
+
+    /* ── MAIN — TV 3-column layout ──────────────────────── */
+    main {
+      flex: 1;
+      height: calc(1080px - 40px);
+      display: flex;
+      flex-direction: row;
+      gap: 10px;
+      padding: 10px;
+      overflow: hidden;
+    }
+
+    /* ── TV COLUMNS ──────────────────────────────────────── */
+    .tv-col {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      overflow: hidden;
+      min-width: 0;
+      flex-shrink: 0;
+    }
+    .tv-col-fin  { width: calc(33.33% - 7px); }
+    .tv-col-com  { width: calc(33.33% - 7px); }
+    .tv-col-acor { flex: 1; }
+
+    /* ── MODULE SECTIONS ─────────────────────────────────── */
+    #comercial-section  { flex-direction: column; gap: 10px; flex: 1; min-height: 0; }
+    #acordos-section    { flex-direction: column; gap: 10px; flex: 1; min-height: 0; }
+
+    /* ── TV CHART ROWS ───────────────────────────────────── */
+    .tv-charts-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    /* ── ALERT ───────────────────────────────────────────── */
+    #alert-box {
+      display: none;
+      position: fixed;
+      top: 48px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 300;
+      align-items: flex-start;
+      gap: 8px;
+      background: rgba(229,62,62,.08);
+      border: 1px solid rgba(229,62,62,.25);
+      border-radius: 8px;
+      padding: 7px 13px;
+      font-size: .7rem;
+      line-height: 1.5;
+      white-space: nowrap;
+    }
+    #alert-box.info { background: rgba(91,79,232,.08); border-color: rgba(91,79,232,.25); }
+    #alert-box svg  { flex-shrink: 0; margin-top: 1px; }
+
+    /* ── LOGIN SCREEN ────────────────────────────────────── */
+    #login-screen {
+      display: none;
+      position: fixed;
+      inset: 0;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      text-align: center;
+      background: var(--bg);
+      z-index: 100;
+    }
+    #login-screen h2 { font-size: 1rem; font-weight: 600; }
+    #login-screen p  { color: var(--text-muted); font-size: .76rem; max-width: 320px; line-height: 1.6; }
+
+    /* ── SPINNERS ────────────────────────────────────────── */
+    @keyframes _spin { to { transform: rotate(360deg); } }
+    .spin {
+      width: 13px; height: 13px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: _spin .7s linear infinite;
+      flex-shrink: 0;
+    }
+    @keyframes _sk { 0%,100%{opacity:.3} 50%{opacity:.6} }
+    .skeleton { background: var(--border); border-radius: 4px; animation: _sk 1.6s ease-in-out infinite; }
+
+    #spinner, .com-spinner-wrap {
+      display: none;
+      align-items: center;
+      gap: 7px;
+      padding: 10px 0;
+      color: var(--text-muted);
+      font-size: .68rem;
+      flex-shrink: 0;
+    }
+    #empty-state { display: none; text-align: center; padding: 12px; color: var(--text-muted); font-size: .7rem; flex-shrink: 0; }
+    #last-update, .section-divider, .dash-section-label, .info-bar { display: none; }
+
+    /* ── SECTION HEADER ──────────────────────────────────── */
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      flex-shrink: 0;
+      min-height: 16px;
+    }
+    .section-header-title {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .section-header-line { flex: 1; height: 1px; background: var(--border); }
+    .section-header-badge {
+      font-size: 9px;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 99px;
+      background: rgba(91,79,232,.08);
+      color: var(--accent);
+      border: 1px solid rgba(91,79,232,.18);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .section-wrap { margin-bottom: 0; }
+
+    /* ── CARDS (base) ────────────────────────────────────── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 9px 11px;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      transition: background .15s;
+      flex-shrink: 0;
+    }
+    .card:hover { background: var(--surface-h); }
+    .card-label {
+      font-size: 9px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--text-muted);
+    }
+    .card-value {
+      font-size: 18px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -.02em;
+      line-height: 1.1;
+      color: var(--text);
+    }
+    .card-value.positive { color: var(--success); }
+    .card-value.negative { color: var(--danger); }
+    .card-value.neutral  { color: var(--text); }
+    .card-sub { font-size: 9px; color: var(--text-muted); }
+
+    .card-total {
+      background: linear-gradient(135deg, #FFFFFF 0%, #EEF0FF 100%);
+      border-color: rgba(91,79,232,.2);
+    }
+    .card-total:hover { background: #EDE9FF; border-color: rgba(91,79,232,.38); }
+    .card-total .card-value { font-size: 20px; }
+
+    /* ── METRIC CARDS — fixed height ────────────────────── */
+    .com-cards-grid .card { height: 90px; justify-content: center; }
+    .cards-highlight .card:not(.card-total) { height: 90px; justify-content: center; }
+
+    /* ── FINANCEIRO LAYOUT ───────────────────────────────── */
+    #dashboard { display: none; flex-direction: column; gap: 10px; flex: 1; min-height: 0; }
+    .cards-highlight { display: flex; flex-direction: column; gap: 10px; flex-shrink: 0; }
+
+    /* ── BANK EXPAND ─────────────────────────────────────── */
+    .bank-expand-btn {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      padding: 0;
+      background: none;
+      border: none;
+      width: 100%;
+      font-family: inherit;
+      text-align: left;
+    }
+    .bank-expand-arrow {
+      font-size: 11px;
+      color: var(--text-muted);
+      transition: transform .3s ease;
+      flex-shrink: 0;
+      margin-left: 6px;
+    }
+    .bank-expand-arrow.open { transform: rotate(180deg); }
+    .bank-expand-content {
+      overflow: hidden;
+      max-height: 0;
+      transition: max-height .3s ease;
+    }
+    .bank-expand-content.open { max-height: 600px; }
+    .cards-banks { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 8px; }
+    .cards-banks .card { padding: 7px 9px; gap: 2px; height: auto; }
+    .bank-icon {
+      width: 20px; height: 20px;
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: .48rem;
+      font-weight: 800;
+      flex-shrink: 0;
+      margin-bottom: 3px;
+    }
+    .cards-banks .card-label { font-size: 9px; letter-spacing: .03em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .cards-banks .card-value { font-size: 13px; font-weight: 700; }
+
+    /* ── COM / ACORDOS TOP CARDS ─────────────────────────── */
+    .com-cards-grid { display: grid; gap: 10px; flex-shrink: 0; }
+    .com-cards-grid-4 { grid-template-columns: repeat(4, 1fr); }
+    .com-cards-grid-3 { grid-template-columns: repeat(3, 1fr); }
+    .com-card-icon {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 9px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--text-muted);
+      margin-bottom: 2px;
+    }
+    .com-card-icon svg { flex-shrink: 0; opacity: .55; }
+    .com-cards-grid .card-value { font-size: 16px; }
+    .com-cards-grid .card-total .card-value { font-size: 18px; }
+
+    /* ── CHART CARDS ─────────────────────────────────────── */
+    .chart-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 7px 9px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      min-height: 0;
+    }
+    .chart-card-title {
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      color: var(--text-muted);
+      padding-bottom: 5px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    /* ── PIE TABLE LAYOUT ────────────────────────────────── */
+    .pie-table-layout { display: flex; flex-direction: column; flex: 1; min-height: 0; margin-top: 5px; }
+    .pie-table-canvas-wrap { height: 110px; flex-shrink: 0; position: relative; }
+    .pie-table {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      margin-top: 4px;
+      min-height: 0;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border) transparent;
+    }
+    .pie-table::-webkit-scrollbar { width: 2px; }
+    .pie-table::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+    .pie-table table { width: 100%; border-collapse: collapse; }
+    .pie-table thead th {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--text-muted);
+      padding: 0 4px 3px;
+      border-bottom: 1px solid var(--border);
+    }
+    .pie-table thead th:first-child { text-align: left; }
+    .pie-table thead th:not(:first-child) { text-align: right; }
+    .pie-table tbody td { padding: 0 4px; height: 24px; color: var(--text-muted); font-size: 11px; white-space: nowrap; }
+    .pie-table tbody td:first-child { max-width: 90px; overflow: hidden; text-overflow: ellipsis; }
+    .pie-table tbody td:not(:first-child) { text-align: right; color: var(--text); }
+    .pie-table tbody tr:nth-child(even) { background: rgba(91,79,232,.03); }
+    .pie-table tfoot td { padding: 3px 4px 1px; border-top: 1px solid var(--border); font-weight: 600; color: var(--text); font-size: 11px; }
+    .pie-table tfoot td:not(:first-child) { text-align: right; }
+    .pie-dot { display: inline-block; width: 6px; height: 6px; border-radius: 2px; margin-right: 4px; vertical-align: middle; flex-shrink: 0; }
+
+    /* ── BAR / MAP WRAPPERS ──────────────────────────────── */
+    .bar-canvas-side { flex: 1; position: relative; margin-top: 5px; min-height: 180px; overflow: hidden; }
+    .map-wrap { height: 200px; flex-shrink: 0; position: relative; margin-top: 5px; overflow: hidden; }
+    .map-wrap svg { width: 100%; height: 100%; display: block; }
+    .map-state { cursor: default; transition: opacity .12s; }
+    .map-state:hover { opacity: .8; }
+
+    #map-tooltip {
+      position: fixed;
+      display: none;
+      background: #FFFFFF;
+      border: 1px solid #E8EAF0;
+      border-radius: 7px;
+      padding: 5px 10px;
+      font-size: .62rem;
+      color: var(--text);
+      pointer-events: none;
+      z-index: 9999;
+      white-space: nowrap;
+      box-shadow: 0 4px 16px rgba(0,0,0,.12);
+    }
+    #map-tooltip strong { color: var(--text); display: block; margin-bottom: 1px; }
+    .map-legend { position: absolute; bottom: 3px; right: 4px; display: flex; align-items: center; gap: 4px; font-size: 9px; color: var(--text-muted); pointer-events: none; }
+    .map-legend-bar { width: 34px; height: 4px; border-radius: 2px; background: linear-gradient(to right, #C7D2FE, #5B4FE8); }
+
+    /* TV mode — no media queries needed */
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════════
+     CONFIGURAÇÃO — altere apenas estas constantes
+     ══════════════════════════════════════════════════════════ -->
+<script>
+  const CLIENT_ID      = '947271402359-7l02tddp4e9lqmb01ntas22sr0ai1l0c.apps.googleusercontent.com';
+  const REDIRECT_URI   = 'https://ignaciogambarra.github.io/teste/';
+  const SPREADSHEET_ID = '1rSqAIe70VwrHErvt0rjnYZobqmGy_4ZUt54-MOa5eUM';
+  const SHEET_NAME     = 'Fluxo Diário';
+  const SCOPES         = 'https://www.googleapis.com/auth/spreadsheets.readonly';
+  const API_BASE       = 'https://sheets.googleapis.com/v4/spreadsheets';
+  const OAUTH_ENDPOINT = 'https://accounts.google.com/o/oauth2/v2/auth';
+
+  // ── Módulo Comercial ──────────────────────────────────────
+  const COMERCIAL_SPREADSHEET_ID = '1TrMEP7_J5Vqepo5xGki2J2Pnz65IATGX82Xo3WCrHIg';
+  const COMERCIAL_SHEET_NAME     = 'COMERCIAL - 2026';
+
+  // ── Módulo Acordos ────────────────────────────────────────
+  const ACORDOS_SPREADSHEET_ID = '1PVeSRGKD781WJrvLdZAHrA0RztFLJdTNDucpKvlc1q4';
+  const ACORDOS_SHEET_NAME     = 'UNIFICADO';
+</script>
+
+<!-- ══════════════════════════ NAVBAR ═══════════════════════ -->
+<header>
+  <span class="logo">FLEX</span>
+
+  <nav class="nav-pills">
+    <span class="nav-pill">Financeiro</span>
+    <span class="nav-pill">Comercial</span>
+    <span class="nav-pill">Acordos</span>
+  </nav>
+
+  <div class="header-right">
+    <span id="header-clock"></span>
+    <span id="last-update" style="display:none;"></span>
+
+    <button id="btn-refresh" class="btn" onclick="loadAll()" disabled>
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
+        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+      </svg>
+      Atualizar
+    </button>
+
+    <button id="btn-login-header" class="btn-google" onclick="redirectToGoogle()">
+      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" />
+      Entrar com Google
+    </button>
+
+    <!-- botão Sair removido (modo TV) -->
+  </div>
+</header>
+
+<!-- ══════════════════════════ MAIN ════════════════════════ -->
+<main>
+
+  <!-- Alert / error box -->
+  <div id="alert-box">
+    <svg id="alert-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--danger)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+    </svg>
+    <span id="alert-text"></span>
+  </div>
+
+  <!-- Login screen (overlay) -->
+  <div id="login-screen">
+    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+    </svg>
+    <h2>Autentique-se para continuar</h2>
+    <p>Faça login com sua conta Google para acessar os dados. Acesso somente leitura.</p>
+    <button class="btn-google" onclick="redirectToGoogle()">
+      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" />
+      Entrar com Google
+    </button>
+  </div>
+
+  <!-- ════ COLUNA 1 — FINANCEIRO (22%) ════════════════════ -->
+  <div class="tv-col tv-col-fin">
+
+    <div class="section-header">
+      <span class="section-header-title">Financeiro</span>
+      <span class="section-header-line"></span>
+      <span class="section-header-badge" id="fin-badge">Fluxo Diário</span>
+    </div>
+
+    <div id="spinner" class="com-spinner-wrap"><div class="spin"></div> Carregando dados…</div>
+    <div id="empty-state">Nenhum dado encontrado na aba <strong>Fluxo Diário</strong>.</div>
+
+    <div id="dashboard">
+      <div class="cards-highlight">
+        <div class="card card-total">
+          <button class="bank-expand-btn" onclick="toggleBanks()">
+            <div>
+              <div class="card-label">Saldo Total em Conta</div>
+              <div class="card-value neutral" id="card-total">—</div>
+              <div class="card-sub" id="card-total-sub">Soma de todas as contas</div>
+            </div>
+            <span class="bank-expand-arrow" id="bank-arrow">▼</span>
+          </button>
+          <div class="bank-expand-content" id="bank-expand-content">
+            <div class="cards-banks" id="cards-banks"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-label">Saldo Hoje*</div>
+          <div class="card-value neutral" id="card-hoje">—</div>
+          <div class="card-sub">Posição do dia atual</div>
+        </div>
+        <div class="card">
+          <div class="card-label">Resultado Projetado*</div>
+          <div class="card-value neutral" id="card-fim-mes">—</div>
+          <div class="card-sub">Projeção de fechamento</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /.tv-col-fin -->
+
+  <!-- ════ COLUNA 2 — COMERCIAL (39%) ═════════════════════ -->
+  <div class="tv-col tv-col-com">
+
+    <div class="section-header">
+      <span class="section-header-title">Comercial</span>
+      <span class="section-header-line"></span>
+      <span class="section-header-badge" id="com-badge">—</span>
+    </div>
+
+    <div id="com-spinner" class="com-spinner-wrap"><div class="spin"></div> Carregando módulo Comercial…</div>
+
+    <div id="comercial-section" style="display:none;">
+      <span id="comercial-title" style="display:none;"></span>
+
+      <!-- 4 metric cards -->
+      <div class="com-cards-grid com-cards-grid-4">
+        <div class="card card-total">
+          <div class="com-card-icon">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            VGV
+          </div>
+          <div class="card-value positive" id="com-card-honorarios">—</div>
+          <div class="card-sub" id="com-card-hon-sub">Soma do mês</div>
+        </div>
+        <div class="card">
+          <div class="com-card-icon">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            Vidas Administradas
+          </div>
+          <div class="card-value neutral" id="com-card-clientes">—</div>
+          <div class="card-sub" id="com-card-vidas-sub">Vidas no mês</div>
+        </div>
+        <div class="card">
+          <div class="com-card-icon">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            Média por Contrato
+          </div>
+          <div class="card-value neutral" id="com-card-media">—</div>
+          <div class="card-sub">Total ÷ Clientes</div>
+        </div>
+        <div class="card">
+          <div class="com-card-icon">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+            Parcela Média
+          </div>
+          <div class="card-value neutral" id="com-card-parcela">—</div>
+          <div class="card-sub">Média da parcela</div>
+        </div>
+      </div>
+
+      <!-- Charts row 1: Canal + Mapa -->
+      <div class="tv-charts-row">
+        <div class="card chart-card">
+          <div class="chart-card-title">Canal de Captação</div>
+          <div class="pie-table-layout">
+            <div class="pie-table-canvas-wrap"><canvas id="chart-canal"></canvas></div>
+            <div class="pie-table" id="table-canal"></div>
+          </div>
+        </div>
+        <div class="card chart-card">
+          <div class="chart-card-title">Contratos por Estado</div>
+          <div class="map-wrap" id="map-uf"></div>
+        </div>
+      </div>
+
+      <!-- Charts row 2: Consultores + Vendas por Dia -->
+      <div class="tv-charts-row">
+        <div class="card chart-card">
+          <div class="chart-card-title">Top Consultores</div>
+          <div class="bar-canvas-side"><canvas id="chart-consultor"></canvas></div>
+        </div>
+        <div class="card chart-card">
+          <div class="chart-card-title">Vendas por Dia</div>
+          <div class="bar-canvas-side"><canvas id="chart-vendas-dia"></canvas></div>
+        </div>
+      </div>
+
+    </div><!-- /#comercial-section -->
+
+    <!-- Canvases ocultos para JS (chart-banco não exibido em TV) -->
+    <div style="display:none;position:absolute;">
+      <canvas id="chart-banco"></canvas>
+      <div id="table-banco"></div>
+    </div>
+
+  </div><!-- /.tv-col-com -->
+
+  <!-- ════ COLUNA 3 — ACORDOS + COMPARATIVO (39%) ══════════ -->
+  <div class="tv-col tv-col-acor">
+
+    <div class="section-header">
+      <span class="section-header-title">Acordos</span>
+      <span class="section-header-line"></span>
+      <span class="section-header-badge" id="acor-badge">—</span>
+    </div>
+
+    <div id="acor-spinner" class="com-spinner-wrap"><div class="spin"></div> Carregando módulo Acordos…</div>
+
+    <div id="acordos-section" style="display:none;">
+      <span id="acordos-title" style="display:none;"></span>
+
+      <!-- 3 metric cards -->
+      <div class="com-cards-grid com-cards-grid-3">
+        <div class="card card-total">
+          <div class="com-card-icon">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            Total de Entrada
+          </div>
+          <div class="card-value positive" id="acor-card-total">—</div>
+          <div class="card-sub" id="acor-card-total-sub">Soma ENTRADA do mês</div>
+        </div>
+        <div class="card">
+          <div class="com-card-icon">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            Acordos Fechados
+          </div>
+          <div class="card-value neutral" id="acor-card-contratos">—</div>
+          <div class="card-sub" id="acor-card-contratos-sub">Registros no mês</div>
+        </div>
+        <div class="card">
+          <div class="com-card-icon">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            Média por Acordo
+          </div>
+          <div class="card-value neutral" id="acor-card-media">—</div>
+          <div class="card-sub">Entrada ÷ Acordos</div>
+        </div>
+      </div>
+
+      <!-- Charts row 1: Credor + Mapa -->
+      <div class="tv-charts-row">
+        <div class="card chart-card">
+          <div class="chart-card-title">Distribuição por Credor</div>
+          <div class="pie-table-layout">
+            <div class="pie-table-canvas-wrap"><canvas id="chart-acor-credor"></canvas></div>
+            <div class="pie-table" id="table-acor-credor"></div>
+          </div>
+        </div>
+        <div class="card chart-card">
+          <div class="chart-card-title">Contratos por Estado</div>
+          <div class="map-wrap" id="map-acor"></div>
+        </div>
+      </div>
+
+      <!-- Charts row 2: Assessores + Acordos por Dia -->
+      <div class="tv-charts-row">
+        <div class="card chart-card">
+          <div class="chart-card-title">Top Assessores</div>
+          <div class="bar-canvas-side"><canvas id="chart-acor-assessores"></canvas></div>
+        </div>
+        <div class="card chart-card">
+          <div class="chart-card-title">Acordos por Dia</div>
+          <div class="bar-canvas-side"><canvas id="chart-acor-dias"></canvas></div>
+        </div>
+      </div>
+
+
+    </div><!-- /#acordos-section -->
+
+    <!-- Canvases ocultos para JS (chart-acor-pgto não exibido em TV) -->
+    <div style="display:none;position:absolute;">
+      <canvas id="chart-acor-pgto"></canvas>
+      <div id="table-acor-pgto"></div>
+    </div>
+
+  </div><!-- /.tv-col-acor -->
+
+</main>
+
+<!-- ══════════════════════════ SCRIPT ═══════════════════════ -->
+<script>
+  /* ── estado ─────────────────────────────────────────────── */
+  let accessToken   = null;
+  let tokenExpiresAt = 0;
+
+  /* ── helpers de UI ──────────────────────────────────────── */
+  function show(id)  { document.getElementById(id).style.display = 'flex'; }
+  function hide(id)  { document.getElementById(id).style.display = 'none'; }
+  function block(id) { document.getElementById(id).style.display = 'block'; }
+
+  function showAlert(msg, type = 'error') {
+    const box  = document.getElementById('alert-box');
+    const icon = document.getElementById('alert-icon');
+    box.className = type === 'info' ? 'info' : '';
+    icon.setAttribute('stroke', type === 'info' ? 'var(--accent)' : 'var(--danger)');
+    document.getElementById('alert-text').innerHTML = msg;
+    box.style.display = 'flex';
+  }
+
+  function hideAlert() { document.getElementById('alert-box').style.display = 'none'; }
+
+  function setLastUpdate() {
+    const now = new Date().toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'medium' });
+    document.getElementById('last-update').innerHTML =
+      `Última atualização: <span>${now}</span>`;
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     AUTENTICAÇÃO — OAuth2 Implicit Grant (redirect flow)
+     Sem bibliotecas externas. Funciona com contas Workspace.
+     ══════════════════════════════════════════════════════════ */
+
+  /**
+   * Redireciona o browser para o endpoint de autorização do Google.
+   * Após o login, o Google redireciona de volta para REDIRECT_URI
+   * com o access_token no hash fragment (#access_token=...&expires_in=...).
+   */
+  function redirectToGoogle() {
+    // Gera state aleatório para proteção CSRF
+    const state = crypto.randomUUID ? crypto.randomUUID()
+                : Math.random().toString(36).slice(2);
+    sessionStorage.setItem('oauth_state', state);
+
+    const params = new URLSearchParams({
+      response_type: 'token',
+      client_id:     CLIENT_ID,
+      redirect_uri:  REDIRECT_URI,
+      scope:         SCOPES,
+      state,
+      prompt:        'select_account',   // força seleção de conta (ideal p/ Workspace)
+      include_granted_scopes: 'true',
+    });
+
+    window.location.href = `${OAUTH_ENDPOINT}?${params}`;
+  }
+
+  /**
+   * Lê o hash fragment da URL após o redirecionamento do Google.
+   * Retorna o token se válido, null caso contrário.
+   */
+  function parseTokenFromHash() {
+    const hash = window.location.hash.slice(1); // remove o '#'
+    if (!hash) return null;
+
+    const params = new URLSearchParams(hash);
+    const token     = params.get('access_token');
+    const expiresIn = parseInt(params.get('expires_in') || '0', 10);
+    const state     = params.get('state');
+    const error     = params.get('error');
+
+    // Limpa o hash da URL para não expor o token no histórico
+    history.replaceState(null, '', window.location.pathname + window.location.search);
+
+    if (error) {
+      handleAuthError(error);
+      return null;
+    }
+
+    // Valida state anti-CSRF
+    const savedState = sessionStorage.getItem('oauth_state');
+    sessionStorage.removeItem('oauth_state');
+    if (state && savedState && state !== savedState) {
+      showAlert('<strong>Erro de segurança:</strong> state inválido. Tente fazer login novamente.');
+      return null;
+    }
+
+    if (!token) return null;
+
+    return { token, expiresAt: Date.now() + expiresIn * 1000 };
+  }
+
+  /**
+   * Verifica se o token armazenado em sessionStorage ainda é válido.
+   */
+  function loadTokenFromSession() {
+    const token     = sessionStorage.getItem('access_token');
+    const expiresAt = parseInt(sessionStorage.getItem('token_expires_at') || '0', 10);
+    if (token && Date.now() < expiresAt - 60_000) {
+      return { token, expiresAt };
+    }
+    sessionStorage.removeItem('access_token');
+    sessionStorage.removeItem('token_expires_at');
+    return null;
+  }
+
+  function saveTokenToSession(token, expiresAt) {
+    sessionStorage.setItem('access_token', token);
+    sessionStorage.setItem('token_expires_at', String(expiresAt));
+  }
+
+  /* ── inicialização — roda ao carregar a página ───────────── */
+  (function init() {
+    // 1. Tenta ler token do hash (retorno do Google)
+    const fromHash = parseTokenFromHash();
+    if (fromHash) {
+      accessToken    = fromHash.token;
+      tokenExpiresAt = fromHash.expiresAt;
+      saveTokenToSession(accessToken, tokenExpiresAt);
+      onSignedIn();
+      return;
+    }
+
+    // 2. Tenta reutilizar token da sessão atual
+    const fromSession = loadTokenFromSession();
+    if (fromSession) {
+      accessToken    = fromSession.token;
+      tokenExpiresAt = fromSession.expiresAt;
+      onSignedIn();
+      return;
+    }
+
+    // 3. Nenhum token disponível — mostra tela de login
+    showLoginScreen();
+  })();
+
+  /* ── transições de UI ───────────────────────────────────── */
+  function onSignedIn() {
+    hide('login-screen');
+    document.getElementById('btn-login-header').style.display = 'none';
+    document.getElementById('btn-refresh').disabled = false;
+    hideAlert();
+    loadAll();
+  }
+
+  function loadAll() {
+    loadData();
+    loadComercial();
+    loadAcordos();
+  }
+
+  function showLoginScreen() {
+    document.getElementById('btn-login-header').style.display = 'inline-flex';
+    document.getElementById('btn-refresh').disabled = true;
+    document.getElementById('last-update').textContent = 'Aguardando autenticação…';
+    document.getElementById('dashboard').style.display = 'none';
+    hide('spinner');
+    hide('empty-state');
+    show('login-screen');
+  }
+
+  /* ── logout ─────────────────────────────────────────────── */
+  function handleLogout() {
+    // Revoga token no Google em segundo plano (best-effort)
+    if (accessToken) {
+      fetch(`https://oauth2.googleapis.com/revoke?token=${accessToken}`, { method: 'POST' })
+        .catch(() => {}); // ignora erros — o importante é limpar localmente
+    }
+    accessToken = null;
+    sessionStorage.removeItem('access_token');
+    sessionStorage.removeItem('token_expires_at');
+    hideAlert();
+    showLoginScreen();
+  }
+
+  /* ── busca de dados na Sheets API ───────────────────────── */
+  async function loadData() {
+    if (!accessToken) {
+      showAlert('Você precisa fazer login antes de carregar os dados.');
+      return;
+    }
+
+    // Verifica expiração antes de fazer a requisição
+    if (Date.now() >= tokenExpiresAt - 60_000) {
+      showAlert('Sessão expirada. Faça login novamente.');
+      handleLogout();
+      return;
+    }
+
+    hide('empty-state');
+    hideAlert();
+    document.getElementById('btn-refresh').disabled = true;
+    show('spinner');
+
+    const range = encodeURIComponent(`'${SHEET_NAME}'`);
+    const url   = `${API_BASE}/${SPREADSHEET_ID}/values/${range}`;
+
+    try {
+      const res = await fetch(url, {
+        headers: { Authorization: `Bearer ${accessToken}` }
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        handleApiError(res.status, err);
+        return;
+      }
+
+      const rows = (await res.json()).values || [];
+      if (rows.length === 0) { block('empty-state'); return; }
+      renderDashboard(rows);
+      setLastUpdate();
+
+    } catch (e) {
+      showAlert(`Erro de rede ao acessar a API: <em>${e.message}</em>`);
+    } finally {
+      hide('spinner');
+      document.getElementById('btn-refresh').disabled = false;
+    }
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     DASHBOARD — parsing e renderização dos cards
+     Regra: NUNCA calcular. Apenas ler o valor já existente
+     na célula da planilha, identificando a linha pelo rótulo.
+     ══════════════════════════════════════════════════════════ */
+
+  const BANK_CARDS = [
+    { label: 'BANCO INTER',       short: 'BI',  color: '#ff6c2f', bg: 'rgba(255,108,47,.15)' },
+    { label: 'CDB INTER',         short: 'CDB', color: '#ff6c2f', bg: 'rgba(255,108,47,.1)'  },
+    { label: 'Sicredi',           short: 'SC',  color: '#009a44', bg: 'rgba(0,154,68,.15)'   },
+    { label: 'Sicredi Aplicação', short: 'SA',  color: '#009a44', bg: 'rgba(0,154,68,.1)'    },
+    { label: 'ContaAzul ContaPJ', short: 'CA',  color: '#4f8ef7', bg: 'rgba(79,142,247,.15)' },
+    { label: 'Caixinha',          short: 'CX',  color: '#a78bfa', bg: 'rgba(167,139,250,.15)'},
+    { label: 'Asaas',             short: 'AS',  color: '#f59e0b', bg: 'rgba(245,158,11,.15)' },
+  ];
+
+  /**
+   * Busca a linha onde QUALQUER célula é exatamente igual a `label`
+   * (case-insensitive, trimmed) e retorna a última célula não-vazia
+   * após a posição do rótulo.
+   */
+  function findExact(rows, label) {
+    const needle = label.trim().toLowerCase();
+    for (const row of rows) {
+      for (let i = 0; i < row.length; i++) {
+        if ((row[i] ?? '').trim().toLowerCase() === needle) {
+          for (let j = row.length - 1; j > i; j--) {
+            if ((row[j] ?? '').trim() !== '') return row[j].trim();
+          }
+        }
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Busca a linha onde QUALQUER célula CONTÉM `substring`
+   * (case-insensitive) e retorna a última célula não-vazia
+   * após a posição do rótulo. Usado para "Saldos em 26/03..." etc.
+   */
+  function findContains(rows, substring) {
+    const needle = substring.trim().toLowerCase();
+    for (const row of rows) {
+      for (let i = 0; i < row.length; i++) {
+        if ((row[i] ?? '').trim().toLowerCase().includes(needle)) {
+          for (let j = row.length - 1; j > i; j--) {
+            if ((row[j] ?? '').trim() !== '') return row[j].trim();
+          }
+        }
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Busca a linha pelo rótulo exato e retorna o PRIMEIRO valor
+   * numérico encontrado após o rótulo (usado p/ Saldo fim do mês
+   * onde pode haver múltiplas colunas).
+   */
+  function findFirstNumeric(rows, label) {
+    const needle = label.trim().toLowerCase();
+    for (const row of rows) {
+      for (let i = 0; i < row.length; i++) {
+        if ((row[i] ?? '').trim().toLowerCase() === needle) {
+          for (let j = i + 1; j < row.length; j++) {
+            const v = (row[j] ?? '').trim();
+            if (v !== '' && !isNaN(parseBRL(v))) return v;
+          }
+        }
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Converte string brasileira de moeda para número.
+   * Aceita: "R$ 1.234,56" / "1.234,56" / "-1.234,56" / "(1.234,56)"
+   */
+  function parseBRL(str) {
+    if (!str) return NaN;
+    let s = str.replace(/R\$\s*/g, '').trim();
+    const neg = s.startsWith('-') || s.startsWith('(');
+    s = s.replace(/[()]/g, '').replace(/-/g, '').trim();
+    s = s.replace(/\./g, '').replace(',', '.');
+    const n = parseFloat(s);
+    return neg ? -n : n;
+  }
+
+  /** Formata número como BRL para exibição nos cards. */
+  function formatBRL(n) {
+    if (isNaN(n)) return '—';
+    return n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  }
+
+  /** Aplica classe de cor positivo/negativo/neutro ao elemento. */
+  function applyColor(el, n) {
+    el.classList.remove('positive', 'negative', 'neutral');
+    if      (isNaN(n)) el.classList.add('neutral');
+    else if (n > 0)    el.classList.add('positive');
+    else if (n < 0)    el.classList.add('negative');
+    else               el.classList.add('neutral');
+  }
+
+  /** Detecta automaticamente a coluna de rótulos e a de valores. */
+  function detectColumns(rows) {
+    const probes = ['BANCO INTER', 'CDB INTER', 'Sicredi', 'Caixinha', 'Asaas', 'Saldo hoje*'];
+    const colWidth = Math.max(...rows.map(r => r.length));
+    const labelHits = new Array(colWidth).fill(0);
+    rows.forEach(row => {
+      row.forEach((cell, j) => {
+        if (probes.some(p => (cell ?? '').trim().toLowerCase() === p.toLowerCase())) labelHits[j]++;
+      });
+    });
+    const labelCol = labelHits.indexOf(Math.max(...labelHits));
+    if (labelHits[labelCol] === 0) return { labelCol: 0, valueCol: 1 };
+
+    const candidateRows = rows.filter(row =>
+      probes.some(p => (row[labelCol] ?? '').trim().toLowerCase() === p.toLowerCase())
+    );
+    const numericHits = new Array(colWidth).fill(0);
+    candidateRows.forEach(row => {
+      row.forEach((cell, j) => {
+        const v = (cell ?? '').trim();
+        if (j !== labelCol && v !== '' && !isNaN(parseBRL(v))) numericHits[j]++;
+      });
+    });
+    const valueCol = numericHits.indexOf(Math.max(...numericHits));
+    return { labelCol, valueCol: numericHits[valueCol] > 0 ? valueCol : labelCol + 1 };
+  }
+
+  /** Preenche um card: parseia o valor bruto e exibe formatado como BRL. */
+  function fillCard(id, raw) {
+    const el = document.getElementById(id);
+    const n  = parseBRL(raw);
+    el.textContent = isNaN(n) ? '—' : formatBRL(n);
+    applyColor(el, n);
+  }
+
+  function renderDashboard(rows) {
+    const { labelCol, valueCol } = detectColumns(rows);
+
+    const readExact = (label) => {
+      const needle = label.trim().toLowerCase();
+      for (const row of rows) {
+        if ((row[labelCol] ?? '').trim().toLowerCase() === needle)
+          return (row[valueCol] ?? '').trim() || null;
+      }
+      return null;
+    };
+
+    const readContains = (sub) => {
+      const needle = sub.trim().toLowerCase();
+      for (const row of rows) {
+        if ((row[labelCol] ?? '').trim().toLowerCase().includes(needle))
+          return (row[valueCol] ?? '').trim() || null;
+      }
+      return null;
+    };
+
+    const readFirstNumeric = (label) => {
+      const needle = label.trim().toLowerCase();
+      for (const row of rows) {
+        if ((row[labelCol] ?? '').trim().toLowerCase() === needle) {
+          for (let j = labelCol + 1; j < row.length; j++) {
+            const v = (row[j] ?? '').trim();
+            if (v !== '' && !isNaN(parseBRL(v))) return v;
+          }
+        }
+      }
+      return null;
+    };
+
+    // Cards de destaque
+    fillCard('card-total',   readContains('saldos em'));
+    fillCard('card-hoje',    readExact('Saldo hoje*'));
+    fillCard('card-fim-mes', readFirstNumeric('Saldo ao fim do mês*'));
+
+    const now = new Date().toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
+    document.getElementById('card-total-sub').textContent = `Atualizado em ${now}`;
+
+    // Cards de banco
+    const container = document.getElementById('cards-banks');
+    container.innerHTML = '';
+    BANK_CARDS.forEach(({ label, short, color, bg }) => {
+      const n = parseBRL(readExact(label));
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.innerHTML = `
+        <div class="bank-icon" style="background:${bg};color:${color};">${short}</div>
+        <div class="card-label">${label}</div>
+        <div class="card-value ${isNaN(n) ? 'neutral' : n >= 0 ? 'positive' : 'negative'}">
+          ${isNaN(n) ? '—' : formatBRL(n)}
+        </div>`;
+      container.appendChild(card);
+    });
+
+    document.getElementById('dashboard').style.display = 'flex';
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     MÓDULO COMERCIAL
+     ══════════════════════════════════════════════════════════ */
+
+  const CHART_PALETTE = [
+    '#5B4FE8','#0CAF60','#3B82F6','#EC4899',
+    '#F59E0B','#8B5CF6','#10B981','#F97316',
+  ];
+
+  const MESES_PT = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
+                    'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+
+  let _comercialCharts = {};
+  let _acordosCharts   = {};
+
+  function toggleBanks() {
+    const content = document.getElementById('bank-expand-content');
+    const arrow   = document.getElementById('bank-arrow');
+    const isOpen  = content.classList.contains('open');
+    content.classList.toggle('open', !isOpen);
+    arrow.classList.toggle('open', !isOpen);
+  }
+
+  async function loadComercial() {
+    if (!accessToken) return;
+    if (Date.now() >= tokenExpiresAt - 60_000) return;
+
+    const comSpinner = document.getElementById('com-spinner');
+    comSpinner.style.display = 'flex';
+    document.getElementById('comercial-section').style.display = 'none';
+
+    const range = encodeURIComponent(`'${COMERCIAL_SHEET_NAME}'`);
+    const url   = `${API_BASE}/${COMERCIAL_SPREADSHEET_ID}/values/${range}`;
+
+    console.log('[Comercial] Iniciando requisição');
+    console.log('[Comercial] Planilha ID:', COMERCIAL_SPREADSHEET_ID);
+    console.log('[Comercial] Aba:', COMERCIAL_SHEET_NAME);
+    console.log('[Comercial] URL:', url);
+    console.log('[Comercial] Token (primeiros 20 chars):', accessToken?.slice(0, 20) + '…');
+
+    try {
+      const res = await fetch(url, {
+        headers: { Authorization: `Bearer ${accessToken}` }
+      });
+
+      console.log('[Comercial] HTTP status:', res.status, res.statusText);
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        console.warn('[Comercial] Erro da API:', res.status, err?.error?.message);
+        showAlert(`<strong>Módulo Comercial (${res.status}):</strong> ${err?.error?.message || 'Erro ao carregar aba Comercial.'}`);
+        return;
+      }
+
+      const json = await res.json();
+      const rows = json.values || [];
+      console.log('[Comercial] Total de linhas retornadas:', rows.length);
+      const preview = Math.min(10, rows.length);
+      for (let i = 0; i < preview; i++) {
+        console.log(`[Comercial] Linha ${i + 1}:`, rows[i] ?? '—');
+      }
+
+      if (rows.length < 2) {
+        console.warn('[Comercial] Nenhum dado encontrado na aba (menos de 2 linhas).');
+        return;
+      }
+      renderComercial(rows);
+
+    } catch (e) {
+      console.error('Comercial fetch error:', e);
+    } finally {
+      comSpinner.style.display = 'none';
+    }
+  }
+
+  function renderComercial(rows) {
+    // ── detecta automaticamente a linha de cabeçalho ─────────
+    const HEADER_MARKERS = ['CLIENTE', 'FECHAMENTO', 'TOTAL EM HONORÁRIOS', 'TOTAL EM HONORARIOS'];
+    const scanLimit = Math.min(15, rows.length);
+    let headerRowIndex = -1;
+
+    for (let i = 0; i < scanLimit; i++) {
+      const upper = (rows[i] || []).map(c => (c || '').trim().toUpperCase());
+      const hasMarker    = HEADER_MARKERS.some(m => upper.some(cell => cell.includes(m)));
+      const hasEnoughCells = upper.filter(c => c !== '').length >= 5;
+      if (hasMarker || hasEnoughCells) {
+        headerRowIndex = i;
+        break;
+      }
+    }
+
+    if (headerRowIndex === -1) {
+      console.warn('[Comercial] Cabeçalho não encontrado nas primeiras', scanLimit, 'linhas. Usando linha 0 como fallback.');
+      headerRowIndex = 0;
+    } else {
+      console.log(`[Comercial] Cabeçalho encontrado na linha ${headerRowIndex + 1} (índice ${headerRowIndex})`);
+      console.log('[Comercial] Conteúdo do cabeçalho:', rows[headerRowIndex]);
+    }
+
+    const header = rows[headerRowIndex].map(h => (h || '').trim().toUpperCase());
+    const data   = rows.slice(headerRowIndex + 1);
+
+    const findCol = (...candidates) => {
+      for (const c of candidates) {
+        const i = header.findIndex(h => h === c.toUpperCase() || h.includes(c.toUpperCase()));
+        if (i >= 0) return i;
+      }
+      return -1;
+    };
+
+    const colFechamento = findCol('FECHAMENTO');
+    const colHonorarios = findCol('TOTAL EM HONORÁRIOS', 'TOTAL EM HONORARIOS', 'HONORÁRIO', 'HONORARIO');
+    const colParcela    = findCol('VALOR DE PARCELA');
+    const colCanal      = findCol('CANAL DE CAPTAÇÃO', 'CANAL DE CAPTACAO', 'CANAL');
+    const colCloser     = findCol('CAPTAÇÃO CLOSER', 'CAPTACAO CLOSER', 'CLOSER');
+    const colUF         = findCol('UF');
+    const colBanco      = findCol('BANCO');
+    const colConsultor  = findCol('QUEM GERIU', 'CONSULTOR');
+    const colCidade     = findCol('CIDADE');
+
+    // ── filtra pelo mês atual ────────────────────────────────
+    const now          = new Date();
+    const curMonth     = now.getMonth();
+    const curYear      = now.getFullYear();
+
+    const filtered = data.filter(row => {
+      if (colFechamento < 0) return true;
+      const raw = (row[colFechamento] || '').trim();
+      if (!raw) return false;
+      let d;
+      const m = raw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+      if (m) {
+        d = new Date(+m[3], +m[2] - 1, +m[1]);
+      } else {
+        d = new Date(raw);
+      }
+      if (isNaN(d.getTime())) return false;
+      return d.getMonth() === curMonth && d.getFullYear() === curYear;
+    });
+
+    console.log('[Comercial] Colunas detectadas:', {
+      FECHAMENTO: colFechamento, 'TOTAL EM HONORÁRIOS': colHonorarios,
+      'VALOR DE PARCELA': colParcela, 'CANAL DE CAPTAÇÃO': colCanal,
+      'CLOSER': colCloser, UF: colUF, BANCO: colBanco,
+      'QUEM GERIU': colConsultor, CIDADE: colCidade,
+    });
+    console.log(`[Comercial] Linhas totais na aba (sem cabeçalho): ${data.length}`);
+    console.log(`[Comercial] Linhas após filtro ${MESES_PT[curMonth]}/${curYear}: ${filtered.length}`);
+    if (filtered.length === 0 && colFechamento >= 0) {
+      const amostra = data.slice(0, 5).map(r => r[colFechamento]);
+      console.warn('[Comercial] Nenhum registro passou o filtro. Amostra da coluna FECHAMENTO:', amostra);
+    }
+
+    // ── atualiza título da seção ─────────────────────────────
+    document.getElementById('comercial-title').textContent =
+      `Comercial — ${MESES_PT[curMonth]}`;
+
+    // ── calcula cards ────────────────────────────────────────
+    let totalHon = 0, totalParc = 0, parcCount = 0;
+    filtered.forEach(row => {
+      if (colHonorarios >= 0) {
+        const v = parseBRL(row[colHonorarios] || '');
+        if (!isNaN(v)) totalHon += v;
+      }
+      if (colParcela >= 0) {
+        const v = parseBRL(row[colParcela] || '');
+        if (!isNaN(v)) { totalParc += v; parcCount++; }
+      }
+    });
+
+    const clientes     = filtered.length;
+    const mediaContrato = clientes > 0 ? totalHon / clientes : 0;
+    const mediaParcela  = parcCount > 0 ? totalParc / parcCount : 0;
+
+    document.getElementById('com-card-honorarios').textContent = formatBRL(totalHon);
+    document.getElementById('com-card-clientes').textContent   = clientes.toLocaleString('pt-BR');
+    document.getElementById('com-card-media').textContent      = formatBRL(mediaContrato);
+    document.getElementById('com-card-parcela').textContent    = formatBRL(mediaParcela);
+    document.getElementById('com-card-hon-sub').textContent    =
+      `${clientes} vida${clientes !== 1 ? 's' : ''} em ${MESES_PT[curMonth]}`;
+    document.getElementById('com-card-vidas-sub').textContent  =
+      `${clientes} vida${clientes !== 1 ? 's' : ''} em ${MESES_PT[curMonth]}`;
+
+    // ── helpers de agregação ─────────────────────────────────
+    function countBy(ci) {
+      const m = {};
+      filtered.forEach(r => {
+        const v = (r[ci] || '').trim();
+        if (v) m[v] = (m[v] || 0) + 1;
+      });
+      return m;
+    }
+
+    function sumBy(ciKey, ciVal) {
+      const m = {};
+      filtered.forEach(r => {
+        const k = (r[ciKey] || '').trim();
+        const v = parseBRL(r[ciVal] || '');
+        if (k && !isNaN(v)) m[k] = (m[k] || 0) + v;
+      });
+      return m;
+    }
+
+    // ── destroi gráficos anteriores ──────────────────────────
+    Object.values(_comercialCharts).forEach(c => c.destroy());
+    _comercialCharts = {};
+
+    // ── factory: pizza + tabela abaixo ───────────────────────
+    function makePie(canvasId, tableId, colHeader, counts) {
+      const entries = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 8);
+      if (!entries.length) return;
+      const labels = entries.map(e => e[0]);
+      const values = entries.map(e => e[1]);
+      const total  = values.reduce((a, b) => a + b, 0);
+      const colors = labels.map((_, i) => CHART_PALETTE[i % CHART_PALETTE.length]);
+
+      const ctx = document.getElementById(canvasId).getContext('2d');
+      _comercialCharts[canvasId] = new Chart(ctx, {
+        type: 'pie',
+        data: {
+          labels,
+          datasets: [{
+            data: values,
+            backgroundColor: colors,
+            borderColor: '#FFFFFF',
+            borderWidth: 2,
+            hoverOffset: 4,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: c => {
+                  const pct = ((c.parsed / total) * 100).toFixed(1);
+                  return `  ${c.label}: ${c.parsed} vida${c.parsed !== 1 ? 's' : ''} (${pct}%)`;
+                }
+              }
+            }
+          }
+        }
+      });
+
+      // Tabela abaixo do gráfico
+      const tableEl = document.getElementById(tableId);
+      if (!tableEl) return;
+      tableEl.innerHTML = `
+        <table>
+          <thead>
+            <tr>
+              <th>${colHeader}</th>
+              <th>Vidas</th>
+              <th>%</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${entries.map((e, i) => {
+              const pct  = ((e[1] / total) * 100).toFixed(1);
+              const name = e[0].length > 22 ? e[0].slice(0, 21) + '\u2026' : e[0];
+              return `<tr>
+                <td title="${e[0]}"><span class="pie-dot" style="background:${colors[i]}"></span>${name}</td>
+                <td>${e[1]}</td>
+                <td>${pct}%</td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+          <tfoot>
+            <tr>
+              <td>Total</td>
+              <td>${total}</td>
+              <td>100%</td>
+            </tr>
+          </tfoot>
+        </table>`;
+    }
+
+    // ── factory: barras horizontais ──────────────────────────
+    function makeBar(canvasId, aggData, limit = 8, isCurrency = false) {
+      const entries = Object.entries(aggData).sort((a, b) => b[1] - a[1]).slice(0, limit);
+      if (!entries.length) return;
+      const labels = entries.map(e => e[0]);
+      const values = entries.map(e => e[1]);
+      const ctx = document.getElementById(canvasId).getContext('2d');
+
+      const valueLabelPlugin = {
+        id: `vlabel_${canvasId}`,
+        afterDatasetsDraw(chart) {
+          const { ctx: c } = chart;
+          const meta = chart.getDatasetMeta(0);
+          c.save();
+          c.fillStyle = '#6B7280';
+          c.font = '11px "Segoe UI", system-ui, sans-serif';
+          c.textAlign = 'left';
+          c.textBaseline = 'middle';
+          meta.data.forEach((bar, i) => {
+            const txt = isCurrency
+              ? formatBRL(values[i])
+              : values[i].toLocaleString('pt-BR');
+            c.fillText(txt, bar.x + 6, bar.y);
+          });
+          c.restore();
+        }
+      };
+
+      _comercialCharts[canvasId] = new Chart(ctx, {
+        type: 'bar',
+        plugins: [valueLabelPlugin],
+        data: {
+          labels,
+          datasets: [{
+            data: values,
+            backgroundColor: 'rgba(91,79,232,.85)',
+            hoverBackgroundColor: '#5B4FE8',
+            borderRadius: 3,
+            borderSkipped: false,
+            barThickness: 18,
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          layout: { padding: { right: 90 } },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: c => isCurrency
+                  ? `  ${formatBRL(c.parsed.x)}`
+                  : `  ${c.parsed.x}`
+              }
+            }
+          },
+          scales: {
+            x: {
+              grid: { color: '#E8EAF0' },
+              border: { display: false },
+              ticks: {
+                color: '#6B7280',
+                font: { size: 10 },
+                callback: v => isCurrency
+                  ? 'R$\u00a0' + (v >= 1000 ? (v / 1000).toFixed(0) + 'k' : v)
+                  : v,
+              }
+            },
+            y: {
+              grid: { display: false },
+              border: { display: false },
+              ticks: { color: '#0F1117', font: { size: 11 }, padding: 6 }
+            }
+          }
+        }
+      });
+    }
+
+    // ── factory: barras consultores (R$ + vidas) ─────────────
+    function makeBarConsultor(canvasId, sumData, countData, limit = 6) {
+      const entries = Object.entries(sumData).sort((a, b) => b[1] - a[1]).slice(0, limit);
+      if (!entries.length) return;
+      const labels    = entries.map(e => e[0]);
+      const sumVals   = entries.map(e => e[1]);
+      const countVals = entries.map(e => countData[e[0]] || 0);
+
+      const fmtShort = v => {
+        if (v >= 1_000_000) return 'R$\u00a0' + (v / 1_000_000).toFixed(1).replace('.', ',') + 'M';
+        if (v >= 1_000)     return 'R$\u00a0' + Math.round(v / 1_000) + 'k';
+        return formatBRL(v);
+      };
+
+      const dualLabelPlugin = {
+        id: `dlabel_${canvasId}`,
+        afterDraw(chart) {
+          const { ctx: c } = chart;
+          const meta = chart.getDatasetMeta(0);
+          c.save();
+          c.font = '11px "Segoe UI", system-ui, sans-serif';
+          c.textAlign = 'left';
+          c.textBaseline = 'middle';
+          meta.data.forEach((bar, i) => {
+            const txt = `${fmtShort(sumVals[i])}  ·  ${countVals[i]} vida${countVals[i] !== 1 ? 's' : ''}`;
+            c.fillStyle = '#6B7280';
+            c.fillText(txt, bar.x + 7, bar.y);
+          });
+          c.restore();
+        }
+      };
+
+      const ctx = document.getElementById(canvasId).getContext('2d');
+      _comercialCharts[canvasId] = new Chart(ctx, {
+        type: 'bar',
+        plugins: [dualLabelPlugin],
+        data: {
+          labels,
+          datasets: [{
+            data: sumVals,
+            backgroundColor: 'rgba(91,79,232,.85)',
+            hoverBackgroundColor: '#5B4FE8',
+            borderRadius: 3,
+            borderSkipped: false,
+            barThickness: 18,
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          layout: { padding: { right: 195 } },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: c => `  ${formatBRL(c.parsed.x)}  ·  ${countVals[c.dataIndex]} vidas`
+              }
+            }
+          },
+          scales: {
+            x: {
+              grid: { color: '#E8EAF0' },
+              border: { display: false },
+              ticks: {
+                color: '#6B7280',
+                font: { size: 10 },
+                callback: v => 'R$\u00a0' + (v >= 1000 ? Math.round(v / 1000) + 'k' : v),
+              }
+            },
+            y: {
+              grid: { display: false },
+              border: { display: false },
+              ticks: { color: '#0F1117', font: { size: 11 }, padding: 6 }
+            }
+          }
+        }
+      });
+    }
+
+    // ── renderiza ────────────────────────────────────────────
+    if (colCanal  >= 0) makePie('chart-canal',  'table-canal',  'Canal',          countBy(colCanal));
+    if (colBanco  >= 0) makePie('chart-banco',  'table-banco',  'Banco / Credor', countBy(colBanco));
+    if (colConsultor >= 0 && colHonorarios >= 0)
+      makeBarConsultor('chart-consultor', sumBy(colConsultor, colHonorarios), countBy(colConsultor), 6);
+    if (colFechamento >= 0)
+      makeVendasPorDia('chart-vendas-dia', filtered, colFechamento);
+    if (colUF >= 0)
+      makeMapa('map-uf', countBy(colUF));
+
+    document.getElementById('comercial-section').style.display = 'flex';
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     MÓDULO ACORDOS
+     ══════════════════════════════════════════════════════════ */
+
+  async function loadAcordos() {
+    if (!accessToken) return;
+    if (Date.now() >= tokenExpiresAt - 60_000) return;
+
+    const spinner = document.getElementById('acor-spinner');
+    spinner.style.display = 'flex';
+    document.getElementById('acordos-section').style.display = 'none';
+
+    const range = encodeURIComponent(`'${ACORDOS_SHEET_NAME}'`);
+    const url   = `${API_BASE}/${ACORDOS_SPREADSHEET_ID}/values/${range}`;
+
+    console.log('[Acordos] Iniciando requisição:', url);
+
+    try {
+      const res = await fetch(url, {
+        headers: { Authorization: `Bearer ${accessToken}` }
+      });
+
+      console.log('[Acordos] HTTP status:', res.status, res.statusText);
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        console.warn('[Acordos] Erro da API:', res.status, err?.error?.message);
+        showAlert(`<strong>Módulo Acordos (${res.status}):</strong> ${err?.error?.message || 'Erro ao carregar aba Acordos.'}`);
+        return;
+      }
+
+      const json = await res.json();
+      const rows = json.values || [];
+      console.log('[Acordos] Total de linhas retornadas:', rows.length);
+      const preview = Math.min(10, rows.length);
+      for (let i = 0; i < preview; i++) {
+        console.log(`[Acordos] Linha ${i + 1}:`, rows[i] ?? '—');
+      }
+
+      if (rows.length < 2) {
+        console.warn('[Acordos] Nenhum dado encontrado (menos de 2 linhas).');
+        return;
+      }
+      renderAcordos(rows);
+
+    } catch (e) {
+      console.error('[Acordos] fetch error:', e);
+    } finally {
+      spinner.style.display = 'none';
+    }
+  }
+
+  function renderAcordos(rows) {
+    // ── detecta automaticamente a linha de cabeçalho ─────────
+    const HEADER_MARKERS = ['CLIENTE', 'CREDOR', 'MÊS', 'MES', 'ASSESSORIA'];
+    const scanLimit = Math.min(15, rows.length);
+    let headerRowIndex = -1;
+
+    for (let i = 0; i < scanLimit; i++) {
+      const upper = (rows[i] || []).map(c => (c || '').trim().toUpperCase());
+      const hasMarker      = HEADER_MARKERS.some(m => upper.some(cell => cell.includes(m)));
+      const hasEnoughCells = upper.filter(c => c !== '').length >= 5;
+      if (hasMarker || hasEnoughCells) {
+        headerRowIndex = i;
+        break;
+      }
+    }
+
+    if (headerRowIndex === -1) {
+      console.warn('[Acordos] Cabeçalho não encontrado nas primeiras', scanLimit, 'linhas. Usando linha 0 como fallback.');
+      headerRowIndex = 0;
+    } else {
+      console.log(`[Acordos] Cabeçalho encontrado na linha ${headerRowIndex + 1} (índice ${headerRowIndex})`);
+      console.log('[Acordos] Conteúdo do cabeçalho:', rows[headerRowIndex]);
+    }
+
+    const header = rows[headerRowIndex].map(h => (h || '').trim().toUpperCase());
+    const data   = rows.slice(headerRowIndex + 1);
+
+    const findCol = (...candidates) => {
+      for (const c of candidates) {
+        const i = header.findIndex(h => h === c.toUpperCase() || h.includes(c.toUpperCase()));
+        if (i >= 0) return i;
+      }
+      return -1;
+    };
+
+    const colMes        = findCol('MÊS', 'MES');
+    const colStatus     = findCol('STATU PGTO.', 'STATU PGTO', 'STATUS PGTO', 'STATUS');
+    const colCredor     = findCol('CREDOR');
+    const colForma      = findCol('FORMA DE PGTO', 'FORMA PGTO', 'FORMA DE PAGAMENTO');
+    const colAssessoria = findCol('ASSESSORIA', 'ASSESSOR');
+    const colDataPgto   = findCol('DATA PGTO.', 'DATA PGTO', 'DATA DE PGTO', 'DATA PAGAMENTO', 'DATA');
+    const colEntrada    = findCol('ENTRADA');
+    const colMapa       = findCol('BUSCA E APREENSÃO', 'BUSCA E APREENSAO', 'UF', 'ESTADO');
+
+    console.log('[Acordos] Colunas detectadas:', {
+      MES: colMes, STATUS: colStatus, CREDOR: colCredor, 'FORMA PGTO': colForma,
+      ASSESSORIA: colAssessoria, 'DATA PGTO': colDataPgto,
+      ENTRADA: colEntrada, MAPA: colMapa,
+    });
+
+    // ── filtra pelo mês atual ─────────────────────────────────
+    const now         = new Date();
+    const curMonth    = now.getMonth();
+    const curYear     = now.getFullYear();
+    const curMesNorm   = MESES_PT[curMonth]
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
+    const curMesComAno = `${curMesNorm}/${curYear}`;
+
+    // Filtro de mês — prioriza DATA PGTO. (dd/mm/yyyy) pois inclui o ano sem ambiguidade;
+    // se não disponível, cai para coluna MÊS com match exato mês/ano
+    const filteredMes = data.filter(row => {
+      if (colDataPgto >= 0) {
+        const rawDate = (row[colDataPgto] || '').trim();
+        const m = rawDate.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+        if (m) {
+          return parseInt(m[2], 10) === curMonth + 1 && parseInt(m[3], 10) === curYear;
+        }
+        // data presente mas não parseável → exclui
+        if (rawDate) return false;
+      }
+      // fallback: coluna MÊS
+      if (colMes < 0) return true;
+      const raw = (row[colMes] || '').trim()
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
+      if (raw.includes('/')) return raw === curMesComAno;
+      return raw === curMesNorm || raw.startsWith(curMesNorm.slice(0, 3));
+    });
+
+    // todos os registros do mês (pagos + pendentes)
+    const filtered = filteredMes;
+
+    console.log(`[Acordos] Linhas brutas (sem cabeçalho): ${data.length}`);
+    console.log(`[Acordos] Após filtro de mês (${MESES_PT[curMonth]}/${curYear}): ${filtered.length}`);
+    if (filtered.length === 0) {
+      const amostra = data.slice(0, 5).map(r => r[colDataPgto >= 0 ? colDataPgto : colMes]);
+      console.warn('[Acordos] Nenhum registro passou o filtro. Amostra:', amostra);
+    }
+
+    // ── atualiza título ───────────────────────────────────────
+    document.getElementById('acordos-title').textContent = `Acordos — ${MESES_PT[curMonth]}`;
+
+    // ── calcula cards ─────────────────────────────────────────
+    let totalEntrada = 0;
+    filtered.forEach(row => {
+      if (colEntrada >= 0) {
+        const v = parseBRL(row[colEntrada] || '');
+        if (!isNaN(v)) totalEntrada += v;
+      }
+    });
+
+    const contratos   = filtered.length;
+    const mediaAcordo = contratos > 0 ? totalEntrada / contratos : 0;
+
+    document.getElementById('acor-card-total').textContent      = formatBRL(totalEntrada);
+    document.getElementById('acor-card-contratos').textContent  = contratos.toLocaleString('pt-BR');
+    document.getElementById('acor-card-media').textContent      = formatBRL(mediaAcordo);
+    document.getElementById('acor-card-total-sub').textContent  =
+      `${contratos} acordo${contratos !== 1 ? 's' : ''} em ${MESES_PT[curMonth]}`;
+    document.getElementById('acor-card-contratos-sub').textContent =
+      `${contratos} acordo${contratos !== 1 ? 's' : ''} em ${MESES_PT[curMonth]}`;
+
+    // ── helpers de agregação ──────────────────────────────────
+    function countBy(ci) {
+      const m = {};
+      filtered.forEach(r => {
+        const v = (r[ci] || '').trim();
+        if (v) m[v] = (m[v] || 0) + 1;
+      });
+      return m;
+    }
+
+    // ── destroi gráficos anteriores ───────────────────────────
+    Object.values(_acordosCharts).forEach(c => c.destroy());
+    _acordosCharts = {};
+
+    // ── factory: pizza + tabela ───────────────────────────────
+    function makePieAcor(canvasId, tableId, colHeader, counts) {
+      const entries = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 8);
+      if (!entries.length) return;
+      const labels = entries.map(e => e[0]);
+      const values = entries.map(e => e[1]);
+      const total  = values.reduce((a, b) => a + b, 0);
+      const colors = labels.map((_, i) => CHART_PALETTE[i % CHART_PALETTE.length]);
+
+      const ctx = document.getElementById(canvasId).getContext('2d');
+      _acordosCharts[canvasId] = new Chart(ctx, {
+        type: 'pie',
+        data: {
+          labels,
+          datasets: [{
+            data: values,
+            backgroundColor: colors,
+            borderColor: '#FFFFFF',
+            borderWidth: 2,
+            hoverOffset: 4,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: c => {
+                  const pct = ((c.parsed / total) * 100).toFixed(1);
+                  return `  ${c.label}: ${c.parsed} (${pct}%)`;
+                }
+              }
+            }
+          }
+        }
+      });
+
+      const tableEl = document.getElementById(tableId);
+      if (!tableEl) return;
+      tableEl.innerHTML = `
+        <table>
+          <thead>
+            <tr><th>${colHeader}</th><th>Qtd</th><th>%</th></tr>
+          </thead>
+          <tbody>
+            ${entries.map((e, i) => {
+              const pct  = ((e[1] / total) * 100).toFixed(1);
+              const name = e[0].length > 22 ? e[0].slice(0, 21) + '\u2026' : e[0];
+              return `<tr>
+                <td title="${e[0]}"><span class="pie-dot" style="background:${colors[i]}"></span>${name}</td>
+                <td>${e[1]}</td>
+                <td>${pct}%</td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+          <tfoot>
+            <tr><td>Total</td><td>${total}</td><td>100%</td></tr>
+          </tfoot>
+        </table>`;
+    }
+
+    // ── factory: barras assessores horizontal ─────────────────
+    function makeBarAssessores(canvasId, counts, limit) {
+      limit = limit || 6;
+      const entries = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, limit);
+      if (!entries.length) return;
+      const labels = entries.map(e => e[0]);
+      const values = entries.map(e => e[1]);
+      const ctx = document.getElementById(canvasId).getContext('2d');
+
+      const vlPlugin = {
+        id: `vlabel_acor_${canvasId}`,
+        afterDatasetsDraw(chart) {
+          const { ctx: c } = chart;
+          const meta = chart.getDatasetMeta(0);
+          c.save();
+          c.fillStyle = '#6B7280';
+          c.font = '11px "Segoe UI", system-ui, sans-serif';
+          c.textAlign = 'left';
+          c.textBaseline = 'middle';
+          meta.data.forEach((bar, i) => {
+            c.fillText(`${values[i]} acordo${values[i] !== 1 ? 's' : ''}`, bar.x + 6, bar.y);
+          });
+          c.restore();
+        }
+      };
+
+      _acordosCharts[canvasId] = new Chart(ctx, {
+        type: 'bar',
+        plugins: [vlPlugin],
+        data: {
+          labels,
+          datasets: [{
+            data: values,
+            backgroundColor: 'rgba(91,79,232,.85)',
+            hoverBackgroundColor: '#5B4FE8',
+            borderRadius: 3,
+            borderSkipped: false,
+            barThickness: 18,
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          layout: { padding: { right: 130 } },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: c => `  ${c.parsed.x} acordo${c.parsed.x !== 1 ? 's' : ''}`
+              }
+            }
+          },
+          scales: {
+            x: {
+              grid: { color: '#E8EAF0' },
+              border: { display: false },
+              ticks: {
+                color: '#6B7280',
+                font: { size: 10 },
+                callback: v => Number.isInteger(v) ? v : null,
+              }
+            },
+            y: {
+              grid: { display: false },
+              border: { display: false },
+              ticks: { color: '#0F1117', font: { size: 11 }, padding: 6 }
+            }
+          }
+        }
+      });
+    }
+
+    // ── renderiza ─────────────────────────────────────────────
+    if (colCredor     >= 0) makePieAcor('chart-acor-credor', 'table-acor-credor', 'Credor',         countBy(colCredor));
+    if (colForma      >= 0) makePieAcor('chart-acor-pgto',   'table-acor-pgto',   'Forma de Pgto.', countBy(colForma));
+    if (colAssessoria >= 0) makeBarAssessores('chart-acor-assessores', countBy(colAssessoria), 6);
+    if (colDataPgto   >= 0) makeVendasPorDia('chart-acor-dias', filtered, colDataPgto, _acordosCharts);
+    if (colMapa       >= 0) makeMapa('map-acor', countBy(colMapa));
+
+    document.getElementById('acordos-section').style.display = 'flex';
+  }
+
+  // ── UF sigla → nome completo (para match com GeoJSON) ──────
+  const UF_NAMES = {
+    AC:'Acre', AL:'Alagoas', AP:'Amapá', AM:'Amazonas', BA:'Bahia',
+    CE:'Ceará', DF:'Distrito Federal', ES:'Espírito Santo', GO:'Goiás',
+    MA:'Maranhão', MT:'Mato Grosso', MS:'Mato Grosso do Sul', MG:'Minas Gerais',
+    PA:'Pará', PB:'Paraíba', PR:'Paraná', PE:'Pernambuco', PI:'Piauí',
+    RJ:'Rio de Janeiro', RN:'Rio Grande do Norte', RS:'Rio Grande do Sul',
+    RO:'Rondônia', RR:'Roraima', SC:'Santa Catarina', SP:'São Paulo',
+    SE:'Sergipe', TO:'Tocantins',
+  };
+
+  // normaliza string: remove acentos, lowercase
+  function normStr(s) {
+    return (s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+  }
+
+  // ── Gráfico: Vidas por Dia (bar + linha de média) ───────────
+  function makeVendasPorDia(canvasId, filteredRows, colFech, registry) {
+    registry = registry || _comercialCharts;
+    const now = new Date();
+    const year = now.getFullYear(), month = now.getMonth();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const daily = new Array(daysInMonth).fill(0);
+
+    // conta vidas (linhas) por dia — sem soma de valores
+    filteredRows.forEach(row => {
+      const raw = (row[colFech] || '').trim();
+      const m = raw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+      if (!m) return;
+      const day = parseInt(m[1], 10);
+      if (day >= 1 && day <= daysInMonth) daily[day - 1]++;
+    });
+
+    const total = daily.reduce((a, b) => a + b, 0);
+    const avg   = daysInMonth > 0 ? total / daysInMonth : 0;
+    const labels = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+
+    const annotationsPlugin = {
+      id: `annot_${canvasId}`,
+      afterDraw(chart) {
+        const { ctx: c } = chart;
+        c.save();
+        // label "Média" ao lado direito da linha
+        const lineMeta = chart.getDatasetMeta(1);
+        const lastPt = lineMeta.data[lineMeta.data.length - 1];
+        if (lastPt) {
+          c.font = '11px "Segoe UI", system-ui, sans-serif';
+          c.fillStyle = '#E53E3E';
+          c.textAlign = 'left';
+          c.textBaseline = 'middle';
+          c.fillText('Média', lastPt.x + 6, lastPt.y);
+        }
+        c.restore();
+      }
+    };
+
+    const ctx = document.getElementById(canvasId).getContext('2d');
+    registry[canvasId] = new Chart(ctx, {
+      type: 'bar',
+      plugins: [annotationsPlugin],
+      data: {
+        labels,
+        datasets: [
+          {
+            type: 'bar',
+            label: 'Vidas fechadas',
+            data: daily,
+            backgroundColor: '#5B4FE8',
+            hoverBackgroundColor: '#7C6AF7',
+            borderRadius: { topLeft: 6, topRight: 6, bottomLeft: 0, bottomRight: 0 },
+            barPercentage: 0.8,
+            order: 2,
+          },
+          {
+            type: 'line',
+            label: 'Média diária',
+            data: new Array(daysInMonth).fill(avg),
+            borderColor: '#E53E3E',
+            borderWidth: 2,
+            borderDash: [6, 4],
+            pointRadius: 0,
+            tension: 0,
+            fill: false,
+            order: 1,
+          },
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        layout: { padding: { right: 50, top: 8 } },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: c => {
+                const v = Math.round(c.parsed.y * 10) / 10;
+                return `  ${c.dataset.label}: ${v} vida${v !== 1 ? 's' : ''}`;
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: { color: '#E8EAF0' },
+            border: { display: false },
+            ticks: { color: '#6B7280', font: { size: 10 } }
+          },
+          y: {
+            grid: { color: '#E8EAF0' },
+            border: { display: false },
+            beginAtZero: true,
+            ticks: {
+              color: '#6B7280',
+              font: { size: 10 },
+              stepSize: 1,
+              callback: v => Number.isInteger(v) ? v : null
+            }
+          }
+        }
+      }
+    });
+  }
+
+  // ── Mapa do Brasil com D3 (GeoJSON) ────────────────────────
+  async function makeMapa(containerId, ufCounts) {
+    if (typeof d3 === 'undefined') {
+      console.warn('[Mapa] D3 não carregado.');
+      return;
+    }
+    const container = document.getElementById(containerId);
+    if (!container) return;
+
+    // limpa renderização anterior
+    d3.select(container).selectAll('*').remove();
+
+    const GEO_URL = 'https://raw.githubusercontent.com/codeforamerica/click_that_hood/master/public/data/brazil-states.geojson';
+
+    let geoData;
+    try {
+      geoData = await d3.json(GEO_URL);
+    } catch (e) {
+      console.error('[Mapa] Erro ao carregar GeoJSON:', e);
+      container.innerHTML = '<div style="color:#6B6B8A;font-size:.8rem;padding:12px;">Mapa indisponível</div>';
+      return;
+    }
+
+    // normaliza as chaves de ufCounts para match robusto
+    const normCounts = {};
+    Object.entries(ufCounts).forEach(([k, v]) => { normCounts[normStr(k)] = v; });
+
+    const totalVidas = Object.values(ufCounts).reduce((a, b) => a + b, 0);
+    const maxCount   = Math.max(...Object.values(ufCounts), 1);
+    const colorScale = d3.scaleLinear()
+      .domain([0, maxCount])
+      .range(['#E8EAF0', '#5B4FE8']);
+
+    const w = container.clientWidth  || 420;
+    const h = container.clientHeight || 240;
+
+    const svg = d3.select(container)
+      .append('svg')
+      .attr('viewBox', `0 0 ${w} ${h}`)
+      .attr('preserveAspectRatio', 'xMidYMid meet')
+      .style('width', '100%')
+      .style('height', '100%');
+
+    const projection = d3.geoMercator().fitSize([w, h], geoData);
+    const pathGen    = d3.geoPath().projection(projection);
+    const tooltip    = d3.select('#map-tooltip');
+
+    svg.selectAll('path')
+      .data(geoData.features)
+      .enter()
+      .append('path')
+      .attr('class', 'map-state')
+      .attr('d', pathGen)
+      .attr('stroke', d => normStr(d.properties.name || '') === 'rio grande do sul' ? '#E53E3E' : '#FFFFFF')
+      .attr('stroke-width', d => normStr(d.properties.name || '') === 'rio grande do sul' ? 2 : 0.8)
+      .attr('fill', d => {
+        const geoName = normStr(d.properties.name || '');
+        let count = normCounts[geoName] || 0;
+        if (!count) {
+          const sigla = Object.entries(UF_NAMES)
+            .find(([, nome]) => normStr(nome) === geoName)?.[0];
+          if (sigla) count = ufCounts[sigla] || ufCounts[sigla.toLowerCase()] || 0;
+        }
+        return colorScale(count);
+      })
+      .on('mouseover', (event, d) => {
+        const geoName = normStr(d.properties.name || '');
+        let count = normCounts[geoName] || 0;
+        if (!count) {
+          const sigla = Object.entries(UF_NAMES)
+            .find(([, nome]) => normStr(nome) === geoName)?.[0];
+          if (sigla) count = ufCounts[sigla] || 0;
+        }
+        const pct = totalVidas > 0 ? ((count / totalVidas) * 100).toFixed(1) : '0.0';
+        tooltip
+          .style('display', 'block')
+          .html(`<strong>${d.properties.name}</strong>${count} vida${count !== 1 ? 's' : ''} &nbsp;·&nbsp; ${pct}% do total`);
+      })
+      .on('mousemove', event => {
+        tooltip
+          .style('left', (event.clientX + 14) + 'px')
+          .style('top',  (event.clientY - 36) + 'px');
+      })
+      .on('mouseout', () => tooltip.style('display', 'none'));
+
+    // legenda de escala no canto inferior direito
+    d3.select(container)
+      .append('div')
+      .attr('class', 'map-legend')
+      .html('<span>Menos vidas</span><div class="map-legend-bar"></div><span>Mais vidas</span>');
+  }
+
+  /* ── tratamento de erros ─────────────────────────────────── */
+  function handleAuthError(code) {
+    const msgs = {
+      'access_denied':       'Acesso negado. Autorize o acesso à planilha ao fazer login.',
+      'invalid_client':      'CLIENT_ID inválido. Verifique as credenciais no Google Cloud Console.',
+      'unauthorized_client': 'Cliente não autorizado. Adicione <code>http://localhost:5500</code> nas origens autorizadas do OAuth Client ID.',
+      'redirect_uri_mismatch': 'redirect_uri não corresponde. Cadastre <code>http://localhost:5500/visualizador-executivo.html</code> nos URIs de redirecionamento autorizados.',
+    };
+    showAlert(msgs[code] || `Erro de autenticação: <code>${code}</code>`);
+  }
+
+  function handleApiError(status, err) {
+    const message = err?.error?.message || 'Erro desconhecido';
+    const map = {
+      401: `<strong>Não autorizado (401).</strong> Token expirado. Faça logout e login novamente.`,
+      403: `<strong>Acesso negado (403).</strong> Sua conta não tem permissão de leitura nesta planilha.<br><em>${message}</em>`,
+      404: `<strong>Planilha não encontrada (404).</strong> Verifique o ID <code>${SPREADSHEET_ID}</code>.`,
+      429: `<strong>Limite de requisições (429).</strong> Aguarde alguns instantes e tente novamente.`,
+    };
+    showAlert(map[status] || `<strong>Erro da API (${status}):</strong> ${message}`);
+  }
+
+  /* ── auto-refresh a cada 60 s ───────────────────────────── */
+  setInterval(() => {
+    if (accessToken && Date.now() < tokenExpiresAt - 60_000) {
+      loadAll();
+    }
+  }, 60_000);
+
+  /* ── relógio em tempo real ───────────────────────────────── */
+  (function startClock() {
+    const el = document.getElementById('header-clock');
+    function tick() {
+      const now = new Date();
+      const d = now.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+      const t = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      el.textContent = `${d}  ${t}`;
+    }
+    tick();
+    setInterval(tick, 1000);
+  })();
+
+  /* ── atualiza badges das seções com o mês atual ────────────── */
+  (function setBadges() {
+    const now  = new Date();
+    const mes  = MESES_PT[now.getMonth()];
+    const ano  = now.getFullYear();
+    const lbl  = `${mes} ${ano}`;
+    ['com-badge', 'acor-badge'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = lbl;
+    });
+  })();
+</script>
+
+<div id="map-tooltip"></div>
+</body>
+</html>
