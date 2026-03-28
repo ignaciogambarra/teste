@@ -134,14 +134,144 @@
     .btn-google:hover { background: var(--surface-h); }
     .btn-google img { width: 13px; height: 13px; }
 
+    /* ── HERO KPI STRIP ──────────────────────────────────── */
+    .hero-strip {
+      height: 90px;
+      flex-shrink: 0;
+      display: flex;
+      gap: 8px;
+      padding: 0 10px 8px;
+    }
+    .hero-kpi {
+      flex: 1;
+      background: #FFFFFF;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 9px 14px 9px 17px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 2px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 1px 6px rgba(0,0,0,.07);
+      min-width: 0;
+    }
+    .hero-kpi::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 4px;
+      border-radius: var(--radius) 0 0 var(--radius);
+    }
+    .hero-kpi.fin::before  { background: #5B4FE8; }
+    .hero-kpi.com::before  { background: #0CAF60; }
+    .hero-kpi.acor::before { background: #3B82F6; }
+    .hero-kpi-label {
+      font-size: 9px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .09em;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .hero-kpi-value {
+      font-size: 26px;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -.04em;
+      line-height: 1;
+      color: var(--text);
+      white-space: nowrap;
+    }
+    .hero-kpi-value.positive { color: var(--success); }
+    .hero-kpi-value.negative { color: var(--danger); }
+    .hero-kpi-sub {
+      font-size: 9px;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* ── RANKING LIST (substitui pizza + mapa) ───────────── */
+    .ranking-list {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      margin-top: 7px;
+      gap: 0;
+      justify-content: space-around;
+    }
+    .ranking-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+      padding: 2px 0;
+    }
+    .ranking-pos {
+      font-size: 9px;
+      font-weight: 700;
+      color: var(--text-muted);
+      width: 13px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+    .ranking-name {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text);
+      flex: 0 0 88px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .ranking-bar-wrap {
+      flex: 1;
+      height: 13px;
+      background: #F0F1F8;
+      border-radius: 3px;
+      overflow: hidden;
+      min-width: 0;
+    }
+    .ranking-bar {
+      height: 100%;
+      border-radius: 3px;
+      background: linear-gradient(90deg, #5B4FE8 0%, #7C6AF7 100%);
+      transition: width .4s ease;
+      min-width: 3px;
+    }
+    .ranking-bar.green { background: linear-gradient(90deg, #0CAF60 0%, #34D399 100%); }
+    .ranking-bar.blue  { background: linear-gradient(90deg, #3B82F6 0%, #60A5FA 100%); }
+    .ranking-val {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+      flex: 0 0 68px;
+      text-align: right;
+      white-space: nowrap;
+    }
+    .ranking-pct {
+      font-size: 10px;
+      color: var(--text-muted);
+      flex: 0 0 34px;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+
     /* ── MAIN — TV 3-column layout ──────────────────────── */
     main {
       flex: 1;
-      height: calc(1080px - 40px);
+      height: calc(1080px - 40px - 90px);
       display: flex;
       flex-direction: row;
       gap: 10px;
-      padding: 10px;
+      padding: 0 10px 10px;
       overflow: hidden;
     }
 
@@ -306,11 +436,15 @@
 
     /* ── METRIC CARDS — fixed height ────────────────────── */
     .com-cards-grid .card { height: 90px; justify-content: center; }
-    .cards-highlight .card:not(.card-total) { height: 90px; justify-content: center; }
 
     /* ── FINANCEIRO LAYOUT ───────────────────────────────── */
     #dashboard { display: none; flex-direction: column; gap: 10px; flex: 1; min-height: 0; }
-    .cards-highlight { display: flex; flex-direction: column; gap: 10px; flex-shrink: 0; }
+    .cards-highlight { display: flex; flex-direction: column; gap: 10px; flex: 1; min-height: 0; }
+    .cards-highlight .card { flex: 1; justify-content: center; min-height: 0; }
+    .cards-highlight .card-label { font-size: 10px; }
+    .cards-highlight .card-value { font-size: 28px; font-weight: 800; letter-spacing: -.04em; }
+    .cards-highlight .card-total .card-value { font-size: 26px; }
+    .cards-highlight .card-sub { font-size: 10px; }
 
     /* ── BANK EXPAND ─────────────────────────────────────── */
     .bank-expand-btn {
@@ -512,6 +646,40 @@
   </div>
 </header>
 
+<!-- ═══════════════════════ HERO KPI STRIP ═══════════════════ -->
+<div class="hero-strip">
+  <div class="hero-kpi fin">
+    <div class="hero-kpi-label">Saldo em Conta</div>
+    <div class="hero-kpi-value neutral" id="hero-fin-total">—</div>
+    <div class="hero-kpi-sub">Financeiro · saldo total</div>
+  </div>
+  <div class="hero-kpi fin">
+    <div class="hero-kpi-label">Resultado Projetado</div>
+    <div class="hero-kpi-value neutral" id="hero-fin-resultado">—</div>
+    <div class="hero-kpi-sub">Financeiro · projeção de fechamento</div>
+  </div>
+  <div class="hero-kpi com">
+    <div class="hero-kpi-label">VGV Comercial</div>
+    <div class="hero-kpi-value positive" id="hero-com-vgv">—</div>
+    <div class="hero-kpi-sub" id="hero-com-vgv-sub">Comercial · mês</div>
+  </div>
+  <div class="hero-kpi com">
+    <div class="hero-kpi-label">Vidas Administradas</div>
+    <div class="hero-kpi-value neutral" id="hero-com-vidas">—</div>
+    <div class="hero-kpi-sub">Comercial · contratos no mês</div>
+  </div>
+  <div class="hero-kpi acor">
+    <div class="hero-kpi-label">Total de Entrada</div>
+    <div class="hero-kpi-value positive" id="hero-acor-entrada">—</div>
+    <div class="hero-kpi-sub" id="hero-acor-entrada-sub">Acordos · mês</div>
+  </div>
+  <div class="hero-kpi acor">
+    <div class="hero-kpi-label">Acordos Fechados</div>
+    <div class="hero-kpi-value neutral" id="hero-acor-count">—</div>
+    <div class="hero-kpi-sub">Acordos · registros no mês</div>
+  </div>
+</div>
+
 <!-- ══════════════════════════ MAIN ════════════════════════ -->
 <main>
 
@@ -628,18 +796,15 @@
         </div>
       </div>
 
-      <!-- Charts row 1: Canal + Mapa -->
+      <!-- Charts row 1: Canal + UF Rankings -->
       <div class="tv-charts-row">
         <div class="card chart-card">
           <div class="chart-card-title">Canal de Captação</div>
-          <div class="pie-table-layout">
-            <div class="pie-table-canvas-wrap"><canvas id="chart-canal"></canvas></div>
-            <div class="pie-table" id="table-canal"></div>
-          </div>
+          <div class="ranking-list" id="ranking-canal"></div>
         </div>
         <div class="card chart-card">
           <div class="chart-card-title">Contratos por Estado</div>
-          <div class="map-wrap" id="map-uf"></div>
+          <div class="ranking-list" id="ranking-uf"></div>
         </div>
       </div>
 
@@ -707,18 +872,15 @@
         </div>
       </div>
 
-      <!-- Charts row 1: Credor + Mapa -->
+      <!-- Charts row 1: Credor + UF Rankings -->
       <div class="tv-charts-row">
         <div class="card chart-card">
           <div class="chart-card-title">Distribuição por Credor</div>
-          <div class="pie-table-layout">
-            <div class="pie-table-canvas-wrap"><canvas id="chart-acor-credor"></canvas></div>
-            <div class="pie-table" id="table-acor-credor"></div>
-          </div>
+          <div class="ranking-list" id="ranking-acor-credor"></div>
         </div>
         <div class="card chart-card">
-          <div class="chart-card-title">Contratos por Estado</div>
-          <div class="map-wrap" id="map-acor"></div>
+          <div class="chart-card-title">Acordos por Estado</div>
+          <div class="ranking-list" id="ranking-acor-uf"></div>
         </div>
       </div>
 
@@ -1145,6 +1307,16 @@
     fillCard('card-hoje',    readExact('Saldo hoje*'));
     fillCard('card-fim-mes', readFirstNumeric('Saldo ao fim do mês*'));
 
+    // ── hero strip — Financeiro ───────────────────────────
+    const rawTotal     = readContains('saldos em');
+    const rawResultado = readFirstNumeric('Saldo ao fim do mês*');
+    const nTotal       = parseBRL(rawTotal);
+    const nResultado   = parseBRL(rawResultado);
+    const hFinTotal    = document.getElementById('hero-fin-total');
+    const hFinRes      = document.getElementById('hero-fin-resultado');
+    if (hFinTotal) { hFinTotal.textContent = isNaN(nTotal)     ? '—' : formatBRL(nTotal);     applyColor(hFinTotal, nTotal); }
+    if (hFinRes)   { hFinRes.textContent   = isNaN(nResultado) ? '—' : formatBRL(nResultado); applyColor(hFinRes, nResultado); }
+
     const now = new Date().toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
     document.getElementById('card-total-sub').textContent = `Atualizado em ${now}`;
 
@@ -1188,6 +1360,54 @@
     const isOpen  = content.classList.contains('open');
     content.classList.toggle('open', !isOpen);
     arrow.classList.toggle('open', !isOpen);
+  }
+
+  // ── Ranking HTML puro (substitui pizza + mapa D3) ─────────
+  function makeRankingHTML(containerId, counts, opts) {
+    opts = opts || {};
+    const barClass = opts.barClass || '';
+    const valFmt   = opts.valFmt   || (v => v.toLocaleString('pt-BR'));
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    const entries = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 8);
+    if (!entries.length) {
+      container.innerHTML = '<div style="color:var(--text-muted);font-size:11px;padding:8px 0;">Sem dados</div>';
+      return;
+    }
+    const total = entries.reduce((s, e) => s + e[1], 0);
+    const max   = entries[0][1];
+    container.innerHTML = entries.map((e, i) => {
+      const pct    = total > 0 ? ((e[1] / total) * 100).toFixed(1) : '0.0';
+      const barPct = max  > 0 ? ((e[1] / max)   * 100).toFixed(1) : '0';
+      const name   = e[0].length > 18 ? e[0].slice(0, 17) + '\u2026' : e[0];
+      return `<div class="ranking-item">
+        <span class="ranking-pos">${i + 1}</span>
+        <span class="ranking-name" title="${e[0]}">${name}</span>
+        <div class="ranking-bar-wrap"><div class="ranking-bar${barClass ? ' ' + barClass : ''}" style="width:${barPct}%"></div></div>
+        <span class="ranking-val">${valFmt(e[1])}</span>
+        <span class="ranking-pct">${pct}%</span>
+      </div>`;
+    }).join('');
+  }
+
+  function makeUFRankingHTML(containerId, ufCounts) {
+    // normaliza chaves: sigla ou nome → sigla canônica
+    const normalized = {};
+    Object.entries(ufCounts).forEach(([k, v]) => {
+      const upper = k.trim().toUpperCase();
+      if (UF_NAMES[upper]) {
+        normalized[upper] = (normalized[upper] || 0) + v;
+      } else {
+        const sigla = Object.entries(UF_NAMES)
+          .find(([, nome]) => normStr(nome) === normStr(k))?.[0];
+        if (sigla) normalized[sigla] = (normalized[sigla] || 0) + v;
+        else       normalized[k]     = (normalized[k] || 0) + v;
+      }
+    });
+    makeRankingHTML(containerId, normalized, {
+      barClass: 'blue',
+      valFmt: v => v + (v === 1 ? ' registro' : ' registros'),
+    });
   }
 
   async function loadComercial() {
@@ -1606,14 +1826,24 @@
     }
 
     // ── renderiza ────────────────────────────────────────────
-    if (colCanal  >= 0) makePie('chart-canal',  'table-canal',  'Canal',          countBy(colCanal));
-    if (colBanco  >= 0) makePie('chart-banco',  'table-banco',  'Banco / Credor', countBy(colBanco));
+    if (colCanal  >= 0) makeRankingHTML('ranking-canal', countBy(colCanal));
+    if (colBanco  >= 0) makePie('chart-banco', 'table-banco', 'Banco / Credor', countBy(colBanco));
     if (colConsultor >= 0 && colHonorarios >= 0)
       makeBarConsultor('chart-consultor', sumBy(colConsultor, colHonorarios), countBy(colConsultor), 6);
     if (colFechamento >= 0)
       makeVendasPorDia('chart-vendas-dia', filtered, colFechamento);
     if (colUF >= 0)
-      makeMapa('map-uf', countBy(colUF));
+      makeUFRankingHTML('ranking-uf', countBy(colUF));
+
+    // ── hero strip — Comercial ────────────────────────────
+    const heroVgv   = document.getElementById('hero-com-vgv');
+    const heroVidas = document.getElementById('hero-com-vidas');
+    const heroMedia = document.getElementById('hero-com-media');
+    const heroSub   = document.getElementById('hero-com-vgv-sub');
+    if (heroVgv)   { heroVgv.textContent   = formatBRL(totalHon); applyColor(heroVgv, totalHon); }
+    if (heroVidas) heroVidas.textContent   = clientes.toLocaleString('pt-BR');
+    if (heroMedia) heroMedia.textContent   = formatBRL(mediaContrato);
+    if (heroSub)   heroSub.textContent     = `Comercial · ${MESES_PT[curMonth]}`;
 
     document.getElementById('comercial-section').style.display = 'flex';
   }
@@ -1936,11 +2166,19 @@
     }
 
     // ── renderiza ─────────────────────────────────────────────
-    if (colCredor     >= 0) makePieAcor('chart-acor-credor', 'table-acor-credor', 'Credor',         countBy(colCredor));
-    if (colForma      >= 0) makePieAcor('chart-acor-pgto',   'table-acor-pgto',   'Forma de Pgto.', countBy(colForma));
+    if (colCredor     >= 0) makeRankingHTML('ranking-acor-credor', countBy(colCredor));
+    if (colForma      >= 0) makePieAcor('chart-acor-pgto', 'table-acor-pgto', 'Forma de Pgto.', countBy(colForma));
     if (colAssessoria >= 0) makeBarAssessores('chart-acor-assessores', countBy(colAssessoria), 6);
     if (colDataPgto   >= 0) makeVendasPorDia('chart-acor-dias', filtered, colDataPgto, _acordosCharts);
-    if (colMapa       >= 0) makeMapa('map-acor', countBy(colMapa));
+    if (colMapa       >= 0) makeUFRankingHTML('ranking-acor-uf', countBy(colMapa));
+
+    // ── hero strip — Acordos ──────────────────────────────
+    const heroEntrada    = document.getElementById('hero-acor-entrada');
+    const heroCount      = document.getElementById('hero-acor-count');
+    const heroEntradaSub = document.getElementById('hero-acor-entrada-sub');
+    if (heroEntrada)    { heroEntrada.textContent    = formatBRL(totalEntrada); applyColor(heroEntrada, totalEntrada); }
+    if (heroCount)      heroCount.textContent        = contratos.toLocaleString('pt-BR');
+    if (heroEntradaSub) heroEntradaSub.textContent   = `Acordos · ${MESES_PT[curMonth]}`;
 
     document.getElementById('acordos-section').style.display = 'flex';
   }
