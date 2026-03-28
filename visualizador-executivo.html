@@ -736,7 +736,7 @@
   <div class="hero-kpi acor">
     <div class="hero-kpi-label">Acordos Fechados</div>
     <div class="hero-kpi-value neutral" id="hero-acor-count">—</div>
-    <div class="hero-kpi-sub">Acordos · registros no mês</div>
+    <div class="hero-kpi-sub">Acordos · no mês</div>
   </div>
 </div>
 
@@ -1443,7 +1443,7 @@
     });
     makeRankingHTML(containerId, normalized, {
       barClass: 'blue',
-      valFmt: v => v + (v === 1 ? ' registro' : ' registros'),
+      valFmt: v => String(v),
     });
   }
 
