@@ -2259,14 +2259,25 @@
 
     const annotationsPlugin = {
       id: `annot_${canvasId}`,
-      afterDraw(chart) {
+      afterDatasetsDraw(chart) {
         const { ctx: c } = chart;
         c.save();
-        // label "Média" ao lado direito da linha
+        // etiquetas de valor acima de cada barra (dataset 0 = barras)
+        const barMeta = chart.getDatasetMeta(0);
+        barMeta.data.forEach((bar, i) => {
+          const val = daily[i];
+          if (!val) return;
+          c.font = 'bold 10px "Inter", "Segoe UI", system-ui, sans-serif';
+          c.fillStyle = '#0F1117';
+          c.textAlign = 'center';
+          c.textBaseline = 'bottom';
+          c.fillText(val, bar.x, bar.y - 2);
+        });
+        // label "Média" ao lado direito da linha (dataset 1)
         const lineMeta = chart.getDatasetMeta(1);
         const lastPt = lineMeta.data[lineMeta.data.length - 1];
         if (lastPt) {
-          c.font = '11px "Segoe UI", system-ui, sans-serif';
+          c.font = '11px "Inter", "Segoe UI", system-ui, sans-serif';
           c.fillStyle = '#E53E3E';
           c.textAlign = 'left';
           c.textBaseline = 'middle';
@@ -2310,7 +2321,7 @@
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        layout: { padding: { right: 50, top: 8 } },
+        layout: { padding: { right: 50, top: 20 } },
         plugins: {
           legend: { display: false },
           tooltip: {
