@@ -505,6 +505,20 @@
     .fin-banks-grid .card-label { font-size: 11px; letter-spacing: .02em; }
     .fin-banks-grid .card-value { font-size: 18px; font-weight: 700; }
 
+    /* ── BANK TOGGLE BUTTON ──────────────────────────────── */
+    .bank-card { position: relative; }
+    .bank-toggle {
+      position: absolute; top: 8px; right: 8px;
+      width: 22px; height: 22px;
+      background: none; border: none; cursor: pointer;
+      color: var(--text-muted); padding: 2px; border-radius: 4px;
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0.45; transition: opacity .15s;
+    }
+    .bank-toggle:hover { opacity: 1; }
+    .bank-toggle svg { width: 14px; height: 14px; }
+    .bank-masked { color: var(--text-muted) !important; letter-spacing: .15em; font-weight: 500; }
+
     /* ── BANK EXPAND ─────────────────────────────────────── */
     .bank-expand-btn {
       display: flex;
@@ -1359,18 +1373,21 @@
     document.getElementById('card-total-sub').textContent = `Atualizado em ${now}`;
 
     // Cards de banco
+    const eyeOff = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`;
+    const eyeOn  = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
     const container = document.getElementById('cards-banks');
     container.innerHTML = '';
     BANK_CARDS.forEach(({ label, short, color, bg }) => {
       const n = parseBRL(readExact(label));
+      const valueStr = isNaN(n) ? '—' : formatBRL(n);
+      const colorClass = isNaN(n) ? 'neutral' : n >= 0 ? 'positive' : 'negative';
       const card = document.createElement('div');
-      card.className = 'card';
+      card.className = 'card bank-card';
       card.innerHTML = `
+        <button class="bank-toggle" onclick="toggleBankVal(this)" title="Mostrar valor">${eyeOff}</button>
         <div class="bank-icon" style="background:${bg};color:${color};">${short}</div>
         <div class="card-label">${label}</div>
-        <div class="card-value ${isNaN(n) ? 'neutral' : n >= 0 ? 'positive' : 'negative'}">
-          ${isNaN(n) ? '—' : formatBRL(n)}
-        </div>`;
+        <div class="card-value ${colorClass} bank-val bank-masked" data-real="${valueStr}" data-hidden="1">R$ ••••••</div>`;
       container.appendChild(card);
     });
 
@@ -1398,6 +1415,27 @@
     const isOpen  = content.classList.contains('open');
     content.classList.toggle('open', !isOpen);
     arrow.classList.toggle('open', !isOpen);
+  }
+
+  const _eyeOff = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`;
+  const _eyeOn  = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
+
+  function toggleBankVal(btn) {
+    const valEl = btn.closest('.bank-card').querySelector('.bank-val');
+    const hidden = valEl.dataset.hidden === '1';
+    if (hidden) {
+      valEl.textContent = valEl.dataset.real;
+      valEl.classList.remove('bank-masked');
+      valEl.dataset.hidden = '0';
+      btn.innerHTML = _eyeOn;
+      btn.title = 'Ocultar valor';
+    } else {
+      valEl.textContent = 'R$ ••••••';
+      valEl.classList.add('bank-masked');
+      valEl.dataset.hidden = '1';
+      btn.innerHTML = _eyeOff;
+      btn.title = 'Mostrar valor';
+    }
   }
 
   // ── Ranking HTML puro (substitui pizza + mapa D3) ─────────
