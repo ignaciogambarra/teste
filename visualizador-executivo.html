@@ -2893,34 +2893,81 @@ function toggleOrcamento() {
   }
 }
 
-/* ── Load spreadsheet ─────────────────────────────────────────────────── */
+/* ── API helper ───────────────────────────────────────────────────────── */
+async function orcApiFetch(url) {
+  const resp = await fetch(url, { headers: { Authorization: `Bearer ${accessToken}` } });
+  if (!resp.ok) { const e = await resp.json().catch(()=>({})); throw new Error(`API ${resp.status}: ${e?.error?.message || resp.statusText}`); }
+  return resp.json();
+}
+
+/* ── Load spreadsheet — 2 etapas: metadata + grid por aba (com cache) ── */
 async function orcLoadSheet() {
   orcSetState('loading');
   try {
-    const url  = `${API_BASE}/${ORC_SHEET_ID}?includeGridData=true`;
-    const resp = await fetch(url, { headers: { Authorization: `Bearer ${accessToken}` } });
-    if (!resp.ok) { const e = await resp.json().catch(()=>{}); throw new Error(`API ${resp.status}: ${e?.error?.message || resp.statusText}`); }
-    const data = await resp.json();
-    orcState.spreadsheet = data;
+    // Etapa 1 — apenas metadados (~2 KB, instantâneo)
+    orcStatus('Obtendo estrutura da planilha…');
+    const meta = await orcApiFetch(`${API_BASE}/${ORC_SHEET_ID}`);
+    orcState.spreadsheet = meta;
 
-    // Target the gid 1343684023 or first sheet
-    const idx = data.sheets.findIndex(s => s.properties.sheetId === ORC_TARGET_GID);
+    const idx = meta.sheets.findIndex(s => s.properties.sheetId === ORC_TARGET_GID);
     orcState.activeSheet = idx >= 0 ? idx : 0;
+    orcBuildTabs(meta.sheets);
 
-    orcBuildTabs(data.sheets);
-    orcInitEngine(orcState.activeSheet);
-    orcRender(orcState.activeSheet);
-    document.getElementById('orc-sheet-name').textContent = data.sheets[orcState.activeSheet].properties.title;
-    orcStatus('Planilha carregada');
+    // Etapa 2 — dados da aba alvo (usa cache se disponível)
+    await orcLoadSheetGrid(orcState.activeSheet);
+    document.getElementById('orc-sheet-name').textContent = meta.sheets[orcState.activeSheet].properties.title;
   } catch(e) {
     orcSetState('error', e.message);
     console.error('[Orçamento]', e);
   }
 }
 
+async function orcLoadSheetGrid(idx) {
+  const sheet    = orcState.spreadsheet.sheets[idx];
+  const shId     = sheet.properties.sheetId;
+  const shName   = sheet.properties.title;
+  const cacheKey = `orc_${ORC_SHEET_ID}_${shId}`;
+
+  // Tenta cache primeiro
+  const cached = sessionStorage.getItem(cacheKey);
+  if (cached) {
+    try {
+      sheet.data = JSON.parse(cached);
+      orcInitEngine(idx);
+      orcRender(idx);
+      document.getElementById('orc-sheet-name').textContent = shName;
+      orcStatus('✓ Carregado do cache · clique ↺ para buscar dados frescos');
+      return;
+    } catch(_) { sessionStorage.removeItem(cacheKey); }
+  }
+
+  // Busca apenas a aba visível (com includeGridData limitado ao range desta aba)
+  orcStatus(`Baixando aba "${shName}"…`);
+  const url  = `${API_BASE}/${ORC_SHEET_ID}?includeGridData=true&ranges=${encodeURIComponent(shName)}`;
+  const data = await orcApiFetch(url);
+
+  // Extrai e salva somente o data desta aba no cache
+  const found = data.sheets.find(s => s.properties.sheetId === shId);
+  if (found) {
+    sheet.data = found.data;
+    try { sessionStorage.setItem(cacheKey, JSON.stringify(found.data)); } catch(_) {}
+  }
+
+  orcInitEngine(idx);
+  orcRender(idx);
+  document.getElementById('orc-sheet-name').textContent = shName;
+  orcStatus('Planilha carregada');
+}
+
 function orcReloadSheet() {
+  // Limpa cache da aba atual antes de recarregar
+  if (orcState.spreadsheet) {
+    const shId = orcState.spreadsheet.sheets[orcState.activeSheet]?.properties?.sheetId;
+    if (shId) sessionStorage.removeItem(`orc_${ORC_SHEET_ID}_${shId}`);
+  }
   orcState.spreadsheet = null; orcState.changes = []; orcState.engine = null;
-  orcUpdateBadge(); orcLoadSheet();
+  orcUpdateBadge();
+  orcLoadSheet();
 }
 
 /* ── Build sheet tabs ─────────────────────────────────────────────────── */
@@ -2939,9 +2986,8 @@ function orcBuildTabs(sheets) {
 function orcSwitchSheet(idx) {
   orcState.activeSheet = idx;
   document.querySelectorAll('.orc-tab').forEach((t,i) => t.classList.toggle('active', i===idx));
-  orcInitEngine(idx);
-  orcRender(idx);
-  document.getElementById('orc-sheet-name').textContent = orcState.spreadsheet.sheets[idx].properties.title;
+  orcSetState('loading');
+  orcLoadSheetGrid(idx).catch(e => orcSetState('error', e.message));
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
