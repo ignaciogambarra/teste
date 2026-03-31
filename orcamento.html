@@ -1,0 +1,1326 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Internacional — Orçamento</title>
+  <style>
+    :root {
+      --red:    #c8102e;
+      --red-dk: #9e0c24;
+      --white:  #ffffff;
+      --bg:     #f4f4f6;
+      --card:   #ffffff;
+      --border: #e2e2e8;
+      --text:   #111118;
+      --muted:  #6b6b7b;
+      --green:  #16803c;
+      --amber:  #b45309;
+      --radius: 10px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.5; }
+
+    /* ─── HEADER ─── */
+    header {
+      background: var(--red);
+      color: var(--white);
+      display: flex; align-items: center; gap: 14px;
+      padding: 0 28px; height: 60px;
+      box-shadow: 0 2px 10px rgba(0,0,0,.22);
+      position: sticky; top: 0; z-index: 100;
+    }
+    .badge { width: 36px; height: 36px; background: var(--white); border-radius: 50%; display: grid; place-items: center; font-weight: 900; color: var(--red); font-size: 11px; letter-spacing: -.5px; flex-shrink: 0; }
+    header h1 { font-size: 16px; font-weight: 700; }
+    header small { font-size: 12px; opacity: .75; }
+
+    /* ─── LAYOUT ─── */
+    main { max-width: 1080px; margin: 0 auto; padding: 28px 16px 72px; }
+
+    /* ─── YEAR TABS ─── */
+    .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 24px; }
+    .tab {
+      padding: 7px 20px; border: 2px solid var(--border); border-radius: 6px;
+      background: var(--card); color: var(--muted); font-size: 13px; font-weight: 700;
+      cursor: pointer; transition: .15s;
+    }
+    .tab:hover { border-color: var(--red); color: var(--red); }
+    .tab.on { background: var(--red); border-color: var(--red); color: var(--white); }
+
+    /* ─── YEAR PANEL ─── */
+    .panel { display: none; }
+    .panel.on { display: block; }
+
+    /* ─── APPROVAL ─── */
+    .badge-green {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: #dcfce7; color: var(--green); border: 1px solid #86efac;
+      border-radius: 20px; padding: 4px 14px; font-size: 11.5px; font-weight: 600;
+      margin-bottom: 20px;
+    }
+
+    /* ─── HERO CARDS ─── */
+    .hero { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; margin-bottom: 28px; }
+    @media(max-width:580px){ .hero { grid-template-columns: 1fr; } }
+    .hcard {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 18px 20px;
+    }
+    .hcard .hl { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 5px; }
+    .hcard .hv { font-size: 20px; font-weight: 800; }
+    .hcard.surplus .hv { color: var(--green); }
+    .hcard.deficit .hv { color: var(--red); }
+
+    /* ─── TWO COLUMN GRID ─── */
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    @media(max-width:740px){ .two-col { grid-template-columns: 1fr; } }
+
+    /* ─── BLOCK ─── */
+    .block { margin-bottom: 20px; }
+    .block-head {
+      background: var(--red); color: var(--white);
+      padding: 10px 16px; border-radius: var(--radius) var(--radius) 0 0;
+      font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px;
+    }
+    .block-body { background: var(--card); border: 1px solid var(--border); border-top: none; border-radius: 0 0 var(--radius) var(--radius); }
+
+    /* ─── ACCORDION GROUP ─── */
+    .group { border-bottom: 1px solid var(--border); }
+    .group:last-child { border-bottom: none; }
+
+    .group-toggle {
+      width: 100%; background: none; border: none; cursor: pointer;
+      display: flex; align-items: center; gap: 10px;
+      padding: 13px 16px; text-align: left;
+      transition: background .12s;
+    }
+    .group-toggle:hover { background: #f8f8fa; }
+    .group-toggle.open { background: #fef2f4; }
+
+    .g-icon { font-size: 18px; flex-shrink: 0; width: 26px; text-align: center; }
+    .g-info { flex: 1; min-width: 0; }
+    .g-name { font-size: 13.5px; font-weight: 700; color: var(--text); }
+    .g-sub  { font-size: 11.5px; color: var(--muted); }
+    .g-right { text-align: right; flex-shrink: 0; }
+    .g-val  { font-size: 13.5px; font-weight: 700; font-variant-numeric: tabular-nums; }
+    .g-pct  { font-size: 11px; color: var(--muted); }
+    .g-chevron { font-size: 10px; color: var(--muted); transition: transform .2s; margin-left: 8px; }
+    .group-toggle.open .g-chevron { transform: rotate(180deg); }
+
+    /* mini progress bar */
+    .g-bar-wrap { padding: 0 16px 6px; }
+    .g-bar { height: 3px; background: #eee; border-radius: 2px; }
+    .g-bar-fill { height: 100%; background: var(--red); border-radius: 2px; transition: width .4s; }
+    .g-bar-fill.green { background: var(--green); }
+    .g-bar-fill.amber { background: #f59e0b; }
+
+    /* ─── LINE ITEMS ─── */
+    .group-body { display: none; padding: 0 0 8px; }
+    .group-body.open { display: block; }
+
+    .line {
+      display: flex; align-items: center; gap: 8px;
+      padding: 7px 16px 7px 52px;
+      border-top: 1px solid #f3f3f5;
+    }
+    .line-name { flex: 1; font-size: 13px; color: var(--text); }
+    .line-val  { font-size: 13px; font-variant-numeric: tabular-nums; color: var(--muted); text-align: right; white-space: nowrap; }
+    .line-bar-wrap { width: 80px; }
+    .line-bar { height: 4px; background: #eee; border-radius: 2px; }
+    .line-bar-fill { height: 100%; border-radius: 2px; background: #ddd; }
+
+    .line.lvl2 { padding-left: 68px; }
+    .line.lvl2 .line-name { font-size: 12px; color: var(--muted); }
+    .line.lvl2 .line-val  { font-size: 12px; }
+
+    .line-total {
+      display: flex; justify-content: space-between;
+      padding: 10px 16px; margin-top: 4px;
+      border-top: 2px solid var(--red);
+      background: #fef2f4;
+      font-size: 13px; font-weight: 800; color: var(--red-dk);
+    }
+
+    /* ─── NOTE ─── */
+    .note {
+      background: #fffbeb; border-left: 3px solid #f59e0b;
+      padding: 11px 14px; border-radius: 0 6px 6px 0;
+      font-size: 12px; color: #78350f; line-height: 1.6;
+      margin-top: 16px;
+    }
+
+    /* ─── CONTEXT BOX ─── */
+    .ctx {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 16px 18px;
+      font-size: 13px; color: var(--muted); line-height: 1.7; margin-bottom: 16px;
+    }
+    .ctx strong { color: var(--text); }
+
+    footer { text-align: center; color: #aaa; font-size: 11.5px; margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--border); }
+    footer a { color: var(--red); text-decoration: none; }
+
+    .positive { color: var(--green) !important; }
+    .negative { color: var(--red) !important; }
+
+    /* ─── AUDITORIA ─── */
+    .audit-section, .ovr-section { margin-top: 24px; }
+
+    .audit-head {
+      display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+      background: #1e3a5f; color: #e2eaf4;
+      padding: 10px 16px; border-radius: var(--radius) var(--radius) 0 0;
+      font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px;
+    }
+    .audit-head-sub { font-weight: 400; opacity: .65; font-size: 11px; }
+    .audit-body {
+      background: var(--card); border: 1px solid #bed0e4; border-top: none;
+      border-radius: 0 0 var(--radius) var(--radius);
+    }
+    .audit-opinion {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 10px 16px; border-bottom: 1px solid #eef2f6;
+      font-size: 12.5px; color: var(--muted); flex-wrap: wrap;
+    }
+    .audit-pill {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; flex-shrink: 0;
+    }
+    .pill-ok   { background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
+    .pill-warn { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
+    .audit-row {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 9px 16px; border-top: 1px solid #eef2f6;
+      font-size: 12.5px; line-height: 1.55; color: var(--muted);
+    }
+    .audit-row strong { color: var(--text); }
+    .audit-icon { font-size: 14px; flex-shrink: 0; margin-top: 1px; }
+    .audit-row.warn { background: #fffbeb; }
+    .audit-row.bad  { background: #fff5f5; }
+    .audit-row.ok   { background: #f0fdf4; }
+
+    /* ─── ORÇADO x REALIZADO ─── */
+    .ovr-head {
+      background: #1e293b; color: #cbd5e1;
+      padding: 10px 16px; border-radius: var(--radius) var(--radius) 0 0;
+      font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px;
+    }
+    .ovr-body {
+      background: var(--card); border: 1px solid #cbd5e1; border-top: none;
+      border-radius: 0 0 var(--radius) var(--radius); overflow: hidden;
+    }
+    .ovr-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+    .ovr-table thead tr { background: #f1f5f9; }
+    .ovr-table th { padding: 8px 12px; text-align: left; font-size: 10.5px; color: #475569; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; }
+    .ovr-table th:not(:first-child) { text-align: right; }
+    .ovr-table td { padding: 9px 12px; border-top: 1px solid #f1f5f9; }
+    .ovr-table td:not(:first-child) { text-align: right; font-variant-numeric: tabular-nums; }
+    .ovr-label { font-weight: 600; color: var(--text); }
+    .ovr-sub { font-size: 11px; color: var(--muted); font-weight: 400; display: block; }
+    .var-pos { color: var(--green) !important; font-weight: 700; }
+    .var-neg { color: var(--red) !important; font-weight: 700; }
+    .ovr-note { padding: 8px 12px; background: #f8fafc; font-size: 11.5px; color: var(--muted); border-top: 1px solid #e2e8f0; line-height: 1.55; }
+
+    /* ─── SEM AUDITORIA ─── */
+    .audit-unavail {
+      display: flex; align-items: flex-start; gap: 10px;
+      background: #f8fafc; border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 14px 16px; margin-top: 20px;
+      font-size: 12.5px; color: var(--muted); line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="badge">SCI</div>
+  <div>
+    <h1>Sport Club Internacional</h1>
+    <small>Transparência Financeira — Orçamento</small>
+  </div>
+</header>
+
+<main>
+
+  <!-- YEAR TABS -->
+  <div class="tabs">
+    <button class="tab" data-year="2021">2021</button>
+    <button class="tab" data-year="2022">2022</button>
+    <button class="tab" data-year="2023">2023</button>
+    <button class="tab" data-year="2024">2024</button>
+    <button class="tab" data-year="2025">2025</button>
+    <button class="tab on" data-year="2026">2026</button>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ 2026 ═══ -->
+  <div class="panel on" id="panel-2026">
+    <div class="badge-green">✓ Aprovado pelo Conselho Deliberativo — 15 dez 2025 · 223 membros presentes</div>
+
+    <div class="hero">
+      <div class="hcard"><div class="hl">O clube vai arrecadar</div><div class="hv">R$ 582,2 Mi</div></div>
+      <div class="hcard"><div class="hl">O clube vai gastar</div><div class="hv">R$ 581,9 Mi</div></div>
+      <div class="hcard surplus"><div class="hl">Resultado previsto</div><div class="hv positive">Superávit R$ 283 mil</div></div>
+    </div>
+
+    <div class="two-col">
+
+      <!-- ══ RECEITAS 2026 ══ -->
+      <div>
+        <div class="block">
+          <div class="block-head">De onde vem o dinheiro</div>
+          <div class="block-body" id="rec-2026">
+
+            <!-- TV -->
+            <div class="group">
+              <button class="group-toggle" onclick="toggle(this)">
+                <span class="g-icon">📺</span>
+                <div class="g-info">
+                  <div class="g-name">TV & Transmissão</div>
+                  <div class="g-sub">Cotas de campeonatos nacionais</div>
+                </div>
+                <div class="g-right">
+                  <div class="g-val">R$ 176,1 Mi</div>
+                  <div class="g-pct">30,2% da receita</div>
+                </div>
+                <span class="g-chevron">▼</span>
+              </button>
+              <div class="g-bar-wrap"><div class="g-bar"><div class="g-bar-fill green" style="width:30.2%"></div></div></div>
+              <div class="group-body">
+                <div class="line">
+                  <span class="line-name">Cotas de TV — todos os campeonatos</span>
+                  <div class="line-bar-wrap"><div class="line-bar"><div class="line-bar-fill" style="width:100%;background:#16803c55"></div></div></div>
+                  <span class="line-val">R$ 176.079.525</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- SÓCIOS -->
+            <div class="group">
+              <button class="group-toggle" onclick="toggle(this)">
+                <span class="g-icon">👥</span>
+                <div class="g-info">
+                  <div class="g-name">Sócios</div>
+                  <div class="g-sub">Mensalidades e programas de sócio</div>
+                </div>
+                <div class="g-right">
+                  <div class="g-val">R$ 107,8 Mi</div>
+                  <div class="g-pct">18,5% da receita</div>
+                </div>
+                <span class="g-chevron">▼</span>
+              </button>
+              <div class="g-bar-wrap"><div class="g-bar"><div class="g-bar-fill green" style="width:18.5%"></div></div></div>
+              <div class="group-body">
+                <div class="line">
+                  <span class="line-name">Mensalidades e programas de associação</span>
+                  <div class="line-bar-wrap"><div class="line-bar"><div class="line-bar-fill" style="width:100%;background:#16803c55"></div></div></div>
+                  <span class="line-val">R$ 107.755.275</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- PATROCÍNIOS -->
+            <div class="group">
+              <button class="group-toggle" onclick="toggle(this)">
+                <span class="g-icon">🤝</span>
+                <div class="g-info">
+                  <div class="g-name">Patrocínios & Publicidade</div>
+                  <div class="g-sub">Master, camisas, parceiros comerciais</div>
+                </div>
+                <div class="g-right">
+                  <div class="g-val">R$ 167,8 Mi</div>
+                  <div class="g-pct">28,8% da receita</div>
+                </div>
+                <span class="g-chevron">▼</span>
+              </button>
+              <div class="g-bar-wrap"><div class="g-bar"><div class="g-bar-fill green" style="width:28.8%"></div></div></div>
+              <div class="group-body">
+                <div class="line">
+                  <span class="line-name">Patrocínios</span>
+                  <div class="line-bar-wrap"><div class="line-bar"><div class="line-bar-fill" style="width:61%;background:#16803c55"></div></div></div>
+                  <span class="line-val">R$ 101.831.376</span>
+                </div>
+                <div class="line">
+                  <span class="line-name">Publicidade</span>
+                  <div class="line-bar-wrap"><div class="line-bar"><div class="line-bar-fill" style="width:39%;background:#16803c55"></div></div></div>
+                  <span class="line-val">R$ 65.977.582</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- TRANSFERÊNCIAS -->
+            <div class="group">
+              <button class="group-toggle" onclick="toggle(this)">
+                <span class="g-icon">🔄</span>
+                <div class="g-info">
+                  <div class="g-name">Vendas & Empréstimos de Atletas</div>
+                  <div class="g-sub">Transferências, bônus, direitos de solidariedade</div>
+                </div>
+                <div class="g-right">
+                  <div class="g-val">~R$ 204,9 Mi</div>
+                  <div class="g-pct">inclusos em Outras Receitas</div>
+                </div>
+                <span class="g-chevron">▼</span>
+              </button>
+              <div class="g-bar-wrap"><div class="g-bar"><div class="g-bar-fill green" style="width:35%"></div></div></div>
+              <div class="group-body">
+                <div class="line">
+                  <span class="line-name">Outras Receitas (vendas de atletas, parking, eventos, loteria)</span>
+                  <div class="line-bar-wrap"><div class="line-bar"><div class="line-bar-fill" style="width:100%;background:#16803c55"></div></div></div>
+                  <span class="line-val">R$ 136.342.185</span>
+                </div>
+                <div class="line lvl2">
+                  <span class="line-name">Meta de vendas de atletas projetada</span>
+                  <span class="line-val">~R$ 204.900.000</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- BILHETERIA -->
+            <div class="group">
+              <button class="group-toggle" onclick="toggle(this)">
+                <span class="g-icon">🎟️</span>
+                <div class="g-info">
+                  <div class="g-name">Bilheteria</div>
+                  <div class="g-sub">Renda dos jogos em casa</div>
+                </div>
+                <div class="g-right">
+                  <div class="g-val">R$ 17,8 Mi</div>
+                  <div class="g-pct">3,1% da receita</div>
+                </div>
+                <span class="g-chevron">▼</span>
+              </button>
+              <div class="g-bar-wrap"><div class="g-bar"><div class="g-bar-fill green" style="width:3.1%"></div></div></div>
+              <div class="group-body">
+                <div class="line">
+                  <span class="line-name">Copa do Brasil</span>
+                  <div class="line-bar-wrap"><div class="line-bar"><div class="line-bar-fill" style="width:15%;background:#16803c55"></div></div></div>
+                  <span class="line-val">R$ 2.596.427</span>
+                </div>
+                <div class="line">
+                  <span class="line-name">Campeonato Brasileiro</span>
+                  <div class="line-bar-wrap"><div class="line-bar"><div class="line-bar-fill" style="width:71%;background:#16803c55"></div></div></div>
+                  <span class="line-val">R$ 12.658.167</span>
+                </div>
+                <div class="line">
+                  <span class="line-name">Campeonato Gaúcho</span>
+                  <div class="line-bar-wrap"><div class="line-bar"><div class="line-bar-fill" style="width:14%;background:#16803c55"></div></div></div>
+                  <span class="line-val">R$ 2.579.116</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- LICENCIAMENTO -->
+            <div class="group">
+              <button class="group-toggle" onclick="toggle(this)">
+                <span class="g-icon">🏷️</span>
+                <div class="g-info">
+                  <div class="g-name">Licenciamento de Marca</div>
+                  <div class="g-sub">Produtos, camisas, royalties</div>
+                </div>
+                <div class="g-right">
+                  <div class="g-val">R$ 32,1 Mi</div>
+                  <div class="g-pct">5,5% da receita</div>
+                </div>
+                <span class="g-chevron">▼</span>
+              </button>
+              <div class="g-bar-wrap"><div class="g-bar"><div class="g-bar-fill green" style="width:5.5%"></div></div></div>
+              <div class="group-body">
+                <div class="line">
+                  <span class="line-name">Licenciamento de marca e produtos oficiais</span>
+                  <div class="line-bar-wrap"><div class="line-bar"><div class="line-bar-fill" style="width:100%;background:#16803c55"></div></div></div>
+                  <span class="line-val">R$ 32.106.690</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="line-total"><span>RECEITA TOTAL</span><span>R$ 582.172.607</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ DESPESAS 2026 ══ -->
+      <div>
+        <div class="block">
+          <div class="block-head">Para onde vai o dinheiro</div>
+          <div class="block-body" id="desp-2026">
+
+            <!-- SALÁRIOS TIME PRINCIPAL -->
+            <div class="group">
+              <button class="group-toggle" onclick="toggle(this)">
+                <span class="g-icon">⚽</span>
+                <div class="g-info">
+                  <div class="g-name">Time Principal</div>
+                  <div class="g-sub">Salários, imagem e operação do elenco</div>
+                </div>
+                <div class="g-right">
+                  <div class="g-val">R$ 304,9 Mi</div>
+                  <div class="g-pct">52,3% da despesa</div>
+                </div>
+                <span class="g-chevron">▼</span>
+              </button>
+              <div class="g-bar-wrap"><div class="g-bar"><div class="g-bar-fill" style="width:52.3%"></div></div></div>
+              <div class="group-body">
+                <div class="line">
+                  <span class="line-name">Salários e benefícios — elenco principal</span>
+                  <div class="line-bar-wrap"><div class="line-bar"><div class="line-bar-fill" style="width:50%;background:#c8102e88"></div></div></div>
+                  <span class="line-val">R$ 152.719.737</span>
+                </div>
+                <div class="line">
+                  <span class="line-name">Direitos de imagem dos jogadores</span>
+                  <div class="line-bar-wrap"><div class="line-bar"><div class="line-bar-fill" style="width:40%;background:#c8102e88"></div></div></div>
+                  <span class="line-val">R$ 72.175.086</span>
+                </div>
+                <div class="line">
+                  <span class="line-name">Amortização de atletas (contratos/passes)</span>
+                  <div class="line-bar-wrap"><div class="line-bar"><div class="line-bar-fill" style="width:20%;background:#c8102e88"></div></div></div>
+                  <span class="line-val">R$ 61.872.467</span>
+                </div>
+                <div class="line">
+                  <span class="line-name">Obrigações legais (rescisões, encargos)</span>
+                  <div class="line-bar-wrap"><div class="line-bar"><div class="line-bar-fill" style="width:11%;background:#c8102e88"></div></div></div>
+                  <span class="line-val">R$ 33.352.148</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- OPERAÇÃO DO FUTEBOL -->
+            <div class="group">
+              <button class="group-toggle" onclick="toggle(this)">
+                <span class="g-icon">✈️</span>
+                <div class="g-info">
+                  <div class="g-name">Operação do Futebol</div>
+                  <div class="g-sub">Viagens, serviços e estrutura de jogo</div>
+                </div>
+                <div class="g-right">
+                  <div class="g-val">R$ 33,4 Mi</div>
+                  <div class="g-pct">5,7% da despesa</div>
+                </div>
+                <span class="g-chevron">▼</span>
+              </button>
+              <div class="g-bar-wrap"><div class="g-bar"><div class="g-bar-fill" style="width:5.7%"></div></div></div>
+              <div class="group-body">
+                <div class="line">
+                  <span class="line-name">Logística e viagens (ônibus, voos, hotéis)</span>
+                  <div class="line-bar-wrap"><div class="line-bar"><div class="line-bar-fill" style="width:68%;background:#c8102e88"></div></div></div>
+                  <span class="line-val">R$ 22.638.865</span>
+                </div>
+                <div class="line">
+                  <span class="line-name">Serviços de terceiros (médico, scouting...)</span>
+                  <div class="line-bar-wrap"><div class="line-bar"><div class="line-bar-fill" style="width:28%;background:#c8102e88"></div></div></div>
+                  <span class="line-val">R$ 9.383.118</span>
+                </div>
+                <div class="line">
+                  <span class="line-name">Depreciação de equipamentos</span>
+                  <div class="line-bar-wrap"><div class="line-bar"><div class="line-bar-fill" style="width:4%;background:#c8102e88"></div></div></div>
+                  <span class="line-val">R$ 1.334.646</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- BASE & FEMININO -->
+            <div class="group">
+              <button class="group-toggle" onclick="toggle(this)">
+                <span class="g-icon">🌱</span>
+                <div class="g-info">
+                  <div class="g-name">Base, Feminino & Escola Rubra</div>
+                  <div class="g-sub">Formação e futebol feminino</div>
+                </div>
+                <div class="g-right">
+                  <div class="g-val">R$ 28,2 Mi</div>
+                  <div class="g-pct">4,8% da despesa</div>
+                </div>
+                <span class="g-chevron">▼</span>
+              </button>
+              <div class="g-bar-wrap"><div class="g-bar"><div class="g-bar-fill" style="width:4.8%"></div></div></div>
+              <div class="group-body">
+                <div class="line">
+                  <span class="line-name">Categorias de base / juvenil (salários)</span>
+                  <div class="line-bar-wrap"><div class="line-bar"><div class="line-bar-fill" style="width:67%;background:#c8102e88"></div></div></div>
+                  <span class="line-val">R$ 18.849.072</span>
+                </div>
+                <div class="line">
+                  <span class="line-name">Futebol feminino (salários)</span>
+                  <div class="line-bar-wrap"><div class="line-bar"><div class="line-bar-fill" style="width:30%;background:#c8102e88"></div></div></div>
+                  <span class="line-val">R$ 8.474.759</span>
+                </div>
+                <div class="line">
+                  <span class="line-name">Escola Rubra (academia)</span>
+                  <div class="line-bar-wrap"><div class="line-bar"><div class="line-bar-fill" style="width:3%;background:#c8102e88"></div></div></div>
+                  <span class="line-val">R$ 861.240</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- DÍVIDA -->
+            <div class="group">
+              <button class="group-toggle" onclick="toggle(this)">
+                <span class="g-icon">🏦</span>
+                <div class="g-info">
+                  <div class="g-name">Juros & Dívida</div>
+                  <div class="g-sub">Encargos financeiros sobre dívida de ~R$ 1 bilhão</div>
+                </div>
+                <div class="g-right">
+                  <div class="g-val">R$ 83,5 Mi</div>
+                  <div class="g-pct">14,3% da despesa</div>
+                </div>
+                <span class="g-chevron">▼</span>
+              </button>
+              <div class="g-bar-wrap"><div class="g-bar"><div class="g-bar-fill amber" style="width:14.3%"></div></div></div>
+              <div class="group-body">
+                <div class="line">
+                  <span class="line-name">Juros e encargos bancários</span>
+                  <div class="line-bar-wrap"><div class="line-bar"><div class="line-bar-fill" style="width:100%;background:#f59e0b88"></div></div></div>
+                  <span class="line-val negative">R$ 97.473.929</span>
+                </div>
+                <div class="line">
+                  <span class="line-name">Receitas financeiras (aplicações)</span>
+                  <div class="line-bar-wrap"><div class="line-bar"><div class="line-bar-fill" style="width:19%;background:#16803c55"></div></div></div>
+                  <span class="line-val positive">R$ 18.900.000</span>
+                </div>
+                <div class="line">
+                  <span class="line-name">Variação cambial (positiva)</span>
+                  <div class="line-bar-wrap"><div class="line-bar"><div class="line-bar-fill" style="width:5%;background:#16803c55"></div></div></div>
+                  <span class="line-val positive">R$ 4.967.107</span>
+                </div>
+                <div class="line lvl2">
+                  <span class="line-name">Resultado financeiro líquido</span>
+                  <span class="line-val negative">(R$ 83.541.036)</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- MARKETING -->
+            <div class="group">
+              <button class="group-toggle" onclick="toggle(this)">
+                <span class="g-icon">📣</span>
+                <div class="g-info">
+                  <div class="g-name">Comercial & Marketing</div>
+                  <div class="g-sub">Comunicação, marketing e atendimento ao sócio</div>
+                </div>
+                <div class="g-right">
+                  <div class="g-val">R$ 18,7 Mi</div>
+                  <div class="g-pct">3,2% da despesa</div>
+                </div>
+                <span class="g-chevron">▼</span>
+              </button>
+              <div class="g-bar-wrap"><div class="g-bar"><div class="g-bar-fill" style="width:3.2%"></div></div></div>
+              <div class="group-body">
+                <div class="line">
+                  <span class="line-name">Marketing, comunicação e atendimento ao sócio</span>
+                  <div class="line-bar-wrap"><div class="line-bar"><div class="line-bar-fill" style="width:100%;background:#c8102e88"></div></div></div>
+                  <span class="line-val">R$ 18.681.334</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- ADMINISTRAÇÃO -->
+            <div class="group">
+              <button class="group-toggle" onclick="toggle(this)">
+                <span class="g-icon">🏢</span>
+                <div class="g-info">
+                  <div class="g-name">Administração & Gestão</div>
+                  <div class="g-sub">Presidência, jurídico, TI, RH e toda a estrutura do clube</div>
+                </div>
+                <div class="g-right">
+                  <div class="g-val">R$ 76,9 Mi</div>
+                  <div class="g-pct">13,2% da despesa</div>
+                </div>
+                <span class="g-chevron">▼</span>
+              </button>
+              <div class="g-bar-wrap"><div class="g-bar"><div class="g-bar-fill" style="width:13.2%"></div></div></div>
+              <div class="group-body">
+                <div class="line">
+                  <span class="line-name">Patrimônio (manutenção, instalações)</span>
+                  <div class="line-bar-wrap"><div class="line-bar"><div class="line-bar-fill" style="width:35%;background:#c8102e88"></div></div></div>
+                  <span class="line-val">R$ 27.229.131</span>
+                </div>
+                <div class="line">
+                  <span class="line-name">Administração geral</span>
+                  <div class="line-bar-wrap"><div class="line-bar"><div class="line-bar-fill" style="width:28%;background:#c8102e88"></div></div></div>
+                  <span class="line-val">R$ 21.266.255</span>
+                </div>
+                <div class="line">
+                  <span class="line-name">Tecnologia da Informação</span>
+                  <div class="line-bar-wrap"><div class="line-bar"><div class="line-bar-fill" style="width:10%;background:#c8102e88"></div></div></div>
+                  <span class="line-val">R$ 7.766.884</span>
+                </div>
+                <div class="line">
+                  <span class="line-name">Jurídico</span>
+                  <div class="line-bar-wrap"><div class="line-bar"><div class="line-bar-fill" style="width:5%;background:#c8102e88"></div></div></div>
+                  <span class="line-val">R$ 3.764.665</span>
+                </div>
+                <div class="line">
+                  <span class="line-name">Parque Gigante</span>
+                  <div class="line-bar-wrap"><div class="line-bar"><div class="line-bar-fill" style="width:3%;background:#c8102e88"></div></div></div>
+                  <span class="line-val">R$ 2.623.609</span>
+                </div>
+                <div class="line">
+                  <span class="line-name">Relações sociais</span>
+                  <div class="line-bar-wrap"><div class="line-bar"><div class="line-bar-fill" style="width:4%;background:#c8102e88"></div></div></div>
+                  <span class="line-val">R$ 2.801.357</span>
+                </div>
+                <div class="line">
+                  <span class="line-name">Recursos Humanos</span>
+                  <div class="line-bar-wrap"><div class="line-bar"><div class="line-bar-fill" style="width:2%;background:#c8102e88"></div></div></div>
+                  <span class="line-val">R$ 1.656.292</span>
+                </div>
+                <div class="line">
+                  <span class="line-name">Central de atendimento ao sócio</span>
+                  <div class="line-bar-wrap"><div class="line-bar"><div class="line-bar-fill" style="width:2%;background:#c8102e88"></div></div></div>
+                  <span class="line-val">R$ 1.548.095</span>
+                </div>
+                <div class="line">
+                  <span class="line-name">Finanças</span>
+                  <div class="line-bar-wrap"><div class="line-bar"><div class="line-bar-fill" style="width:5%;background:#c8102e88"></div></div></div>
+                  <span class="line-val">R$ 4.110.106</span>
+                </div>
+                <div class="line">
+                  <span class="line-name">Presidência</span>
+                  <div class="line-bar-wrap"><div class="line-bar"><div class="line-bar-fill" style="width:2%;background:#c8102e88"></div></div></div>
+                  <span class="line-val">R$ 1.171.926</span>
+                </div>
+                <div class="line">
+                  <span class="line-name">Museu do clube</span>
+                  <div class="line-bar-wrap"><div class="line-bar"><div class="line-bar-fill" style="width:1%;background:#c8102e88"></div></div></div>
+                  <span class="line-val">R$ 899.053</span>
+                </div>
+                <div class="line">
+                  <span class="line-name">FECI / Esportes amadores</span>
+                  <div class="line-bar-wrap"><div class="line-bar"><div class="line-bar-fill" style="width:1%;background:#c8102e88"></div></div></div>
+                  <span class="line-val">R$ 754.660</span>
+                </div>
+                <div class="line">
+                  <span class="line-name">Conselhos</span>
+                  <div class="line-bar-wrap"><div class="line-bar"><div class="line-bar-fill" style="width:1%;background:#c8102e88"></div></div></div>
+                  <span class="line-val">R$ 496.340</span>
+                </div>
+                <div class="line">
+                  <span class="line-name">Ouvidoria</span>
+                  <div class="line-bar-wrap"><div class="line-bar"><div class="line-bar-fill" style="width:1%;background:#c8102e88"></div></div></div>
+                  <span class="line-val">R$ 408.629</span>
+                </div>
+                <div class="line">
+                  <span class="line-name">Planejamento estratégico</span>
+                  <div class="line-bar-wrap"><div class="line-bar"><div class="line-bar-fill" style="width:0%;background:#c8102e88"></div></div></div>
+                  <span class="line-val">R$ 140.464</span>
+                </div>
+                <div class="line">
+                  <span class="line-name">Negócios estratégicos</span>
+                  <div class="line-bar-wrap"><div class="line-bar"><div class="line-bar-fill" style="width:0%;background:#c8102e88"></div></div></div>
+                  <span class="line-val">R$ 322.885</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- OPERACIONAL EXTRA -->
+            <div class="group">
+              <button class="group-toggle" onclick="toggle(this)">
+                <span class="g-icon">⚙️</span>
+                <div class="g-info">
+                  <div class="g-name">Despesas Operacionais</div>
+                  <div class="g-sub">Custos operacionais gerais do clube</div>
+                </div>
+                <div class="g-right">
+                  <div class="g-val">R$ 95,6 Mi</div>
+                  <div class="g-pct">16,4% da despesa</div>
+                </div>
+                <span class="g-chevron">▼</span>
+              </button>
+              <div class="g-bar-wrap"><div class="g-bar"><div class="g-bar-fill" style="width:16.4%"></div></div></div>
+              <div class="group-body">
+                <div class="line">
+                  <span class="line-name">Despesas operacionais gerais do clube</span>
+                  <div class="line-bar-wrap"><div class="line-bar"><div class="line-bar-fill" style="width:100%;background:#c8102e88"></div></div></div>
+                  <span class="line-val">R$ 95.641.686</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="line-total"><span>DESPESA TOTAL</span><span>R$ 581.889.274</span></div>
+          </div>
+        </div>
+      </div>
+    </div><!-- .two-col -->
+
+    <div class="note">
+      <strong>Atenção torcedor:</strong> O orçamento <strong>não inclui</strong> o pagamento do principal da dívida (só os juros: R$ 97,5 Mi/ano). A dívida total do clube é de ~R$ 1 bilhão. Meta de sócios: 149.000. Vendas de atletas projetadas: ~R$ 205 Mi (~€ 32 Mi).
+    </div>
+
+    <div class="audit-unavail">
+      <span style="font-size:20px;flex-shrink:0">📋</span>
+      <div><strong>Auditoria independente ainda não disponível.</strong> O relatório BDO do exercício 2026 será publicado após o encerramento e aprovação do exercício, previsto para meados de 2027. A seção "Orçado × Realizado" será atualizada quando os dados auditados estiverem disponíveis.</div>
+    </div>
+  </div><!-- /panel-2026 -->
+
+  <!-- ═══════════════════════════════════════════════════════ 2025 ═══ -->
+  <div class="panel" id="panel-2025">
+    <div class="badge-green">✓ Aprovado — Novembro 2024 · 203 votos a favor · 9 rejeições · 8 abstenções</div>
+
+    <div class="hero">
+      <div class="hcard"><div class="hl">O clube ia arrecadar</div><div class="hv">R$ 569,4 Mi</div></div>
+      <div class="hcard"><div class="hl">O clube ia gastar</div><div class="hv">R$ 561,7 Mi</div></div>
+      <div class="hcard surplus"><div class="hl">Resultado previsto</div><div class="hv positive">Superávit R$ 7,6 Mi</div></div>
+    </div>
+
+    <div class="two-col">
+      <div>
+        <div class="block">
+          <div class="block-head">De onde vem o dinheiro</div>
+          <div class="block-body">
+            <div class="group">
+              <button class="group-toggle" onclick="toggle(this)">
+                <span class="g-icon">📺</span>
+                <div class="g-info"><div class="g-name">TV, Sócios, Jogos & Comercial</div><div class="g-sub">Receita líquida de atividade</div></div>
+                <div class="g-right"><div class="g-val">R$ 432,6 Mi</div><div class="g-pct">76% da receita</div></div>
+                <span class="g-chevron">▼</span>
+              </button>
+              <div class="g-bar-wrap"><div class="g-bar"><div class="g-bar-fill green" style="width:76%"></div></div></div>
+              <div class="group-body">
+                <div class="line"><span class="line-name">Receita líquida de atividade</span><div class="line-bar-wrap"><div class="line-bar"><div class="line-bar-fill" style="width:100%;background:#16803c55"></div></div></div><span class="line-val">R$ 432.585.089</span></div>
+                <div class="line lvl2"><span class="line-name">Inclui TV, sócios, patrocínios, bilheteria por competição (Gaúcho, Brasileirão, Copa do Brasil, Conmebol)</span><span class="line-val">—</span></div>
+              </div>
+            </div>
+            <div class="group">
+              <button class="group-toggle" onclick="toggle(this)">
+                <span class="g-icon">🔄</span>
+                <div class="g-info"><div class="g-name">Vendas de Atletas</div><div class="g-sub">Meta de transferências</div></div>
+                <div class="g-right"><div class="g-val">R$ 160 Mi</div><div class="g-pct">meta projetada</div></div>
+                <span class="g-chevron">▼</span>
+              </button>
+              <div class="g-bar-wrap"><div class="g-bar"><div class="g-bar-fill green" style="width:28%"></div></div></div>
+              <div class="group-body">
+                <div class="line"><span class="line-name">Meta de vendas / empréstimos de jogadores</span><div class="line-bar-wrap"><div class="line-bar"><div class="line-bar-fill" style="width:100%;background:#16803c55"></div></div></div><span class="line-val">R$ 160.000.000</span></div>
+              </div>
+            </div>
+            <div class="line-total"><span>RECEITA TOTAL</span><span>R$ 569.389.579</span></div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="block">
+          <div class="block-head">Para onde vai o dinheiro</div>
+          <div class="block-body">
+            <div class="group">
+              <button class="group-toggle" onclick="toggle(this)">
+                <span class="g-icon">⚽</span>
+                <div class="g-info"><div class="g-name">Futebol (todos os departamentos)</div><div class="g-sub">Elenco, base, feminino e operação</div></div>
+                <div class="g-right"><div class="g-val">R$ 431,5 Mi</div><div class="g-pct">76,8% da despesa</div></div>
+                <span class="g-chevron">▼</span>
+              </button>
+              <div class="g-bar-wrap"><div class="g-bar"><div class="g-bar-fill" style="width:76.8%"></div></div></div>
+              <div class="group-body">
+                <div class="line"><span class="line-name">Custos de atividade (futebol)</span><div class="line-bar-wrap"><div class="line-bar"><div class="line-bar-fill" style="width:100%;background:#c8102e88"></div></div></div><span class="line-val">R$ 431.493.811</span></div>
+                <div class="line lvl2"><span class="line-name">Estratégia: folha salarial reduzida, compensada por aumento nos direitos de imagem</span><span class="line-val">—</span></div>
+              </div>
+            </div>
+            <div class="line-total"><span>DESPESA TOTAL</span><span>R$ 561.742.376</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ctx"><strong>Estratégia 2025:</strong> Orçamento elaborado com suporte da Bain &amp; Company. A gestão optou por reduzir a folha salarial e compensar com aumento dos contratos de direitos de imagem. Meta de sócios: ~149.000.</div>
+    <div class="note"><strong>Nota:</strong> O portal exibe os dados de 2025 via JavaScript interativo. Os valores acima foram obtidos de comunicados oficiais do Conselho Deliberativo.</div>
+
+    <div class="audit-unavail">
+      <span style="font-size:20px;flex-shrink:0">📋</span>
+      <div><strong>Auditoria independente ainda não disponível.</strong> O relatório BDO do exercício 2025 será publicado após o encerramento e aprovação do exercício, previsto para meados de 2026. A seção "Orçado × Realizado" será atualizada quando os dados auditados estiverem disponíveis.</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ 2024 ═══ -->
+  <div class="panel" id="panel-2024">
+    <div class="badge-green">✓ Aprovado · 131 votos a favor · 52 com ressalvas · 14 reprovações · 34 abstenções (236 presentes)</div>
+
+    <div class="hero">
+      <div class="hcard"><div class="hl">Receita bruta projetada</div><div class="hv">R$ 533,5 Mi</div></div>
+      <div class="hcard"><div class="hl">Receita líquida</div><div class="hv">R$ 463,3 Mi</div></div>
+      <div class="hcard surplus"><div class="hl">Resultado previsto</div><div class="hv positive">Superávit R$ 1,1 Mi</div></div>
+    </div>
+
+    <div class="two-col">
+      <div>
+        <div class="block">
+          <div class="block-head">De onde vem o dinheiro</div>
+          <div class="block-body">
+            <div class="group">
+              <button class="group-toggle" onclick="toggle(this)">
+                <span class="g-icon">📺</span>
+                <div class="g-info"><div class="g-name">TV, Sócios, Patrocínios & Jogos</div><div class="g-sub">Receita operacional</div></div>
+                <div class="g-right"><div class="g-val">R$ 463,3 Mi</div><div class="g-pct">86,8% da receita</div></div>
+                <span class="g-chevron">▼</span>
+              </button>
+              <div class="g-bar-wrap"><div class="g-bar"><div class="g-bar-fill green" style="width:86.8%"></div></div></div>
+              <div class="group-body">
+                <div class="line"><span class="line-name">Receita líquida projetada</span><div class="line-bar-wrap"><div class="line-bar"><div class="line-bar-fill" style="width:100%;background:#16803c55"></div></div></div><span class="line-val">R$ 463.280.000</span></div>
+              </div>
+            </div>
+            <div class="group">
+              <button class="group-toggle" onclick="toggle(this)">
+                <span class="g-icon">🔄</span>
+                <div class="g-info"><div class="g-name">Vendas & Empréstimos de Atletas</div><div class="g-sub">Transferências e direitos de solidariedade</div></div>
+                <div class="g-right"><div class="g-val">R$ 135 Mi</div><div class="g-pct">meta projetada</div></div>
+                <span class="g-chevron">▼</span>
+              </button>
+              <div class="g-bar-wrap"><div class="g-bar"><div class="g-bar-fill green" style="width:25.3%"></div></div></div>
+              <div class="group-body">
+                <div class="line"><span class="line-name">Vendas / empréstimos / solidariedade</span><div class="line-bar-wrap"><div class="line-bar"><div class="line-bar-fill" style="width:100%;background:#16803c55"></div></div></div><span class="line-val">R$ 135.000.000</span></div>
+              </div>
+            </div>
+            <div class="line-total"><span>RECEITA TOTAL</span><span>R$ 533.460.000</span></div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="block">
+          <div class="block-head">Para onde vai o dinheiro — Futebol</div>
+          <div class="block-body">
+            <div class="group">
+              <button class="group-toggle" onclick="toggle(this)">
+                <span class="g-icon">⚽</span>
+                <div class="g-info"><div class="g-name">Time Principal</div><div class="g-sub">Salários, contratos e operação</div></div>
+                <div class="g-right"><div class="g-val">R$ 312,8 Mi</div><div class="g-pct">79,9% do futebol</div></div>
+                <span class="g-chevron">▼</span>
+              </button>
+              <div class="g-bar-wrap"><div class="g-bar"><div class="g-bar-fill" style="width:58.7%"></div></div></div>
+              <div class="group-body">
+                <div class="line"><span class="line-name">Elenco profissional masculino</span><div class="line-bar-wrap"><div class="line-bar"><div class="line-bar-fill" style="width:100%;background:#c8102e88"></div></div></div><span class="line-val">R$ 312.803.908</span></div>
+              </div>
+            </div>
+            <div class="group">
+              <button class="group-toggle" onclick="toggle(this)">
+                <span class="g-icon">🌱</span>
+                <div class="g-info"><div class="g-name">Base, Feminino & Escola</div><div class="g-sub">Formação e futebol feminino</div></div>
+                <div class="g-right"><div class="g-val">R$ 54,6 Mi</div><div class="g-pct">13,9% do futebol</div></div>
+                <span class="g-chevron">▼</span>
+              </button>
+              <div class="g-bar-wrap"><div class="g-bar"><div class="g-bar-fill" style="width:10.2%"></div></div></div>
+              <div class="group-body">
+                <div class="line"><span class="line-name">Categorias de base / juvenil</span><div class="line-bar-wrap"><div class="line-bar"><div class="line-bar-fill" style="width:81%;background:#c8102e88"></div></div></div><span class="line-val">R$ 44.200.430</span></div>
+                <div class="line"><span class="line-name">Desenvolvimento de atletas (intangíveis)</span><div class="line-bar-wrap"><div class="line-bar"><div class="line-bar-fill" style="width:44%;background:#c8102e88"></div></div></div><span class="line-val">R$ 24.305.829</span></div>
+                <div class="line"><span class="line-name">Futebol feminino</span><div class="line-bar-wrap"><div class="line-bar"><div class="line-bar-fill" style="width:17%;background:#c8102e88"></div></div></div><span class="line-val">R$ 9.528.389</span></div>
+                <div class="line"><span class="line-name">Escola de Futebol Rubra</span><div class="line-bar-wrap"><div class="line-bar"><div class="line-bar-fill" style="width:2%;background:#c8102e88"></div></div></div><span class="line-val">R$ 827.602</span></div>
+              </div>
+            </div>
+            <div class="line-total"><span>TOTAL FUTEBOL</span><span>R$ 391.666.158</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ctx"><strong>Impacto das Enchentes (maio/2024):</strong> Prejuízo total de <strong>R$ 86,2 Mi</strong>, dos quais R$ 18,9 Mi foram recuperados via CBF e seguros. As contas foram aprovadas pelo Conselho Deliberativo em 2025.</div>
+
+    <!-- AUDITORIA 2024 -->
+    <div class="audit-section">
+      <div class="audit-head">🔍 O que a Auditoria Aponta <span class="audit-head-sub">· BDO RCS Auditores Independentes · Exercício 2024 · ITG 2003 (R2)</span></div>
+      <div class="audit-body">
+        <div class="audit-opinion">
+          <span class="audit-pill pill-ok">✓ Opinião Não Modificada</span>
+          <span>Demonstrações financeiras apresentam adequadamente a posição patrimonial conforme ITG 2003 (R2). A adoção da norma revisada implicou mudança de critério com efeito retroativo.</span>
+        </div>
+        <div class="audit-row warn">
+          <span class="audit-icon">⚠️</span>
+          <div><strong>Capital Circulante Líquido (CCL) negativo: R$ 358.956 milhões.</strong> Os passivos de curto prazo superam os ativos de curto prazo em R$ 358,9 Mi — pressão de liquidez significativa. Piorou em relação a 2023 (R$ 288,4 Mi), pressionado pelas consequências financeiras das enchentes.</div>
+        </div>
+        <div class="audit-row warn">
+          <span class="audit-icon">⚠️</span>
+          <div><strong>Déficits acumulados: R$ 197.362 milhões</strong> — aumento expressivo em relação a R$ 113.827 Mi de 2023. O resultado de 2024 foi negativo (déficit R$ 34,5 Mi), revertendo os três superávits consecutivos de 2021–2023.</div>
+        </div>
+        <div class="audit-row bad">
+          <span class="audit-icon">🌊</span>
+          <div><strong>Enchentes de maio/2024 (força maior):</strong> Impacto de <strong>R$ 86,2 milhões</strong> identificado pela auditoria — perdas patrimoniais, cancelamento de jogos e custos extras. R$ 18,9 Mi recuperados via CBF e seguros. Prejuízo líquido: ~R$ 67 Mi. A BDO reconhece o caráter de força maior do evento.</div>
+        </div>
+        <div class="audit-row warn">
+          <span class="audit-icon">📋</span>
+          <div><strong>Mudança contábil — ITG 2003 (R2):</strong> A adoção da norma revisada exigiu uma baixa contábil de <strong>R$ 46.656 milhões</strong> sobre intangíveis de atletas reconhecidos em exercícios anteriores. Não representa saída de caixa — é exclusivamente um ajuste de critério de mensuração.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ORÇADO x REALIZADO 2024 -->
+    <div class="ovr-section">
+      <div class="ovr-head">📊 Orçado × Realizado — 2024</div>
+      <div class="ovr-body">
+        <table class="ovr-table">
+          <thead>
+            <tr>
+              <th>Indicador</th>
+              <th>Orçado (CD nov/2023)</th>
+              <th>Realizado (BDO)</th>
+              <th>Variação</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="ovr-label">Receita Bruta Total</span><span class="ovr-sub">Inclui vendas de atletas</span></td>
+              <td>R$ 533,5 Mi</td>
+              <td>R$ 621,1 Mi</td>
+              <td class="var-pos">+R$ 87,6 Mi (+16,4%)</td>
+            </tr>
+            <tr>
+              <td><span class="ovr-label">Receita de Atletas</span><span class="ovr-sub">Transferências e empréstimos</span></td>
+              <td>R$ 135,0 Mi</td>
+              <td>R$ 258,3 Mi</td>
+              <td class="var-pos">+R$ 123,3 Mi (+91%) ✅</td>
+            </tr>
+            <tr>
+              <td><span class="ovr-label">Resultado Final</span><span class="ovr-sub">Superávit / (Déficit)</span></td>
+              <td class="var-pos">+ R$ 1,1 Mi</td>
+              <td class="var-neg">(R$ 34,5 Mi)</td>
+              <td class="var-neg">-R$ 35,6 Mi ❌</td>
+            </tr>
+            <tr>
+              <td><span class="ovr-label">CCL (Liquidez)</span><span class="ovr-sub">Capital Circulante Líquido</span></td>
+              <td>—</td>
+              <td class="var-neg">(R$ 358,9 Mi)</td>
+              <td class="var-neg">Piorou vs. 2023</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="ovr-note">⚡ A receita de atletas (R$ 258 Mi) foi 91% acima da meta. Porém as enchentes geraram perdas e custos extras de ~R$ 86 Mi que consumiram o superávit projetado e resultaram em déficit de R$ 34,5 Mi. Sem as enchentes, o resultado teria sido superavitário.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ 2023 ═══ -->
+  <div class="panel" id="panel-2023">
+    <div class="badge-green">✓ Terceiro superávit consecutivo — maior da história do clube até então</div>
+
+    <div class="hero">
+      <div class="hcard"><div class="hl">Faturamento bruto total</div><div class="hv">~R$ 685 Mi</div></div>
+      <div class="hcard"><div class="hl">Receita líquida</div><div class="hv">R$ 422,9 Mi</div></div>
+      <div class="hcard surplus"><div class="hl">Resultado</div><div class="hv positive">Maior superávit histórico</div></div>
+    </div>
+
+    <div class="two-col">
+      <div>
+        <div class="block">
+          <div class="block-head">Destaques de Receita</div>
+          <div class="block-body">
+            <div class="group">
+              <button class="group-toggle" onclick="toggle(this)">
+                <span class="g-icon">👥</span>
+                <div class="g-info"><div class="g-name">Receita Social (Sócios)</div><div class="g-sub">Crescimento em relação a 2022</div></div>
+                <div class="g-right"><div class="g-val positive">+24%</div><div class="g-pct">vs. 2022</div></div>
+                <span class="g-chevron">▼</span>
+              </button>
+              <div class="g-bar-wrap"><div class="g-bar"><div class="g-bar-fill green" style="width:60%"></div></div></div>
+              <div class="group-body"><div class="line"><span class="line-name">Crescimento em mensalidades e programas de sócio</span><span class="line-val positive">+24% vs. 2022</span></div></div>
+            </div>
+            <div class="group">
+              <button class="group-toggle" onclick="toggle(this)">
+                <span class="g-icon">🤝</span>
+                <div class="g-info"><div class="g-name">Receita Comercial</div><div class="g-sub">Patrocínios e publicidade</div></div>
+                <div class="g-right"><div class="g-val positive">+R$ 20 Mi</div><div class="g-pct">vs. 2022</div></div>
+                <span class="g-chevron">▼</span>
+              </button>
+              <div class="g-bar-wrap"><div class="g-bar"><div class="g-bar-fill green" style="width:40%"></div></div></div>
+              <div class="group-body"><div class="line"><span class="line-name">Crescimento em patrocínios e receitas comerciais</span><span class="line-val positive">+R$ 20.000.000</span></div></div>
+            </div>
+            <div class="group">
+              <button class="group-toggle" onclick="toggle(this)">
+                <span class="g-icon">📡</span>
+                <div class="g-info"><div class="g-name">Contrato LFU assinado</div><div class="g-sub">Liga Forte União — nova cota de TV</div></div>
+                <div class="g-right"><div class="g-val">2024+</div><div class="g-pct">impacto a partir de 2024</div></div>
+                <span class="g-chevron">▼</span>
+              </button>
+              <div class="g-bar-wrap"><div class="g-bar"><div class="g-bar-fill green" style="width:70%"></div></div></div>
+              <div class="group-body"><div class="line"><span class="line-name">Contrato de transmissão da Liga Forte União (LFU) assinado em 2023, garantindo previsibilidade de receita a partir de 2024</span><span class="line-val">Assinado</span></div></div>
+            </div>
+            <div class="line-total"><span>RECEITA LÍQUIDA</span><span>R$ 422.870.000</span></div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="block">
+          <div class="block-head">Para onde foi o dinheiro</div>
+          <div class="block-body">
+            <div class="group">
+              <button class="group-toggle" onclick="toggle(this)">
+                <span class="g-icon">⚽</span>
+                <div class="g-info"><div class="g-name">Futebol (todos os departamentos)</div><div class="g-sub">Elenco, base, feminino</div></div>
+                <div class="g-right"><div class="g-val">R$ 292,1 Mi</div><div class="g-pct">69% da receita líquida</div></div>
+                <span class="g-chevron">▼</span>
+              </button>
+              <div class="g-bar-wrap"><div class="g-bar"><div class="g-bar-fill" style="width:69%"></div></div></div>
+              <div class="group-body"><div class="line"><span class="line-name">Custos totais de futebol (realizado)</span><div class="line-bar-wrap"><div class="line-bar"><div class="line-bar-fill" style="width:100%;background:#c8102e88"></div></div></div><span class="line-val">R$ 292.130.000</span></div></div>
+            </div>
+            <div class="line-total"><span>RESULTADO</span><span class="positive">MAIOR SUPERÁVIT DA HISTÓRIA</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ctx"><strong>Contexto:</strong> Inter entre os 5 maiores clubes do Brasil em receita social e bilheteria. Terceiro superávit consecutivo desde a reconstrução orçamentária de 2021.</div>
+    <div class="note"><strong>Nota:</strong> Valores linha a linha do orçamento aprovado de 2023 não foram divulgados publicamente. Os dados acima refletem a prestação de contas consolidada de comunicados do Conselho Deliberativo.</div>
+
+    <!-- AUDITORIA 2023 -->
+    <div class="audit-section">
+      <div class="audit-head">🔍 O que a Auditoria Aponta <span class="audit-head-sub">· BDO RCS Auditores Independentes · Exercício 2023</span></div>
+      <div class="audit-body">
+        <div class="audit-opinion">
+          <span class="audit-pill pill-ok">✓ Opinião Não Modificada</span>
+          <span>Demonstrações financeiras apresentam adequadamente a posição patrimonial. Terceiro superávit consecutivo, mas a auditoria destaca dependência de receita extraordinária e não-recorrente.</span>
+        </div>
+        <div class="audit-row ok">
+          <span class="audit-icon">✅</span>
+          <div><strong>CCL negativo melhorou: R$ 288.414 milhões</strong> (era R$ 367.956 Mi em 2022). Ainda negativo, mas a tendência de recuperação é consistente — terceiro ano consecutivo de melhora operacional.</div>
+        </div>
+        <div class="audit-row ok">
+          <span class="audit-icon">✅</span>
+          <div><strong>Déficits acumulados caíram para R$ 113.827 milhões</strong> (eram R$ 284.607 Mi em 2022). Redução de ~60% em dois anos — reflexo da disciplina orçamentária mantida desde 2021.</div>
+        </div>
+        <div class="audit-row warn">
+          <span class="audit-icon">⚠️</span>
+          <div><strong>Superávit de R$ 170.383 Mi depende de receita não-recorrente.</strong> A assinatura do contrato com a Liga Forte União (LFU) gerou uma receita antecipada de <strong>R$ 211.816 milhões</strong> reconhecida integralmente em 2023. <strong>Sem essa receita, o resultado de 2023 seria um déficit de ~R$ 41 Mi.</strong> A BDO ressalta explicitamente que essa receita não se repetirá nos mesmos moldes.</div>
+        </div>
+        <div class="audit-row ok">
+          <span class="audit-icon">✅</span>
+          <div><strong>EBITDA recorde: R$ 297.783 milhões</strong> — geração de caixa operacional mais alta da história do clube até então. Indica capacidade operacional robusta, mesmo descontando o efeito LFU.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ORÇADO x REALIZADO 2023 -->
+    <div class="ovr-section">
+      <div class="ovr-head">📊 Orçado × Realizado — 2023</div>
+      <div class="ovr-body">
+        <table class="ovr-table">
+          <thead>
+            <tr>
+              <th>Indicador</th>
+              <th>Orçado</th>
+              <th>Realizado (BDO)</th>
+              <th>Variação</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="ovr-label">Receita Bruta de Atividades</span><span class="ovr-sub">Excluindo receita LFU não-recorrente</span></td>
+              <td>Não divulgado</td>
+              <td>R$ 423,4 Mi</td>
+              <td>—</td>
+            </tr>
+            <tr>
+              <td><span class="ovr-label">Receita LFU (não-recorrente)</span><span class="ovr-sub">Antecipação contrato Liga Forte União</span></td>
+              <td>—</td>
+              <td>R$ 211,8 Mi</td>
+              <td class="var-neg">⚠️ Não se repete</td>
+            </tr>
+            <tr>
+              <td><span class="ovr-label">EBITDA</span><span class="ovr-sub">Geração de caixa operacional</span></td>
+              <td>—</td>
+              <td class="var-pos">R$ 297,8 Mi</td>
+              <td class="var-pos">Recorde histórico</td>
+            </tr>
+            <tr>
+              <td><span class="ovr-label">Resultado Final</span><span class="ovr-sub">Superávit / (Déficit)</span></td>
+              <td>—</td>
+              <td class="var-pos">+ R$ 170,4 Mi</td>
+              <td>R$ 211,8 Mi veio da LFU ⚠️</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="ovr-note">⚠️ Sem a receita extraordinária da LFU (R$ 211,8 Mi), o resultado de 2023 teria sido um déficit de ~R$ 41 Mi — ressalva explícita do relatório BDO. O orçamento aprovado de 2023 não foi divulgado publicamente com detalhamento linha a linha.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ 2022 ═══ -->
+  <div class="panel" id="panel-2022">
+    <div class="badge-green">✓ Segundo superávit consecutivo — maior receita da história até aquele momento</div>
+
+    <div class="hero">
+      <div class="hcard"><div class="hl">Receita total (realizado)</div><div class="hv">~R$ 466 Mi</div></div>
+      <div class="hcard surplus"><div class="hl">Superávit</div><div class="hv positive">+ R$ 1.032.000</div></div>
+      <div class="hcard surplus"><div class="hl">Variação vs. superávit 2021</div><div class="hv positive">+31%</div></div>
+    </div>
+
+    <div class="ctx"><strong>O que aconteceu em 2022:</strong> O faturamento atingiu o maior valor da história do clube até então, impulsionado pelo retorno do público aos estádios após a pandemia de COVID-19. O resultado foi o segundo superávit consecutivo, 31% superior ao de 2021, consolidando a nova gestão financeira.</div>
+    <div class="note"><strong>Nota:</strong> Dados linha a linha de 2022 foram obtidos de comunicados das prestações de contas ao Conselho Deliberativo. O portal exibe esses dados via JavaScript interativo.</div>
+
+    <!-- AUDITORIA 2022 -->
+    <div class="audit-section">
+      <div class="audit-head">🔍 O que a Auditoria Aponta <span class="audit-head-sub">· BDO RCS Auditores Independentes · Exercício 2022</span></div>
+      <div class="audit-body">
+        <div class="audit-opinion">
+          <span class="audit-pill pill-ok">✓ Opinião Não Modificada</span>
+          <span>Demonstrações financeiras apresentam adequadamente a posição patrimonial. Segundo superávit consecutivo, com maior receita da história do clube até aquele momento.</span>
+        </div>
+        <div class="audit-row bad">
+          <span class="audit-icon">🔴</span>
+          <div><strong>CCL negativo piorou: R$ 367.956 milhões</strong> (era R$ 259.645 Mi em 2021). Apesar do superávit operacional, a dívida de longo prazo e os passivos circulantes cresceram mais rápido que as disponibilidades de curto prazo. É o indicador mais crítico de saúde financeira de curto prazo.</div>
+        </div>
+        <div class="audit-row warn">
+          <span class="audit-icon">⚠️</span>
+          <div><strong>Déficits acumulados cresceram para R$ 284.607 milhões</strong> (eram R$ 237.181 Mi em 2021). O superávit operacional de R$ 1 Mi não foi suficiente para reverter os déficits históricos acumulados no patrimônio líquido do clube.</div>
+        </div>
+        <div class="audit-row warn">
+          <span class="audit-icon">⚖️</span>
+          <div><strong>Investigação do Ministério Público:</strong> A BDO mantém ênfase sobre inquérito em curso que apura atos de gestão de exercícios anteriores à atual administração. Sem impacto patrimonial quantificado, mas com risco de passivo contingente.</div>
+        </div>
+        <div class="audit-row ok">
+          <span class="audit-icon">✅</span>
+          <div><strong>EBITDA de R$ 113.622 milhões</strong> — crescimento de +15% em relação ao EBITDA de 2021 (R$ 99.042 Mi). Tendência crescente de geração operacional de caixa.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ORÇADO x REALIZADO 2022 -->
+    <div class="ovr-section">
+      <div class="ovr-head">📊 Orçado × Realizado — 2022</div>
+      <div class="ovr-body">
+        <table class="ovr-table">
+          <thead>
+            <tr>
+              <th>Indicador</th>
+              <th>Orçado (CD 2021)</th>
+              <th>Realizado (BDO)</th>
+              <th>Variação</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="ovr-label">Receita Total</span><span class="ovr-sub">Faturamento consolidado</span></td>
+              <td>~R$ 420,0 Mi</td>
+              <td>R$ 466,6 Mi</td>
+              <td class="var-pos">+R$ 46,6 Mi (+11,1%) ✅</td>
+            </tr>
+            <tr>
+              <td><span class="ovr-label">EBITDA</span><span class="ovr-sub">Geração de caixa operacional</span></td>
+              <td>—</td>
+              <td class="var-pos">R$ 113,6 Mi</td>
+              <td class="var-pos">+15% vs. 2021</td>
+            </tr>
+            <tr>
+              <td><span class="ovr-label">Resultado Final</span><span class="ovr-sub">Superávit / (Déficit)</span></td>
+              <td class="var-pos">+ R$ 1,0 Mi</td>
+              <td class="var-pos">+ R$ 1,0 Mi</td>
+              <td class="var-pos">✅ Meta atingida</td>
+            </tr>
+            <tr>
+              <td><span class="ovr-label">CCL (Liquidez)</span><span class="ovr-sub">Capital Circulante Líquido</span></td>
+              <td>—</td>
+              <td class="var-neg">(R$ 367,9 Mi)</td>
+              <td class="var-neg">Piorou vs. 2021 ⚠️</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="ovr-note">✅ Receita 11% acima do orçado, resultado em linha com a meta. Ponto de atenção: CCL piorou apesar do superávit operacional — a dívida de longo prazo cresceu mais rápido do que as disponibilidades de curto prazo.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ 2021 ═══ -->
+  <div class="panel" id="panel-2021">
+    <div class="badge-green">✓ Primeiro superávit após reconstrução orçamentária — recomendação do Conselho Fiscal</div>
+
+    <div class="hero">
+      <div class="hcard surplus"><div class="hl">Superávit</div><div class="hv positive">+ R$ 787.000</div></div>
+      <div class="hcard"><div class="hl">Caráter</div><div class="hv" style="font-size:16px">1º Superávit</div></div>
+      <div class="hcard"><div class="hl">Abordagem</div><div class="hv" style="font-size:15px">Conservadora</div></div>
+    </div>
+
+    <div class="ctx"><strong>O que aconteceu em 2021:</strong> O orçamento foi inteiramente reconstruído pela nova gestão, por recomendação do Conselho Fiscal. Foram adotadas projeções conservadoras e identificadas economias em múltiplas áreas, com foco em reduzir a dívida de curto e longo prazo. Foi o primeiro superávit de um ciclo que se consolidaria em 2022 e 2023.</div>
+    <div class="note"><strong>Nota:</strong> Dados detalhados linha a linha de 2021 não foram divulgados publicamente. Os valores acima refletem a prestação de contas consolidada de comunicados do Conselho Deliberativo e fontes jornalísticas verificadas.</div>
+
+    <!-- AUDITORIA 2021 -->
+    <div class="audit-section">
+      <div class="audit-head">🔍 O que a Auditoria Aponta <span class="audit-head-sub">· BDO RCS Auditores Independentes · Exercício 2021</span></div>
+      <div class="audit-body">
+        <div class="audit-opinion">
+          <span class="audit-pill pill-ok">✓ Opinião Não Modificada</span>
+          <span>Demonstrações financeiras apresentam adequadamente a posição patrimonial do clube. Primeiro superávit da reconstrução orçamentária — resultado conservador que marca o início da recuperação financeira.</span>
+        </div>
+        <div class="audit-row bad">
+          <span class="audit-icon">🔴</span>
+          <div><strong>CCL negativo: R$ 259.645 milhões.</strong> Os passivos circulantes superam os ativos circulantes em R$ 259,6 Mi — o clube não possuía recursos de curto prazo suficientes para cobrir suas obrigações de curto prazo. É o ponto de partida da jornada de recuperação.</div>
+        </div>
+        <div class="audit-row warn">
+          <span class="audit-icon">⚠️</span>
+          <div><strong>Déficits acumulados: R$ 237.181 milhões</strong> no patrimônio líquido do clube. Não é uma dívida nova — é o acúmulo histórico de anos de resultados negativos de gestões anteriores. A BDO destaca esse saldo como condicionante de longo prazo.</div>
+        </div>
+        <div class="audit-row warn">
+          <span class="audit-icon">⚖️</span>
+          <div><strong>Investigação do Ministério Público:</strong> A BDO inclui parágrafo de ênfase sobre inquérito em curso que apura atos de gestão de exercícios anteriores. Sem impacto patrimonial quantificado até a data do relatório, mas com risco de passivo contingente.</div>
+        </div>
+        <div class="audit-row ok">
+          <span class="audit-icon">✅</span>
+          <div><strong>EBITDA de R$ 99.042 milhões</strong> — primeiro indicador sólido de geração de caixa operacional após os anos de crise financeira. Sinaliza que a estrutura de receitas e custos está se equilibrando.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ORÇADO x REALIZADO 2021 -->
+    <div class="ovr-section">
+      <div class="ovr-head">📊 Orçado × Realizado — 2021</div>
+      <div class="ovr-body">
+        <table class="ovr-table">
+          <thead>
+            <tr>
+              <th>Indicador</th>
+              <th>Orçado (CD 2020)</th>
+              <th>Realizado (BDO)</th>
+              <th>Variação</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="ovr-label">Receita Total</span><span class="ovr-sub">Faturamento consolidado</span></td>
+              <td>~R$ 392,0 Mi</td>
+              <td>R$ 382,2 Mi</td>
+              <td class="var-neg">-R$ 9,8 Mi (-2,5%)</td>
+            </tr>
+            <tr>
+              <td><span class="ovr-label">EBITDA</span><span class="ovr-sub">Geração de caixa operacional</span></td>
+              <td>—</td>
+              <td class="var-pos">R$ 99,0 Mi</td>
+              <td class="var-pos">Sinal positivo de recuperação</td>
+            </tr>
+            <tr>
+              <td><span class="ovr-label">Resultado Final</span><span class="ovr-sub">Superávit / (Déficit)</span></td>
+              <td class="var-pos">Superávit (meta)</td>
+              <td class="var-pos">+ R$ 787 mil</td>
+              <td class="var-pos">✅ Meta atingida</td>
+            </tr>
+            <tr>
+              <td><span class="ovr-label">CCL (Liquidez)</span><span class="ovr-sub">Capital Circulante Líquido</span></td>
+              <td>—</td>
+              <td class="var-neg">(R$ 259,6 Mi)</td>
+              <td>Ponto de partida da recuperação</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="ovr-note">📌 Receita 2,5% abaixo da meta — reflexo das restrições de público ainda ligadas à pandemia. A gestão conservadora garantiu o superávit simbólico de R$ 787 mil, marco do início da recuperação financeira do clube após anos de déficit.</div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    Sport Club Internacional · Transparência Financeira ·
+    Fonte: <a href="https://internacional.com.br/transparencia/orcamento" target="_blank">internacional.com.br/transparencia/orcamento</a> e comunicados do Conselho Deliberativo · Compilado em março de 2026
+  </footer>
+</main>
+
+<script>
+  // Year tabs
+  document.querySelectorAll('.tab').forEach(t => {
+    t.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(x => x.classList.remove('on'));
+      document.querySelectorAll('.panel').forEach(x => x.classList.remove('on'));
+      t.classList.add('on');
+      document.getElementById('panel-' + t.dataset.year).classList.add('on');
+    });
+  });
+
+  // Accordion
+  function toggle(btn) {
+    const isOpen = btn.classList.contains('open');
+    const body = btn.parentElement.querySelector('.group-body');
+    btn.classList.toggle('open', !isOpen);
+    body.classList.toggle('open', !isOpen);
+  }
+</script>
+</body>
+</html>
