@@ -26,7 +26,35 @@
       --success:   #0CAF60;
       --danger:    #E53E3E;
       --radius:    8px;
+      --chart-grid:#E8EAF0;
+      --chart-tick:#6B7280;
+      --chart-label:#0F1117;
     }
+    :root.dark {
+      --bg:        #0C0E14;
+      --surface:   #141720;
+      --surface-h: #1B1F2E;
+      --border:    #252B3B;
+      --accent:    #7C6AF7;
+      --accent-h:  #6B59F5;
+      --text:      #E8EBF3;
+      --text-muted:#8B95A8;
+      --success:   #10C96E;
+      --danger:    #F87171;
+      --radius:    8px;
+      --chart-grid:#252B3B;
+      --chart-tick:#8B95A8;
+      --chart-label:#E8EBF3;
+    }
+
+    /* ── DARK MODE — overrides para cores hardcoded ─────── */
+    .dark header                { background: var(--surface); border-bottom-color: var(--border); }
+    .dark .hero-kpi             { background: var(--surface) !important; }
+    .dark .card-total           { background: linear-gradient(135deg, var(--surface) 0%, #1D1A38 100%) !important; border-color: rgba(124,106,247,.25) !important; }
+    .dark .card-total:hover     { background: #1D1A38 !important; }
+    .dark .fin-card-featured    { background: linear-gradient(135deg, var(--surface) 0%, #1D1A38 100%) !important; }
+    .dark .ranking-bar-wrap     { background: #252B3B; }
+    .dark .btn-theme svg        { stroke: var(--text-muted); }
 
     /* ── RESET & BASE — TV 1920×1080 ─────────────────────── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -47,8 +75,8 @@
     header {
       height: 40px;
       flex-shrink: 0;
-      background: #FFFFFF;
-      border-bottom: 1px solid #E8EAF0;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
       display: flex;
       align-items: center;
       padding: 0 16px;
@@ -81,6 +109,16 @@
       display: inline-flex;
       align-items: center;
     }
+    .nav-pill-orc {
+      cursor: pointer !important;
+      color: var(--accent) !important;
+      background: rgba(91,79,232,.1) !important;
+      border: 1px solid rgba(91,79,232,.25) !important;
+      transition: background .15s;
+      margin-left: 6px;
+    }
+    .nav-pill-orc:hover { background: rgba(91,79,232,.2) !important; }
+    .nav-pill-orc.orc-active { background: var(--accent) !important; color: #fff !important; }
 
     .header-right { display: flex; align-items: center; gap: 8px; margin-left: 20px; flex-shrink: 0; }
 
@@ -145,7 +183,7 @@
     }
     .hero-kpi {
       flex: 1;
-      background: #FFFFFF;
+      background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius);
       padding: 10px 16px 10px 20px;
@@ -229,7 +267,7 @@
       font-weight: 500;
       color: var(--text);
       flex: 1;
-      min-width: 80px;
+      min-width: 60px;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -256,14 +294,14 @@
       font-weight: 700;
       color: var(--text);
       font-variant-numeric: tabular-nums;
-      flex: 0 0 82px;
+      flex: 0 0 52px;
       text-align: right;
       white-space: nowrap;
     }
     .ranking-pct {
       font-size: 11px;
       color: var(--text-muted);
-      flex: 0 0 48px;
+      flex: 0 0 42px;
       text-align: right;
       font-variant-numeric: tabular-nums;
       white-space: nowrap;
@@ -311,12 +349,12 @@
       flex: 1;
     }
     /* Ranking full-width: itens maiores, mais respiro */
-    .ranking-list-wide .ranking-item { padding: 5px 0; gap: 12px; }
+    .ranking-list-wide .ranking-item { padding: 5px 0; gap: 8px; }
     .ranking-list-wide .ranking-pos  { font-size: 12px; width: 20px; }
     .ranking-list-wide .ranking-name { font-size: 13px; }
     .ranking-list-wide .ranking-bar-wrap { height: 16px; }
-    .ranking-list-wide .ranking-val  { font-size: 13px; flex: 0 0 100px; }
-    .ranking-list-wide .ranking-pct  { font-size: 12px; flex: 0 0 50px; white-space: nowrap; }
+    .ranking-list-wide .ranking-val  { font-size: 13px; flex: 0 0 52px; }
+    .ranking-list-wide .ranking-pct  { font-size: 12px; flex: 0 0 42px; white-space: nowrap; }
 
     /* ── ALERT ───────────────────────────────────────────── */
     #alert-box {
@@ -649,8 +687,8 @@
     #map-tooltip {
       position: fixed;
       display: none;
-      background: #FFFFFF;
-      border: 1px solid #E8EAF0;
+      background: var(--surface);
+      border: 1px solid var(--border);
       border-radius: 7px;
       padding: 5px 10px;
       font-size: .62rem;
@@ -665,6 +703,123 @@
     .map-legend-bar { width: 34px; height: 4px; border-radius: 2px; background: linear-gradient(to right, #C7D2FE, #5B4FE8); }
 
     /* TV mode — no media queries needed */
+
+  /* ══════════════════════════════════════════════════════════
+     MÓDULO ORÇAMENTO
+  ══════════════════════════════════════════════════════════ */
+  #orcamento-screen {
+    position: absolute; inset: 0; z-index: 50;
+    background: var(--bg); display: none; flex-direction: column; overflow: hidden;
+  }
+  #orcamento-screen.orc-visible { display: flex; }
+  .orc-topbar {
+    height: 44px; background: var(--surface); border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; padding: 0 12px; gap: 10px; flex-shrink: 0;
+  }
+  .orc-back { background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: .7rem; padding: 4px 8px; border-radius: 4px; display: flex; align-items: center; gap: 4px; }
+  .orc-back:hover { background: var(--surface-h); color: var(--text); }
+  .orc-sheet-lbl { font-size: .72rem; font-weight: 600; color: var(--text); }
+  .orc-sep { color: var(--border); margin: 0 4px; }
+  .orc-sheet-sub { font-size: .65rem; color: var(--text-muted); max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .orc-fbar {
+    flex: 1; height: 30px; background: var(--surface-h); border: 1px solid var(--border);
+    border-radius: 5px; display: flex; align-items: center; overflow: hidden;
+  }
+  .orc-fbar:focus-within { border-color: var(--accent); }
+  .orc-cell-addr { padding: 0 8px; font-size: .65rem; font-family: monospace; font-weight: 700; color: var(--accent); min-width: 44px; text-align: center; border-right: 1px solid var(--border); flex-shrink: 0; }
+  .orc-fbar-input { flex: 1; background: transparent; border: none; outline: none; font-size: .65rem; padding: 0 8px; font-family: monospace; color: var(--text); }
+  .orc-badge-changes { background: #f59e0b; color: #1c1004; font-size: .6rem; font-weight: 700; padding: 2px 7px; border-radius: 20px; }
+  .orc-btn { padding: 5px 12px; border-radius: 5px; border: 1px solid var(--border); background: var(--surface-h); color: var(--text); font-size: .65rem; cursor: pointer; white-space: nowrap; }
+  .orc-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .orc-btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .orc-btn-primary:hover { background: var(--accent-h); border-color: var(--accent-h); color: #fff; }
+  .orc-sheet-tabs {
+    height: 32px; background: var(--surface-h); border-bottom: 1px solid var(--border);
+    display: flex; align-items: flex-end; padding: 0 10px; gap: 2px; flex-shrink: 0; overflow-x: auto;
+  }
+  .orc-tab { padding: 5px 14px; font-size: .62rem; font-weight: 500; color: var(--text-muted); cursor: pointer; border-radius: 5px 5px 0 0; border: 1px solid transparent; border-bottom: none; white-space: nowrap; }
+  .orc-tab:hover { color: var(--text); background: rgba(91,79,232,.06); }
+  .orc-tab.active { color: var(--text); background: var(--bg); border-color: var(--border); }
+  .orc-sheet-area { flex: 1; overflow: hidden; position: relative; }
+  .orc-state { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; color: var(--text-muted); font-size: .75rem; }
+  .orc-scroll { width: 100%; height: 100%; overflow: auto; }
+  .orc-statusbar { height: 20px; background: var(--surface); border-top: 1px solid var(--border); font-size: .6rem; color: var(--text-muted); display: flex; align-items: center; padding: 0 10px; gap: 16px; flex-shrink: 0; }
+  /* Spreadsheet table */
+  .orc-table { border-collapse: collapse; table-layout: fixed; min-width: 900px; font-size: .68rem; }
+  .orc-table thead th { position: sticky; top: 0; z-index: 20; background: var(--surface-h); padding: 4px 6px; text-align: center; font-weight: 600; color: var(--text-muted); font-size: .6rem; border-right: 1px solid var(--border); border-bottom: 2px solid var(--border); white-space: nowrap; user-select: none; }
+  .orc-table thead th:first-child { position: sticky; left: 0; z-index: 30; border-right: 2px solid var(--border); }
+  .orc-table td { border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 0; height: 24px; cursor: cell; position: relative; overflow: hidden; }
+  .orc-table td.orc-row-num { position: sticky; left: 0; z-index: 10; background: var(--surface-h) !important; color: var(--text-muted); font-size: .58rem; text-align: center; width: 36px; min-width: 36px; border-right: 2px solid var(--border); cursor: default; }
+  .orc-cell { padding: 2px 6px; width: 100%; height: 100%; display: flex; align-items: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; user-select: none; }
+  .orc-cell.right  { justify-content: flex-end; }
+  .orc-cell.center { justify-content: center; }
+  .orc-table td.orc-selected { outline: 2px solid var(--accent); outline-offset: -2px; z-index: 5; }
+  .orc-table td.orc-editable:hover .orc-cell { background: rgba(91,79,232,.06); }
+  /* Row type styles */
+  .orc-row-section td { background: var(--accent) !important; color: #fff !important; font-weight: 700; font-size: .62rem; letter-spacing: .03em; }
+  .orc-row-section td.orc-row-num { background: var(--accent-h) !important; color: rgba(255,255,255,.4) !important; }
+  .orc-row-total td { background: rgba(91,79,232,.15) !important; color: var(--text) !important; font-weight: 600; }
+  .orc-row-subtotal td { background: rgba(91,79,232,.06) !important; font-weight: 600; color: var(--text); }
+  .orc-row-header td { background: var(--surface-h) !important; font-weight: 600; color: var(--text-muted); }
+  /* Changed cells */
+  .orc-cell-changed { background: rgba(245,158,11,.18) !important; color: #92400e !important; font-weight: 700; }
+  .orc-cell-affected { background: rgba(245,158,11,.07) !important; }
+  .dark .orc-cell-changed { background: rgba(245,158,11,.25) !important; color: #fbbf24 !important; }
+  /* Dialogs */
+  .orc-overlay { position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,.55); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: 16px; }
+  .orc-dialog { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; box-shadow: 0 16px 48px rgba(0,0,0,.3); width: 500px; max-width: 100%; max-height: 88vh; display: flex; flex-direction: column; animation: orc-dlg .18s ease; }
+  .orc-dialog-xl { width: 820px; }
+  @keyframes orc-dlg { from { opacity:0; transform:translateY(-10px) scale(.98); } to { opacity:1; transform:none; } }
+  .orc-dlg-hdr { padding: 16px 20px 12px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+  .orc-dlg-hdr h3 { font-size: .82rem; font-weight: 700; color: var(--text); flex: 1; }
+  .orc-dlg-body { padding: 16px 20px; overflow-y: auto; flex: 1; }
+  .orc-dlg-ftr { padding: 12px 20px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 8px; flex-shrink: 0; }
+  .orc-field { margin-bottom: 14px; }
+  .orc-field label { display: block; font-size: .62rem; font-weight: 600; color: var(--text-muted); margin-bottom: 5px; text-transform: uppercase; letter-spacing: .04em; }
+  .orc-field input, .orc-field select, .orc-field textarea { width: 100%; padding: 7px 10px; border: 1.5px solid var(--border); border-radius: 5px; font-family: inherit; font-size: .72rem; color: var(--text); background: var(--surface-h); outline: none; }
+  .orc-field input:focus, .orc-field select:focus, .orc-field textarea:focus { border-color: var(--accent); }
+  .orc-field textarea { resize: vertical; line-height: 1.6; }
+  .orc-change-card { background: var(--surface-h); border: 1px solid var(--border); border-radius: 7px; padding: 12px 14px; margin-bottom: 14px; }
+  .orc-cc-lbl { font-size: .58rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 2px; }
+  .orc-cc-name { font-size: .8rem; font-weight: 700; color: var(--text); margin-bottom: 10px; }
+  .orc-vals { display: flex; gap: 20px; }
+  .orc-val-col .label { font-size: .58rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 2px; }
+  .orc-val-col .value { font-size: 1.1rem; font-weight: 700; }
+  .v-old { color: var(--text-muted); }
+  .v-new { color: var(--accent); }
+  .v-delta { font-size: .8rem; font-weight: 700; }
+  .v-pos { color: var(--success); }
+  .v-neg { color: var(--danger); }
+  .orc-impact { background: rgba(245,158,11,.08); border: 1px solid rgba(245,158,11,.3); border-radius: 7px; padding: 10px 14px; margin-bottom: 14px; }
+  .orc-impact h4 { font-size: .6rem; font-weight: 700; color: #92400e; text-transform: uppercase; letter-spacing: .04em; margin-bottom: 8px; }
+  .dark .orc-impact h4 { color: #fbbf24; }
+  .orc-impact-item { display: flex; justify-content: space-between; padding: 3px 0; border-bottom: 1px solid rgba(0,0,0,.04); font-size: .65rem; }
+  .orc-impact-item:last-child { border-bottom: none; }
+  .orc-req { color: var(--danger); }
+  /* Report */
+  .orc-report-body { padding: 0 !important; }
+  .orc-report-inner { padding: 24px 28px; line-height: 1.75; color: var(--text); font-size: .75rem; }
+  .orc-report-inner h1 { font-size: 1.1rem; font-weight: 700; margin-bottom: 4px; color: var(--text); }
+  .orc-report-inner h2 { font-size: .85rem; font-weight: 700; color: var(--accent); margin: 22px 0 8px; padding-bottom: 5px; border-bottom: 1px solid var(--border); }
+  .orc-report-inner h3 { font-size: .75rem; font-weight: 600; margin: 14px 0 6px; }
+  .orc-report-inner p  { margin-bottom: 10px; }
+  .orc-report-inner ul { padding-left: 18px; margin-bottom: 10px; }
+  .orc-report-inner li { margin-bottom: 4px; }
+  .orc-report-inner table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: .68rem; }
+  .orc-report-inner th { background: var(--accent); color: #fff; padding: 6px 10px; font-size: .62rem; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; text-align: left; }
+  .orc-report-inner td { padding: 6px 10px; border-bottom: 1px solid var(--border); }
+  .orc-report-inner tr:nth-child(even) td { background: var(--surface-h); }
+  .orc-report-inner .d-pos { color: var(--success); font-weight: 700; }
+  .orc-report-inner .d-neg { color: var(--danger); font-weight: 700; }
+  .orc-report-inner .highlight { background: rgba(91,79,232,.07); border-left: 3px solid var(--accent); padding: 10px 14px; border-radius: 0 6px 6px 0; margin: 12px 0; }
+  .orc-report-meta { font-size: .6rem; color: var(--text-muted); margin-bottom: 18px; }
+  @media print {
+    #orcamento-screen, .orc-topbar, .orc-sheet-tabs, .orc-statusbar { display: none !important; }
+    #orc-dlg-report { position: static !important; background: none !important; display: block !important; padding: 0; }
+    .orc-dialog { box-shadow: none; width: 100%; max-width: none; }
+    .orc-dlg-hdr, .orc-dlg-ftr { display: none; }
+    .orc-report-body { overflow: visible !important; max-height: none !important; }
+  }
   </style>
 </head>
 <body>
@@ -673,6 +828,46 @@
      CONFIGURAÇÃO — altere apenas estas constantes
      ══════════════════════════════════════════════════════════ -->
 <script>
+  // ── DARK MODE ────────────────────────────────────────────
+  (function initTheme() {
+    if (localStorage.getItem('theme') === 'dark') {
+      document.documentElement.classList.add('dark');
+      const icon = document.getElementById('theme-icon');
+      if (icon) icon.innerHTML = '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>';
+    }
+  })();
+
+  function toggleTheme() {
+    const dark = document.documentElement.classList.toggle('dark');
+    localStorage.setItem('theme', dark ? 'dark' : 'light');
+    const icon = document.getElementById('theme-icon');
+    if (dark) {
+      icon.innerHTML = '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>';
+    } else {
+      icon.innerHTML = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
+    }
+    _applyThemeToCharts();
+  }
+
+  function _applyThemeToCharts() {
+    const s = getComputedStyle(document.documentElement);
+    const grid  = s.getPropertyValue('--chart-grid').trim();
+    const tick  = s.getPropertyValue('--chart-tick').trim();
+    const label = s.getPropertyValue('--chart-label').trim();
+    const allCharts = [...Object.values(_comercialCharts || {}), ...Object.values(_acordosCharts || {})];
+    allCharts.forEach(chart => {
+      if (!chart || !chart.options) return;
+      const scales = chart.options.scales || {};
+      ['x','y'].forEach(ax => {
+        if (!scales[ax]) return;
+        if (scales[ax].grid)  scales[ax].grid.color  = grid;
+        if (scales[ax].ticks) scales[ax].ticks.color = tick;
+        if (scales[ax].ticks && scales[ax].ticks.font === undefined) scales[ax].ticks.color = tick;
+      });
+      chart.update('none');
+    });
+  }
+
   const CLIENT_ID      = '947271402359-7l02tddp4e9lqmb01ntas22sr0ai1l0c.apps.googleusercontent.com';
   const REDIRECT_URI   = 'https://ignaciogambarra.github.io/teste/';
   const SPREADSHEET_ID = '1rSqAIe70VwrHErvt0rjnYZobqmGy_4ZUt54-MOa5eUM';
@@ -698,11 +893,18 @@
     <span class="nav-pill">Financeiro</span>
     <span class="nav-pill">Comercial</span>
     <span class="nav-pill">Acordos</span>
+    <span class="nav-pill nav-pill-orc" id="pill-orcamento" onclick="toggleOrcamento()">📊 Orçamento</span>
   </nav>
 
   <div class="header-right">
     <span id="header-clock"></span>
     <span id="last-update" style="display:none;"></span>
+
+    <button class="btn btn-theme" id="btn-theme" onclick="toggleTheme()" title="Alternar dark/light mode">
+      <svg id="theme-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+      </svg>
+    </button>
 
     <button id="btn-refresh" class="btn" onclick="loadAll()" disabled>
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -856,12 +1058,12 @@
       <!-- Charts row 1: Canal + UF Rankings -->
       <div class="tv-charts-row">
         <div class="card chart-card">
-          <div class="chart-card-title">Canal de Captação</div>
-          <div class="ranking-list" id="ranking-canal"></div>
+          <div class="chart-card-title">Canal de Captação Closer</div>
+          <div class="ranking-list ranking-list-wide" id="ranking-canal"></div>
         </div>
         <div class="card chart-card">
           <div class="chart-card-title">Contratos por Estado</div>
-          <div class="ranking-list" id="ranking-uf"></div>
+          <div class="ranking-list ranking-list-wide" id="ranking-uf"></div>
         </div>
       </div>
 
@@ -960,6 +1162,122 @@
   </div><!-- /.tv-col-acor -->
 
 </main>
+
+<!-- ══════════════════════════════════════════════════════════
+     MÓDULO ORÇAMENTO — full-screen overlay
+══════════════════════════════════════════════════════════ -->
+<div id="orcamento-screen">
+
+  <!-- Topbar -->
+  <div class="orc-topbar">
+    <button class="orc-back" onclick="toggleOrcamento()">← Voltar ao Dashboard</button>
+    <span class="orc-sep">|</span>
+    <span class="orc-sheet-lbl">Orçamento</span>
+    <span class="orc-sep">›</span>
+    <span id="orc-sheet-name" class="orc-sheet-sub">—</span>
+    <div class="orc-fbar" style="flex:1;margin:0 12px;">
+      <div id="orc-cell-addr" class="orc-cell-addr">—</div>
+      <input id="orc-fbar-inp" class="orc-fbar-input" type="text"
+             placeholder="Selecione uma célula para editar ou ver a fórmula"
+             onkeydown="orcFormulaKeydown(event)">
+    </div>
+    <span id="orc-badge" class="orc-badge-changes" style="display:none">0 alterações</span>
+    <button id="orc-btn-reset" class="orc-btn" onclick="orcResetAll()" style="display:none">↩ Reverter</button>
+    <button class="orc-btn" onclick="orcReloadSheet()" style="margin-left:4px">↺ Recarregar</button>
+    <button class="orc-btn orc-btn-primary" onclick="orcOpenReport()" style="margin-left:4px">✦ Relatório AI</button>
+  </div>
+
+  <!-- Sheet tabs -->
+  <div class="orc-sheet-tabs" id="orc-tabs"></div>
+
+  <!-- Content -->
+  <div class="orc-sheet-area">
+    <div id="orc-loading" class="orc-state">
+      <div class="spin" style="width:28px;height:28px;border-width:3px;margin-bottom:4px;"></div>
+      Carregando planilha de orçamento…
+    </div>
+    <div id="orc-error" class="orc-state" style="display:none">
+      <span style="font-size:1.4rem">⚠</span>
+      <span id="orc-error-msg">Erro ao carregar.</span>
+      <button class="orc-btn" onclick="orcReloadSheet()">Tentar novamente</button>
+    </div>
+    <div class="orc-scroll" id="orc-scroll" style="display:none">
+      <table class="orc-table" id="orc-table">
+        <thead id="orc-thead"></thead>
+        <tbody id="orc-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Status bar -->
+  <div class="orc-statusbar">
+    <span id="orc-status">Pronto</span>
+    <span id="orc-sel-info" style="margin-left:auto"></span>
+  </div>
+</div>
+
+<!-- ── Reason Dialog ── -->
+<div id="orc-dlg-reason" class="orc-overlay" style="display:none">
+  <div class="orc-dialog">
+    <div class="orc-dlg-hdr"><span>📝</span><h3>Justificativa de Alteração</h3></div>
+    <div class="orc-dlg-body">
+      <div id="orc-change-card" class="orc-change-card"></div>
+      <div id="orc-impact-box" class="orc-impact" style="display:none">
+        <h4>Células impactadas em cascata</h4>
+        <div id="orc-impact-list"></div>
+      </div>
+      <div class="orc-field">
+        <label>Categoria da decisão</label>
+        <select id="orc-sel-cat">
+          <option value="corte_despesa">✂ Corte de Despesa</option>
+          <option value="revisao_receita">📈 Revisão de Receita</option>
+          <option value="ajuste_volume">📦 Ajuste de Volume</option>
+          <option value="repricing">💲 Repricing / Preço</option>
+          <option value="capex">🏗 CAPEX / Investimento</option>
+          <option value="headcount">👥 Headcount / RH</option>
+          <option value="estrategico">🎯 Decisão Estratégica</option>
+          <option value="mercado">🌐 Ajuste de Mercado</option>
+          <option value="outro">📌 Outro</option>
+        </select>
+      </div>
+      <div class="orc-field">
+        <label>Justificativa <span class="orc-req">*</span></label>
+        <textarea id="orc-txt-reason" rows="4"
+          placeholder="Descreva o racional desta decisão. Quanto mais detalhado, mais preciso será o relatório para o Conselho Consultivo…"></textarea>
+      </div>
+    </div>
+    <div class="orc-dlg-ftr">
+      <button class="orc-btn" onclick="orcCancelEdit()">Cancelar</button>
+      <button class="orc-btn orc-btn-primary" onclick="orcConfirmEdit()">Confirmar Alteração</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Report Modal ── -->
+<div id="orc-dlg-report" class="orc-overlay" style="display:none">
+  <div class="orc-dialog orc-dialog-xl">
+    <div class="orc-dlg-hdr">
+      <span>📊</span>
+      <h3>Relatório Orçamentário — Análise Comparativa</h3>
+      <button class="orc-btn" onclick="orcCloseReport()" style="margin-left:auto;padding:3px 8px;">✕</button>
+    </div>
+    <div class="orc-dlg-body orc-report-body">
+      <div id="orc-rep-loading" style="display:none;padding:40px;text-align:center;color:var(--text-muted)">
+        <div class="spin" style="width:28px;height:28px;border-width:3px;margin:0 auto 12px;"></div>
+        Analisando com inteligência artificial…
+      </div>
+      <div id="orc-rep-empty" style="display:none;padding:40px;text-align:center;color:var(--text-muted);font-size:.72rem">
+        Nenhuma alteração registrada. Edite indicadores na planilha para gerar o relatório comparativo.
+      </div>
+      <div id="orc-rep-content" class="orc-report-inner"></div>
+    </div>
+    <div class="orc-dlg-ftr">
+      <button class="orc-btn" onclick="orcCloseReport()">Fechar</button>
+      <button class="orc-btn" onclick="orcExportHTML()">⬇ Exportar HTML</button>
+      <button class="orc-btn orc-btn-primary" onclick="window.print()">🖨 Imprimir / PDF</button>
+    </div>
+  </div>
+</div>
 
 <!-- ══════════════════════════ SCRIPT ═══════════════════════ -->
 <script>
@@ -1902,7 +2220,7 @@
     }
 
     // ── renderiza ────────────────────────────────────────────
-    if (colCanal  >= 0) makeRankingHTML('ranking-canal', countBy(colCanal));
+    if (colCloser >= 0) makeRankingHTML('ranking-canal', countBy(colCloser));
     if (colBanco  >= 0) makePie('chart-banco', 'table-banco', 'Banco / Credor', countBy(colBanco));
     if (colConsultor >= 0 && colHonorarios >= 0)
       makeBarConsultor('chart-consultor', sumBy(colConsultor, colHonorarios), countBy(colConsultor), 6);
@@ -2539,6 +2857,532 @@
       if (el) el.textContent = lbl;
     });
   })();
+
+/* ══════════════════════════════════════════════════════════════════════════
+   MÓDULO ORÇAMENTO
+   Reutiliza: accessToken, API_BASE, SPREADSHEET_ID, redirectToGoogle()
+══════════════════════════════════════════════════════════════════════════ */
+
+const ORC_SHEET_ID      = '1rSqAIe70VwrHErvt0rjnYZobqmGy_4ZUt54-MOa5eUM';
+const ORC_TARGET_GID    = 1343684023;
+const ORC_ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages';
+const ORC_MODEL         = 'claude-sonnet-4-6';
+const ORC_KEY_STORE     = 'orcflex_anthropic_key';
+
+let orcState = {
+  spreadsheet:  null,
+  engine:       null,
+  activeSheet:  0,
+  selectedCell: null,
+  changes:      [],
+  pendingEdit:  null,
+  visible:      false
+};
+
+/* ── Toggle orçamento overlay ─────────────────────────────────────────── */
+function toggleOrcamento() {
+  orcState.visible = !orcState.visible;
+  const screen = document.getElementById('orcamento-screen');
+  const pill   = document.getElementById('pill-orcamento');
+  screen.classList.toggle('orc-visible', orcState.visible);
+  pill.classList.toggle('orc-active', orcState.visible);
+
+  if (orcState.visible) {
+    if (!accessToken) { redirectToGoogle(); orcState.visible = false; screen.classList.remove('orc-visible'); pill.classList.remove('orc-active'); return; }
+    if (!orcState.spreadsheet) orcLoadSheet();
+  }
+}
+
+/* ── Load spreadsheet ─────────────────────────────────────────────────── */
+async function orcLoadSheet() {
+  orcSetState('loading');
+  try {
+    const url  = `${API_BASE}/${ORC_SHEET_ID}?includeGridData=true`;
+    const resp = await fetch(url, { headers: { Authorization: `Bearer ${accessToken}` } });
+    if (!resp.ok) { const e = await resp.json().catch(()=>{}); throw new Error(`API ${resp.status}: ${e?.error?.message || resp.statusText}`); }
+    const data = await resp.json();
+    orcState.spreadsheet = data;
+
+    // Target the gid 1343684023 or first sheet
+    const idx = data.sheets.findIndex(s => s.properties.sheetId === ORC_TARGET_GID);
+    orcState.activeSheet = idx >= 0 ? idx : 0;
+
+    orcBuildTabs(data.sheets);
+    orcInitEngine(orcState.activeSheet);
+    orcRender(orcState.activeSheet);
+    document.getElementById('orc-sheet-name').textContent = data.sheets[orcState.activeSheet].properties.title;
+    orcStatus('Planilha carregada');
+  } catch(e) {
+    orcSetState('error', e.message);
+    console.error('[Orçamento]', e);
+  }
+}
+
+function orcReloadSheet() {
+  orcState.spreadsheet = null; orcState.changes = []; orcState.engine = null;
+  orcUpdateBadge(); orcLoadSheet();
+}
+
+/* ── Build sheet tabs ─────────────────────────────────────────────────── */
+function orcBuildTabs(sheets) {
+  const tabs = document.getElementById('orc-tabs');
+  tabs.innerHTML = '';
+  sheets.forEach((sh, i) => {
+    const t = document.createElement('div');
+    t.className = 'orc-tab' + (i === orcState.activeSheet ? ' active' : '');
+    t.textContent = sh.properties.title;
+    t.onclick = () => { orcSwitchSheet(i); };
+    tabs.appendChild(t);
+  });
+}
+
+function orcSwitchSheet(idx) {
+  orcState.activeSheet = idx;
+  document.querySelectorAll('.orc-tab').forEach((t,i) => t.classList.toggle('active', i===idx));
+  orcInitEngine(idx);
+  orcRender(idx);
+  document.getElementById('orc-sheet-name').textContent = orcState.spreadsheet.sheets[idx].properties.title;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   FORMULA ENGINE
+══════════════════════════════════════════════════════════════════════════ */
+class OrcFormulaEngine {
+  constructor() { this.cells = new Map(); this.deps = new Map(); }
+  load(rowData) {
+    this.cells.clear(); this.deps.clear();
+    rowData.forEach((row, r) => {
+      (row.values || []).forEach((cell, c) => {
+        const id  = this.id(r+1, c);
+        const uev = cell.userEnteredValue || {};
+        const ev  = cell.effectiveValue  || {};
+        let value = ev.numberValue ?? ev.stringValue ?? ev.boolValue ?? '';
+        this.cells.set(id, { value, formula: uev.formulaValue||'', original: value, fmt: cell.formattedValue||'', format: cell.userEnteredFormat||{}, row:r+1, col:c });
+      });
+    });
+    this._buildDeps();
+  }
+  id(row, col) { return this._col(col) + row; }
+  _col(n) { let s='', num=n+1; while(num>0){const r=(num-1)%26;s=String.fromCharCode(65+r)+s;num=Math.floor((num-1)/26);} return s; }
+  _colIdx(s) { let n=0; for(const c of s) n=n*26+(c.charCodeAt(0)-64); return n-1; }
+  _extractRefs(f) {
+    const refs=new Set(), re=/\$?([A-Z]+)\$?(\d+)(?::\$?([A-Z]+)\$?(\d+))?/g; let m;
+    while((m=re.exec(f))!==null){
+      if(m[3]){const c1=this._colIdx(m[1]),r1=parseInt(m[2]),c2=this._colIdx(m[3]),r2=parseInt(m[4]);for(let c=c1;c<=c2;c++)for(let r=r1;r<=r2;r++)refs.add(this.id(r,c));}
+      else refs.add(m[1]+m[2]);
+    }
+    return refs;
+  }
+  _buildDeps() {
+    for(const[id,cell]of this.cells){if(!cell.formula)continue;for(const ref of this._extractRefs(cell.formula)){if(!this.deps.has(ref))this.deps.set(ref,new Set());this.deps.get(ref).add(id);}}
+  }
+  get(id) { return this.cells.get(id)?.value ?? 0; }
+  set(id, val) {
+    const cell = this.cells.get(id); if(!cell) return [];
+    cell.value=val; cell.formula='';
+    const affected=[]; this._prop(id,affected,new Set([id])); return affected;
+  }
+  _prop(id, aff, vis) {
+    const deps=this.deps.get(id); if(!deps) return;
+    for(const dep of deps){
+      if(vis.has(dep)) continue; vis.add(dep);
+      const c=this.cells.get(dep); if(!c||!c.formula) continue;
+      try{c.value=this._evalF(c.formula);aff.push({id:dep,value:c.value});}catch{c.value='#ERRO!';aff.push({id:dep,value:'#ERRO!'});}
+      this._prop(dep,aff,vis);
+    }
+  }
+  _evalF(f) { return !f.startsWith('=') ? (isNaN(f)?f:Number(f)) : this._e(f.substring(1).trim()); }
+  _e(x) {
+    x=x.trim(); if(!x) return 0;
+    if(/^IFERROR\s*\(/i.test(x)){const a=this._args(x.replace(/^IFERROR\s*\(/i,'').slice(0,-1));try{return this._e(a[0]);}catch{return this._e(a[1]||'0');}}
+    if(/^IF\s*\(/i.test(x)){const a=this._args(x.replace(/^IF\s*\(/i,'').slice(0,-1));return this._cond(a[0])?this._e(a[1]):this._e(a[2]||'0');}
+    if(/^SUM\s*\(/i.test(x)){return this._args(x.replace(/^SUM\s*\(/i,'').slice(0,-1)).reduce((s,a)=>s+(Number(this._e(a))||0),0);}
+    if(/^AVERAGE\s*\(/i.test(x)){const ns=this._args(x.replace(/^AVERAGE\s*\(/i,'').slice(0,-1)).map(a=>Number(this._e(a))).filter(v=>!isNaN(v));return ns.length?ns.reduce((a,b)=>a+b,0)/ns.length:0;}
+    if(/^MAX\s*\(/i.test(x)){return Math.max(...this._args(x.replace(/^MAX\s*\(/i,'').slice(0,-1)).map(a=>Number(this._e(a))||0));}
+    if(/^MIN\s*\(/i.test(x)){return Math.min(...this._args(x.replace(/^MIN\s*\(/i,'').slice(0,-1)).map(a=>Number(this._e(a))||0));}
+    if(/^ROUND\s*\(/i.test(x)){const a=this._args(x.replace(/^ROUND\s*\(/i,'').slice(0,-1));const d=parseInt(this._e(a[1]||'0'))||0;return Math.round((Number(this._e(a[0]))||0)*10**d)/10**d;}
+    if(/^ABS\s*\(/i.test(x)){return Math.abs(Number(this._e(x.replace(/^ABS\s*\(/i,'').slice(0,-1)))||0);}
+    if(/^INT\s*\(/i.test(x)){return Math.trunc(Number(this._e(x.replace(/^INT\s*\(/i,'').slice(0,-1)))||0);}
+    if(/^\$?[A-Z]+\$?\d+:\$?[A-Z]+\$?\d+$/.test(x)){return Array.from(this._extractRefs('='+x)).reduce((s,r)=>s+(Number(this.get(r))||0),0);}
+    const cm=x.match(/^\$?([A-Z]+)\$?(\d+)$/); if(cm) return this.get(cm[1]+cm[2]);
+    if(x.startsWith('"')&&x.endsWith('"')) return x.slice(1,-1);
+    if(/^-?[\d.]+$/.test(x)) return parseFloat(x);
+    if(/^-?[\d.]+%$/.test(x)) return parseFloat(x)/100;
+    let js=x.replace(/\$?([A-Z]+)\$?(\d+)/g,(_,c,r)=>{const v=this.get(c+r);return(v===''||v===null)?0:Number(v)||0;}).replace(/(\d+(?:\.\d+)?)%/g,'($1/100)').replace(/\^/g,'**');
+    try{return Function('"use strict";return('+js+')')();}catch(e){throw new Error('Err:'+x);}
+  }
+  _cond(x) {
+    x=x.trim();
+    const ops=[['>=', (a,b)=>a>=b],['<=', (a,b)=>a<=b],['<>', (a,b)=>a!=b],['>', (a,b)=>a>b],['<', (a,b)=>a<b],['=', (a,b)=>a==b]];
+    for(const[op,fn] of ops){let d=0;for(let i=0;i<=x.length-op.length;i++){const ch=x[i];if(ch==='(')d++;else if(ch===')')d--;else if(d===0&&x.slice(i,i+op.length)===op){return fn(this._e(x.substring(0,i)),this._e(x.substring(i+op.length)));} }}
+    return Boolean(this._e(x));
+  }
+  _args(str) {
+    const a=[]; let d=0,cur='';
+    for(const ch of str){if(ch==='('||ch==='{'){d++;cur+=ch;}else if(ch===')'||ch==='}'){d--;cur+=ch;}else if(ch===','&&d===0){a.push(cur.trim());cur='';}else cur+=ch;}
+    if(cur.trim())a.push(cur.trim()); return a;
+  }
+}
+
+function orcInitEngine(idx) {
+  const sh = orcState.spreadsheet.sheets[idx];
+  const rd = (sh.data&&sh.data[0]?.rowData) || [];
+  orcState.engine = new OrcFormulaEngine();
+  orcState.engine.load(rd);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   RENDERER
+══════════════════════════════════════════════════════════════════════════ */
+function orcRender(idx) {
+  const sh   = orcState.spreadsheet.sheets[idx];
+  const rd   = (sh.data&&sh.data[0]?.rowData) || [];
+  const eng  = orcState.engine;
+  const head = document.getElementById('orc-thead');
+  const body = document.getElementById('orc-tbody');
+  head.innerHTML = ''; body.innerHTML = '';
+
+  let maxCols = 0;
+  rd.forEach(r => { if(r.values) maxCols = Math.max(maxCols, r.values.length); });
+  maxCols = Math.min(maxCols, 52);
+
+  // Header row
+  const hTr = document.createElement('tr');
+  const corner = document.createElement('th'); corner.textContent=''; hTr.appendChild(corner);
+  for(let c=0;c<maxCols;c++){const th=document.createElement('th');th.textContent=eng._col(c);th.style.minWidth=c===0?'220px':'88px';hTr.appendChild(th);}
+  head.appendChild(hTr);
+
+  // Detect header row (row with month names)
+  const hdrRowIdx = orcDetectHeaderRow(rd);
+
+  // Data rows
+  rd.forEach((row, r) => {
+    const cells = row.values || [];
+    const tr = document.createElement('tr');
+    const rt = orcRowType(cells, r, hdrRowIdx);
+    if(rt) tr.className = rt;
+
+    const numTd = document.createElement('td');
+    numTd.className = 'orc-row-num'; numTd.textContent = r+1; tr.appendChild(numTd);
+
+    for(let c=0;c<maxCols;c++){
+      const cd    = cells[c] || {};
+      const cellId = eng.id(r+1, c);
+      const td    = document.createElement('td');
+      if(c===0) td.classList.add('orc-col-label');
+
+      const {display, isNum, align} = orcFormatCell(cd, eng, cellId);
+      const hasChange  = orcState.changes.some(ch=>ch.cellId===cellId);
+      const hasAffect  = orcState.changes.some(ch=>ch.affected&&ch.affected.some(a=>a.id===cellId));
+      if(hasChange)  td.classList.add('orc-cell-changed');
+      if(hasAffect)  td.classList.add('orc-cell-affected');
+
+      const editable = isNum && !rt?.includes('section');
+      if(editable) td.classList.add('orc-editable');
+
+      const inner = document.createElement('div');
+      inner.className = 'orc-cell' + (align==='right'?' right':align==='center'?' center':'');
+      inner.textContent = display;
+      td.appendChild(inner);
+
+      td.dataset.cellId = cellId; td.dataset.row=r; td.dataset.col=c;
+      td.onclick = (e) => orcCellClick(e, r, c, cellId, cd, editable, display);
+      tr.appendChild(td);
+    }
+    body.appendChild(tr);
+  });
+
+  document.getElementById('orc-scroll').style.display = 'block';
+  document.getElementById('orc-loading').style.display = 'none';
+  document.getElementById('orc-error').style.display = 'none';
+}
+
+function orcDetectHeaderRow(rd) {
+  for(let r=0;r<Math.min(rd.length,5);r++){
+    const cells=rd[r].values||[];
+    let hits=0;
+    const mRe=/^(jan|fev|mar|abr|mai|jun|jul|ago|set|out|nov|dez)/i;
+    cells.forEach(c=>{if(mRe.test(c.formattedValue||''))hits++;});
+    if(hits>=3) return r;
+  }
+  return 0;
+}
+
+function orcRowType(cells, r, hdrIdx) {
+  if(r===hdrIdx) return 'orc-row-header';
+  const first  = cells[0]||{};
+  const fmt    = first.userEnteredFormat||{};
+  const isBold = fmt.textFormat?.bold===true;
+  const bg     = fmt.backgroundColor||{};
+  const darkBg = (bg.red<0.35)&&(bg.blue>0.15||bg.green<0.3);
+  const text   = (first.formattedValue||'').trim().toUpperCase();
+  if(darkBg||(isBold&&(text.includes('RECEITA')||text.includes('DESPESA')||text.includes('EBITDA')||text.includes('RESULTADO')||text.includes('LUCRO')||text.includes('CAIXA')||text.includes('TOTAL GERAL'))))return 'orc-row-section';
+  if(isBold&&(text.startsWith('TOTAL')||text.includes('LUCRO')||text.includes('EBITDA')||text.includes('= ')))return 'orc-row-total';
+  if(isBold) return 'orc-row-subtotal';
+  return '';
+}
+
+function orcFormatCell(cd, eng, cellId) {
+  const ev  = cd.effectiveValue||{};
+  const fmt = (cd.userEnteredFormat||{}).numberFormat||{};
+  const cell= eng.cells.get(cellId);
+  const value = cell ? cell.value : (ev.numberValue ?? ev.stringValue ?? '');
+  let display = cell?.fmt || cd.formattedValue || '';
+  let isNum   = ev.numberValue !== undefined;
+  let align   = isNum ? 'right' : 'left';
+
+  // Re-format if value changed
+  if(cell && cell.value !== cell.original && typeof cell.value==='number'){
+    if(fmt.type==='PERCENT') display=(cell.value*100).toFixed(1)+'%';
+    else if(fmt.type==='CURRENCY'||display.includes('R$')) display=orcBRL(cell.value);
+    else display=orcNum(cell.value);
+  }
+  if(!display&&!ev.numberValue&&!ev.stringValue){display='';isNum=false;align='left';}
+  return {display, isNum, align};
+}
+
+/* ── Cell interaction ─────────────────────────────────────────────────── */
+function orcCellClick(e, row, col, cellId, cd, editable, display) {
+  document.querySelectorAll('.orc-table td.orc-selected').forEach(t=>t.classList.remove('orc-selected'));
+  e.currentTarget.classList.add('orc-selected');
+  orcState.selectedCell = {row, col, cellId};
+  const cell = orcState.engine.cells.get(cellId);
+  document.getElementById('orc-cell-addr').textContent = cellId;
+  document.getElementById('orc-fbar-inp').value = cell?.formula || String(cell?.value ?? display ?? '');
+  const lbl = orcRowLabel(row);
+  document.getElementById('orc-sel-info').textContent = cellId + (lbl?' — '+lbl:'') + (cell?.formula?' [fórmula]':'');
+  orcStatus(editable ? 'Célula editável — pressione Enter para editar' : 'Somente leitura');
+}
+
+function orcFormulaKeydown(e) {
+  if(e.key!=='Enter') return;
+  const cellId = orcState.selectedCell?.cellId; if(!cellId) return;
+  const raw = document.getElementById('orc-fbar-inp').value;
+  orcInitiateEdit(cellId, raw); e.preventDefault();
+}
+
+function orcRowLabel(rowIdx) {
+  const rd=(orcState.spreadsheet?.sheets[orcState.activeSheet]?.data?.[0]?.rowData)||[];
+  return (rd[rowIdx]?.values?.[0]?.formattedValue||'').trim();
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   CHANGE TRACKING
+══════════════════════════════════════════════════════════════════════════ */
+function orcInitiateEdit(cellId, rawVal) {
+  const eng  = orcState.engine;
+  const cell = eng.cells.get(cellId); if(!cell) return;
+  const oldVal = cell.original;
+  let newVal   = orcParseNum(rawVal); if(newVal===null) newVal=rawVal;
+  if(newVal===oldVal) return;
+
+  // Simulate to get affected (without applying)
+  const snap = orcSnap(eng);
+  const affected = eng.set(cellId, newVal);
+  orcRestore(eng, snap);
+
+  orcState.pendingEdit = {cellId, oldVal, newVal, affected};
+  orcShowReasonDlg(cellId, oldVal, newVal, affected);
+}
+
+function orcShowReasonDlg(cellId, oldVal, newVal, affected) {
+  const lbl   = orcRowLabel(orcState.engine.cells.get(cellId)?.row-1 || 0);
+  const delta = (typeof oldVal==='number'&&typeof newVal==='number') ? newVal-oldVal : null;
+  const dpct  = delta!==null&&oldVal!==0 ? (delta/Math.abs(oldVal)*100) : null;
+
+  document.getElementById('orc-change-card').innerHTML = `
+    <div class="orc-cc-lbl">Célula ${cellId}</div>
+    <div class="orc-cc-name">${lbl||cellId}</div>
+    <div class="orc-vals">
+      <div class="orc-val-col"><div class="label">Anterior</div><div class="value v-old">${orcFmt(oldVal)}</div></div>
+      <div class="orc-val-col"><div class="label">Novo</div><div class="value v-new">${orcFmt(newVal)}</div></div>
+      ${delta!==null?`<div class="orc-val-col"><div class="label">Δ Delta</div><div class="v-delta ${delta>=0?'v-pos':'v-neg'}">${delta>=0?'+':''}${orcFmt(delta)}${dpct!==null?` (${dpct>=0?'+':''}${dpct.toFixed(1)}%)`:''}  </div></div>`:''}
+    </div>`;
+
+  const impBox  = document.getElementById('orc-impact-box');
+  const impList = document.getElementById('orc-impact-list');
+  if(affected.length>0){
+    impBox.style.display='block';
+    impList.innerHTML=affected.slice(0,12).map(a=>{
+      const c=orcState.engine.cells.get(a.id);
+      const d=typeof c?.original==='number'&&typeof a.value==='number'?a.value-c.original:null;
+      const l=(orcRowLabel(c?.row-1||0)||'').substring(0,35);
+      return `<div class="orc-impact-item"><span>${a.id}${l?' — '+l:''}</span><span style="font-weight:600;color:${d!==null&&d>=0?'var(--success)':'var(--danger)'};">${orcFmt(c?.original)} → ${orcFmt(a.value)}${d!==null?(d>=0?' (+'+orcFmt(d)+')':' ('+orcFmt(d)+')'):''}  </span></div>`;
+    }).join('') + (affected.length>12?`<div class="orc-impact-item"><span>…e mais ${affected.length-12} células</span></div>`:'');
+  } else impBox.style.display='none';
+
+  document.getElementById('orc-txt-reason').value='';
+  document.getElementById('orc-sel-cat').value='corte_despesa';
+  document.getElementById('orc-dlg-reason').style.display='flex';
+  setTimeout(()=>document.getElementById('orc-txt-reason').focus(),80);
+}
+
+function orcCancelEdit() { orcState.pendingEdit=null; document.getElementById('orc-dlg-reason').style.display='none'; }
+
+function orcConfirmEdit() {
+  const reason = document.getElementById('orc-txt-reason').value.trim();
+  if(!reason){ document.getElementById('orc-txt-reason').style.borderColor='var(--danger)'; document.getElementById('orc-txt-reason').focus(); return; }
+  document.getElementById('orc-txt-reason').style.borderColor='';
+  const {cellId,oldVal,newVal} = orcState.pendingEdit;
+  const cat = document.getElementById('orc-sel-cat').value;
+  const eng = orcState.engine;
+  eng.cells.get(cellId).value=newVal; eng.cells.get(cellId).formula='';
+  const actual = eng.set(cellId, newVal);
+  orcState.changes = orcState.changes.filter(c=>c.cellId!==cellId);
+  orcState.changes.push({cellId, label:orcRowLabel(eng.cells.get(cellId)?.row-1||0)||cellId, oldVal, newVal, affected:actual, reason, category:cat, timestamp:new Date().toISOString()});
+  orcState.pendingEdit=null;
+  document.getElementById('orc-dlg-reason').style.display='none';
+  orcUpdateBadge();
+  orcRender(orcState.activeSheet);
+  orcStatus(`Alteração registrada: ${cellId} ${orcFmt(oldVal)} → ${orcFmt(newVal)}`);
+}
+
+function orcResetAll() {
+  if(!confirm('Reverter todas as alterações ao orçamento original?')) return;
+  if(orcState.engine) for(const[,c]of orcState.engine.cells) c.value=c.original;
+  orcState.changes=[]; orcUpdateBadge(); orcRender(orcState.activeSheet); orcStatus('Alterações revertidas.');
+}
+
+function orcUpdateBadge() {
+  const n=orcState.changes.length;
+  const badge=document.getElementById('orc-badge');
+  const btn=document.getElementById('orc-btn-reset');
+  if(n>0){badge.textContent=n+(n===1?' alteração':' alterações');badge.style.display='inline-block';btn.style.display='inline-block';}
+  else{badge.style.display='none';btn.style.display='none';}
+}
+
+function orcSnap(eng) { const m=new Map(); for(const[id,c]of eng.cells) m.set(id,{value:c.value,formula:c.formula}); return m; }
+function orcRestore(eng, snap) { for(const[id,s]of snap){const c=eng.cells.get(id);if(c){c.value=s.value;c.formula=s.formula;}} }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   AI REPORT
+══════════════════════════════════════════════════════════════════════════ */
+function orcOpenReport() {
+  document.getElementById('orc-dlg-report').style.display='flex';
+  document.getElementById('orc-rep-content').innerHTML='';
+  document.getElementById('orc-rep-loading').style.display='none';
+  document.getElementById('orc-rep-empty').style.display='none';
+  if(orcState.changes.length===0){document.getElementById('orc-rep-empty').style.display='block';return;}
+  orcGenerateReport();
+}
+function orcCloseReport() { document.getElementById('orc-dlg-report').style.display='none'; }
+
+async function orcGenerateReport() {
+  let apiKey = localStorage.getItem(ORC_KEY_STORE)||'';
+  if(!apiKey){
+    apiKey = prompt('Informe sua Anthropic API Key (será salva para uso futuro):\n\nObtida em: console.anthropic.com → API Keys');
+    if(!apiKey){ orcCloseReport(); return; }
+    localStorage.setItem(ORC_KEY_STORE, apiKey.trim());
+  }
+
+  document.getElementById('orc-rep-loading').style.display='block';
+  document.getElementById('orc-rep-content').innerHTML='';
+
+  try {
+    const prompt = orcBuildPrompt();
+    const resp = await fetch(ORC_ANTHROPIC_URL, {
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:ORC_MODEL,max_tokens:2048,messages:[{role:'user',content:prompt}]})
+    });
+    if(!resp.ok){const e=await resp.json().catch(()=>({error:{message:resp.statusText}}));throw new Error(e.error?.message||`Erro ${resp.status}`);}
+    const data=await resp.json();
+    document.getElementById('orc-rep-loading').style.display='none';
+    orcRenderReport(data.content?.[0]?.text||'');
+  } catch(e) {
+    document.getElementById('orc-rep-loading').style.display='none';
+    document.getElementById('orc-rep-content').innerHTML=`<div class="highlight" style="border-color:var(--danger)">Erro ao gerar relatório: ${e.message}</div>`;
+    if(e.message.includes('401')||e.message.includes('invalid')) { localStorage.removeItem(ORC_KEY_STORE); }
+  }
+}
+
+function orcBuildPrompt() {
+  const shName = orcState.spreadsheet?.sheets[orcState.activeSheet]?.properties?.title||'Orçamento';
+  const date   = new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
+  const chgs   = orcState.changes.map((ch,i)=>{
+    const delta = typeof ch.oldVal==='number'&&typeof ch.newVal==='number'?ch.newVal-ch.oldVal:'N/A';
+    const dpct  = typeof delta==='number'&&ch.oldVal!==0?((delta/Math.abs(ch.oldVal))*100).toFixed(1)+'%':'—';
+    return `${i+1}. **${ch.label}** (${ch.cellId})
+   Anterior: ${orcBRL(ch.oldVal)} → Novo: ${orcBRL(ch.newVal)}
+   Delta: ${typeof delta==='number'?(delta>=0?'+':'')+orcBRL(delta):delta} (${dpct})
+   Categoria: ${ch.category} | Células impactadas: ${ch.affected?.length||0}
+   Justificativa: "${ch.reason}"`;
+  }).join('\n\n');
+
+  return `Você é um analista financeiro sênior de controladoria. Gere um relatório executivo em português brasileiro para o Conselho Consultivo do Grupo Flex.
+
+**CONTEXTO:** Planilha: ${shName} | Data: ${date} | ${orcState.changes.length} alteração(ões)
+**FOCO PRINCIPAL DO CONSELHO:** geração de caixa (cash generation) mais efetiva.
+
+**ALTERAÇÕES REALIZADAS:**
+${chgs}
+
+**INSTRUÇÕES:**
+Estruture o relatório em Markdown com:
+1. **Sumário Executivo** — visão geral das mudanças e impacto principal
+2. **Análise Detalhada das Alterações** — impacto operacional e financeiro de cada mudança
+3. **Impacto na Geração de Caixa** — análise específica de EBITDA, fluxo de caixa livre e geração de caixa
+4. **Tabela Comparativa: Orçamento Original × Revisado** — principais indicadores com deltas
+5. **Riscos e Oportunidades** — análise das decisões tomadas
+6. **Recomendações ao Conselho** — máximo 5 recomendações estratégicas
+
+Use linguagem executiva, objetiva. Destaque números. Máximo 1.000 palavras.`;
+}
+
+function orcRenderReport(md) {
+  let h = md
+    .replace(/^### (.+)$/gm,'<h3>$1</h3>')
+    .replace(/^## (.+)$/gm,'<h2>$1</h2>')
+    .replace(/^# (.+)$/gm,'<h1>$1</h1>')
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g,'<em>$1</em>')
+    .replace(/^- (.+)$/gm,'<li>$1</li>')
+    .replace(/^\d+\. (.+)$/gm,'<li>$1</li>')
+    .replace(/\n\n/g,'</p><p>');
+  h = h.replace(/((?:<li>[\s\S]*?<\/li>\n?)+)/g,'<ul>$1</ul>');
+  // Tables
+  const lines = h.split('\n');
+  let inTable=false, tableHtml='', result=[];
+  lines.forEach(ln=>{
+    if(/^\|.+\|$/.test(ln.trim())){
+      if(/^[\s|:-]+$/.test(ln.trim())){return;}
+      const cells=ln.split('|').filter((_,i,a)=>i>0&&i<a.length-1);
+      if(!inTable){inTable=true;tableHtml='<table><tr>'+cells.map(c=>`<th>${c.trim()}</th>`).join('')+'</tr>';}
+      else tableHtml+='<tr>'+cells.map(c=>`<td>${c.trim()}</td>`).join('')+'</tr>';
+    } else {
+      if(inTable){result.push(tableHtml+'</table>');inTable=false;tableHtml='';}
+      result.push(ln);
+    }
+  });
+  if(inTable) result.push(tableHtml+'</table>');
+  h=result.join('\n');
+  h=h.replace(/(\+R\$[\d.,]+)/g,'<span class="d-pos">$1</span>').replace(/(-R\$[\d.,]+)/g,'<span class="d-neg">$1</span>');
+  const meta=`<div class="orc-report-meta">Gerado em ${new Date().toLocaleString('pt-BR')} • ${orcState.changes.length} alteração(ões) • Planilha: ${orcState.spreadsheet?.sheets[orcState.activeSheet]?.properties?.title||'—'}</div>`;
+  document.getElementById('orc-rep-content').innerHTML=meta+'<p>'+h+'</p>';
+}
+
+function orcExportHTML() {
+  const content=document.getElementById('orc-rep-content').innerHTML;
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Relatório Orçamentário — Grupo Flex</title><style>body{font-family:Arial,sans-serif;max-width:900px;margin:40px auto;line-height:1.75;color:#1f2937;font-size:14px;}h1{font-size:22px;color:#1a2744;}h2{font-size:16px;color:#5B4FE8;border-bottom:1px solid #e5e7eb;padding-bottom:5px;margin-top:24px;}h3{font-size:14px;margin-top:16px;}table{width:100%;border-collapse:collapse;margin:14px 0;}th{background:#1a2744;color:#fff;padding:7px 10px;font-size:12px;text-align:left;}td{padding:6px 10px;border-bottom:1px solid #f3f4f6;}tr:nth-child(even)td{background:#f9fafb;}.d-pos{color:#16a34a;font-weight:700;}.d-neg{color:#dc2626;font-weight:700;}</style></head><body>${content}</body></html>`;
+  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([html],{type:'text/html'}));
+  a.download=`relatorio-orcamento-${new Date().toISOString().split('T')[0]}.html`; a.click();
+}
+
+/* ── Utilities ────────────────────────────────────────────────────────── */
+function orcSetState(st, msg) {
+  document.getElementById('orc-loading').style.display = st==='loading'?'flex':'none';
+  document.getElementById('orc-error').style.display   = st==='error'?'flex':'none';
+  document.getElementById('orc-scroll').style.display  = 'none';
+  if(st==='error'&&msg) document.getElementById('orc-error-msg').textContent=msg;
+}
+function orcStatus(msg) { document.getElementById('orc-status').textContent=msg; }
+function orcBRL(n) {
+  if(n===''||n===null||n===undefined||isNaN(n)) return'—';
+  return new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:0,maximumFractionDigits:0}).format(Number(n));
+}
+function orcNum(n) { return new Intl.NumberFormat('pt-BR',{minimumFractionDigits:0,maximumFractionDigits:2}).format(Number(n)); }
+function orcFmt(v) { return typeof v==='number'?orcBRL(v):String(v??'—'); }
+function orcParseNum(s) { const n=parseFloat(String(s).replace(/R\$\s*/g,'').replace(/\./g,'').replace(',','.')); return isNaN(n)?null:n; }
 </script>
 
 <div id="map-tooltip"></div>
