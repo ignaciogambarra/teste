@@ -3044,37 +3044,131 @@ class OrcFormulaEngine {
       this._prop(dep,aff,vis);
     }
   }
-  _evalF(f) { return !f.startsWith('=') ? (isNaN(f)?f:Number(f)) : this._e(f.substring(1).trim()); }
-  _e(x) {
-    x=x.trim(); if(!x) return 0;
-    if(/^IFERROR\s*\(/i.test(x)){const a=this._args(x.replace(/^IFERROR\s*\(/i,'').slice(0,-1));try{return this._e(a[0]);}catch{return this._e(a[1]||'0');}}
-    if(/^IF\s*\(/i.test(x)){const a=this._args(x.replace(/^IF\s*\(/i,'').slice(0,-1));return this._cond(a[0])?this._e(a[1]):this._e(a[2]||'0');}
-    if(/^SUM\s*\(/i.test(x)){return this._args(x.replace(/^SUM\s*\(/i,'').slice(0,-1)).reduce((s,a)=>s+(Number(this._e(a))||0),0);}
-    if(/^AVERAGE\s*\(/i.test(x)){const ns=this._args(x.replace(/^AVERAGE\s*\(/i,'').slice(0,-1)).map(a=>Number(this._e(a))).filter(v=>!isNaN(v));return ns.length?ns.reduce((a,b)=>a+b,0)/ns.length:0;}
-    if(/^MAX\s*\(/i.test(x)){return Math.max(...this._args(x.replace(/^MAX\s*\(/i,'').slice(0,-1)).map(a=>Number(this._e(a))||0));}
-    if(/^MIN\s*\(/i.test(x)){return Math.min(...this._args(x.replace(/^MIN\s*\(/i,'').slice(0,-1)).map(a=>Number(this._e(a))||0));}
-    if(/^ROUND\s*\(/i.test(x)){const a=this._args(x.replace(/^ROUND\s*\(/i,'').slice(0,-1));const d=parseInt(this._e(a[1]||'0'))||0;return Math.round((Number(this._e(a[0]))||0)*10**d)/10**d;}
-    if(/^ABS\s*\(/i.test(x)){return Math.abs(Number(this._e(x.replace(/^ABS\s*\(/i,'').slice(0,-1)))||0);}
-    if(/^INT\s*\(/i.test(x)){return Math.trunc(Number(this._e(x.replace(/^INT\s*\(/i,'').slice(0,-1)))||0);}
-    if(/^\$?[A-Z]+\$?\d+:\$?[A-Z]+\$?\d+$/.test(x)){return Array.from(this._extractRefs('='+x)).reduce((s,r)=>s+(Number(this.get(r))||0),0);}
-    const cm=x.match(/^\$?([A-Z]+)\$?(\d+)$/); if(cm) return this.get(cm[1]+cm[2]);
-    if(x.startsWith('"')&&x.endsWith('"')) return x.slice(1,-1);
-    if(/^-?[\d.]+$/.test(x)) return parseFloat(x);
-    if(/^-?[\d.]+%$/.test(x)) return parseFloat(x)/100;
-    let js=x.replace(/\$?([A-Z]+)\$?(\d+)/g,(_,c,r)=>{const v=this.get(c+r);return(v===''||v===null)?0:Number(v)||0;}).replace(/(\d+(?:\.\d+)?)%/g,'($1/100)').replace(/\^/g,'**');
-    try{return Function('"use strict";return('+js+')')();}catch(e){throw new Error('Err:'+x);}
+  _evalF(f){if(!f||typeof f!=='string')return 0;return !f.startsWith('=')?((f===''||isNaN(f))?f:Number(f)):this._parse(f.substring(1).trim(),0).val;}
+  /* ── Recursive-descent parser ─────────────────────────────────────── */
+  _parse(x,p){return this._pCmp(x,p);}
+  _ws(x,p){while(p<x.length&&x[p]===' ')p++;return p;}
+  _pCmp(x,p){
+    let{val,pos}=this._pAdd(x,p);pos=this._ws(x,pos);
+    for(const[op,fn]of[['>=', (a,b)=>a>=b],['<=', (a,b)=>a<=b],['<>', (a,b)=>a!=b],['>', (a,b)=>a>b],['<', (a,b)=>a<b],['=', (a,b)=>a==b]]){
+      if(x.startsWith(op,pos)){const r=this._pAdd(x,pos+op.length);return{val:fn(val,r.val),pos:r.pos};}
+    }
+    return{val,pos};
   }
-  _cond(x) {
-    x=x.trim();
-    const ops=[['>=', (a,b)=>a>=b],['<=', (a,b)=>a<=b],['<>', (a,b)=>a!=b],['>', (a,b)=>a>b],['<', (a,b)=>a<b],['=', (a,b)=>a==b]];
-    for(const[op,fn] of ops){let d=0;for(let i=0;i<=x.length-op.length;i++){const ch=x[i];if(ch==='(')d++;else if(ch===')')d--;else if(d===0&&x.slice(i,i+op.length)===op){return fn(this._e(x.substring(0,i)),this._e(x.substring(i+op.length)));} }}
-    return Boolean(this._e(x));
+  _pAdd(x,p){
+    let{val,pos}=this._pMul(x,p);pos=this._ws(x,pos);
+    while(pos<x.length&&(x[pos]==='+'||x[pos]==='-')){
+      const op=x[pos];const r=this._pMul(x,pos+1);
+      val=op==='+'?val+r.val:val-r.val;pos=this._ws(x,r.pos);
+    }
+    return{val,pos};
   }
-  _args(str) {
-    const a=[]; let d=0,cur='';
-    for(const ch of str){if(ch==='('||ch==='{'){d++;cur+=ch;}else if(ch===')'||ch==='}'){d--;cur+=ch;}else if(ch===','&&d===0){a.push(cur.trim());cur='';}else cur+=ch;}
-    if(cur.trim())a.push(cur.trim()); return a;
+  _pMul(x,p){
+    let{val,pos}=this._pUnary(x,p);pos=this._ws(x,pos);
+    while(pos<x.length&&(x[pos]==='*'||x[pos]==='/')){
+      const op=x[pos];const r=this._pUnary(x,pos+1);
+      val=op==='*'?val*r.val:val/r.val;pos=this._ws(x,r.pos);
+    }
+    return{val,pos};
   }
+  _pUnary(x,p){
+    p=this._ws(x,p);
+    if(x[p]==='-'){const r=this._pPow(x,p+1);return{val:-r.val,pos:r.pos};}
+    if(x[p]==='+'){return this._pPow(x,p+1);}
+    return this._pPow(x,p);
+  }
+  _pPow(x,p){
+    let{val,pos}=this._pPrimary(x,p);pos=this._ws(x,pos);
+    if(x[pos]==='^'){const r=this._pUnary(x,pos+1);return{val:Math.pow(val,r.val),pos:r.pos};}
+    return{val,pos};
+  }
+  _pPrimary(x,p){
+    p=this._ws(x,p);
+    if(x[p]==='"'){let i=p+1,s='';while(i<x.length&&x[i]!=='"')s+=x[i++];return{val:s,pos:i+1};}
+    if(x[p]==='('){const r=this._parse(x,p+1);const ep=this._ws(x,r.pos);return{val:r.val,pos:ep+1};}
+    const nm=x.slice(p).match(/^[\d.]+/);
+    if(nm){let v=parseFloat(nm[0]);let ep=p+nm[0].length;if(x[ep]==='%'){v/=100;ep++;}return{val:v,pos:ep};}
+    return this._pIdent(x,p);
+  }
+  _pIdent(x,p){
+    p=this._ws(x,p);let i=p;
+    while(i<x.length&&/[\w$]/.test(x[i]))i++;
+    const name=x.slice(p,i);i=this._ws(x,i);
+    if(x[i]==='(')return this._pFunc(name.toUpperCase(),x,i+1);
+    if(x[i]===':'){
+      let j=this._ws(x,i+1),k=j;
+      while(k<x.length&&/[\w$]/.test(x[k]))k++;
+      const ref2=x.slice(j,k);
+      const val=Array.from(this._extractRefs('='+name+':'+ref2)).reduce((s,r)=>s+(Number(this.get(r))||0),0);
+      return{val,pos:k};
+    }
+    const cm=name.match(/^\$?([A-Z]+)\$?(\d+)$/i);
+    if(cm){const v=this.get(cm[1].toUpperCase()+cm[2]);return{val:(v===''||v===null||v===undefined)?0:Number(v)||0,pos:i};}
+    if(name.toUpperCase()==='TRUE')return{val:true,pos:i};
+    if(name.toUpperCase()==='FALSE')return{val:false,pos:i};
+    return{val:0,pos:i};
+  }
+  _pFunc(name,x,p){
+    /* find matching ')' — p is already past the opening '(' */
+    let d=1,i=p;
+    while(i<x.length&&d>0){if(x[i]==='(')d++;else if(x[i]===')'){if(--d===0)break;}i++;}
+    const inner=x.slice(p,i),endPos=i+1;
+    /* lazy eval for IF / IFERROR */
+    if(name==='IF'){
+      const a=this._splitArgs(inner);
+      const cond=this._parse(a[0]||'0',0).val;
+      return{val:cond?this._parse(a[1]||'0',0).val:this._parse(a[2]||'0',0).val,pos:endPos};
+    }
+    if(name==='IFERROR'){
+      const a=this._splitArgs(inner);
+      try{
+        const v=this._parse(a[0]||'0',0).val;
+        return{val:(isFinite(v)||typeof v==='string')?v:this._parse(a[1]||'0',0).val,pos:endPos};
+      }catch{return{val:this._parse(a[1]||'0',0).val,pos:endPos};}
+    }
+    const args=this._splitArgs(inner).map(a=>this._parse(a.trim()||'0',0).val);
+    return{val:this._fn(name,args),pos:endPos};
+  }
+  _fn(name,args){
+    const n=v=>Number(v)||0;
+    switch(name){
+      case 'SUM':       return args.reduce((s,v)=>s+n(v),0);
+      case 'AVERAGE':   {const ns=args.map(n).filter(v=>!isNaN(v));return ns.length?ns.reduce((a,b)=>a+b,0)/ns.length:0;}
+      case 'MAX':       return args.length?Math.max(...args.map(n)):0;
+      case 'MIN':       return args.length?Math.min(...args.map(n)):0;
+      case 'ABS':       return Math.abs(n(args[0]));
+      case 'INT':       return Math.trunc(n(args[0]));
+      case 'ROUND':     {const d=parseInt(args[1])||0;return Math.round(n(args[0])*10**d)/10**d;}
+      case 'ROUNDUP':   {const d=parseInt(args[1])||0;return Math.ceil(n(args[0])*10**d)/10**d;}
+      case 'ROUNDDOWN': {const d=parseInt(args[1])||0;return Math.floor(n(args[0])*10**d)/10**d;}
+      case 'NOT':       return !args[0];
+      case 'AND':       return args.every(Boolean);
+      case 'OR':        return args.some(Boolean);
+      case 'ISBLANK':   return args[0]===''||args[0]===null||args[0]===undefined;
+      case 'ISNUMBER':  return !isNaN(n(args[0]))&&args[0]!=='';
+      case 'COUNTA':    return args.filter(v=>v!==''&&v!=null).length;
+      case 'COUNT':     return args.filter(v=>!isNaN(n(v))&&v!=='').length;
+      case 'LEN':       return String(args[0]??'').length;
+      case 'LEFT':      {const s=String(args[0]??'');const l=parseInt(args[1]??1)||0;return s.slice(0,l);}
+      case 'RIGHT':     {const s=String(args[0]??'');const l=parseInt(args[1]??1)||0;return l?s.slice(-l):s;}
+      case 'MID':       {const s=String(args[0]??'');return s.slice(n(args[1])-1,n(args[1])-1+n(args[2]));}
+      case 'CONCATENATE':case 'CONCAT':return args.map(v=>v??'').join('');
+      case 'TEXT':      return String(args[0]??'');
+      case 'VALUE':     return n(args[0]);
+      default:          return 0;
+    }
+  }
+  _splitArgs(str){
+    const a=[];let d=0,cur='';
+    for(const ch of str){
+      if(ch==='('||ch==='{'){d++;cur+=ch;}
+      else if(ch===')'||ch==='}'){d--;cur+=ch;}
+      else if(ch===','&&d===0){a.push(cur.trim());cur='';}
+      else cur+=ch;
+    }
+    if(cur.trim())a.push(cur.trim());return a;
+  }
+  _args(str){return this._splitArgs(str);}
 }
 
 function orcInitEngine(idx) {
