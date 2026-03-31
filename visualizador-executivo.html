@@ -775,7 +775,23 @@
   /* Dialogs */
   .orc-overlay { position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,.55); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: 16px; }
   .orc-dialog { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; box-shadow: 0 16px 48px rgba(0,0,0,.3); width: 500px; max-width: 100%; max-height: 88vh; display: flex; flex-direction: column; animation: orc-dlg .18s ease; }
-  .orc-dialog-xl { width: 820px; }
+  .orc-dialog-xl { width: 1000px; }
+  /* Expandable groups */
+  .orc-chevron { display:inline-block; width:14px; font-size:.6rem; opacity:.75; transition:transform .15s; flex-shrink:0; }
+  .orc-row-section { cursor:pointer; user-select:none; }
+  .orc-row-section:hover td:not(.orc-row-num) { filter:brightness(1.12); }
+  /* Report sidebar */
+  .orc-rep-sidebar { width:210px; border-right:1px solid var(--border); display:flex; flex-direction:column; flex-shrink:0; }
+  .orc-rep-sidebar-hdr { padding:10px 12px 8px; font-size:.58rem; font-weight:700; color:var(--text-muted); letter-spacing:.05em; text-transform:uppercase; border-bottom:1px solid var(--border); flex-shrink:0; }
+  .orc-rep-list { flex:1; overflow-y:auto; padding:6px; }
+  .orc-rep-item { padding:8px 10px; border-radius:6px; cursor:pointer; position:relative; border:1px solid transparent; margin-bottom:3px; transition:background .1s; }
+  .orc-rep-item:hover { background:var(--surface-h); border-color:var(--border); }
+  .orc-rep-item.active { border-color:var(--accent); background:rgba(91,79,232,.07); }
+  .orc-rep-item-date { font-size:.63rem; font-weight:600; color:var(--text); }
+  .orc-rep-item-info { font-size:.58rem; color:var(--text-muted); margin-top:2px; padding-right:18px; }
+  .orc-rep-del { position:absolute; top:5px; right:5px; background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:.62rem; padding:2px 5px; border-radius:3px; line-height:1; }
+  .orc-rep-del:hover { background:var(--danger); color:#fff; }
+  .orc-rep-main { flex:1; overflow-y:auto; display:flex; flex-direction:column; }
   @keyframes orc-dlg { from { opacity:0; transform:translateY(-10px) scale(.98); } to { opacity:1; transform:none; } }
   .orc-dlg-hdr { padding: 16px 20px 12px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
   .orc-dlg-hdr h3 { font-size: .82rem; font-weight: 700; color: var(--text); flex: 1; }
@@ -1268,18 +1284,27 @@
       <h3>Relatório Orçamentário — Análise Comparativa</h3>
       <button class="orc-btn" onclick="orcCloseReport()" style="margin-left:auto;padding:3px 8px;">✕</button>
     </div>
-    <div class="orc-dlg-body orc-report-body">
-      <div id="orc-rep-loading" style="display:none;padding:40px;text-align:center;color:var(--text-muted)">
-        <div class="spin" style="width:28px;height:28px;border-width:3px;margin:0 auto 12px;"></div>
-        Analisando com inteligência artificial…
+    <div class="orc-dlg-body orc-report-body" style="display:flex;gap:0;padding:0;min-height:500px">
+      <!-- Left sidebar: saved reports -->
+      <div class="orc-rep-sidebar">
+        <div class="orc-rep-sidebar-hdr">Relatórios Salvos</div>
+        <div id="orc-rep-list" class="orc-rep-list"></div>
       </div>
-      <div id="orc-rep-empty" style="display:none;padding:40px;text-align:center;color:var(--text-muted);font-size:.72rem">
-        Nenhuma alteração registrada. Edite indicadores na planilha para gerar o relatório comparativo.
+      <!-- Main content area -->
+      <div class="orc-rep-main">
+        <div id="orc-rep-loading" style="display:none;padding:40px;text-align:center;color:var(--text-muted)">
+          <div class="spin" style="width:28px;height:28px;border-width:3px;margin:0 auto 12px;"></div>
+          Analisando com inteligência artificial…
+        </div>
+        <div id="orc-rep-empty" style="display:none;padding:40px;text-align:center;color:var(--text-muted);font-size:.72rem">
+          Nenhuma alteração registrada. Edite indicadores na planilha para gerar o relatório comparativo.
+        </div>
+        <div id="orc-rep-content" class="orc-report-inner" style="flex:1"></div>
       </div>
-      <div id="orc-rep-content" class="orc-report-inner"></div>
     </div>
     <div class="orc-dlg-ftr">
       <button class="orc-btn" onclick="orcCloseReport()">Fechar</button>
+      <button class="orc-btn" onclick="orcGenerateReport()" id="orc-btn-regen">↻ Gerar Novo Relatório</button>
       <button class="orc-btn" onclick="orcExportHTML()">⬇ Exportar HTML</button>
       <button class="orc-btn orc-btn-primary" onclick="window.print()">🖨 Imprimir / PDF</button>
     </div>
@@ -2872,18 +2897,21 @@
 
 const ORC_SHEET_ID      = '1rSqAIe70VwrHErvt0rjnYZobqmGy_4ZUt54-MOa5eUM';
 const ORC_TARGET_GID    = 1343684023;
-const ORC_ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages';
-const ORC_MODEL         = 'claude-sonnet-4-6';
-const ORC_KEY_STORE     = 'orcflex_anthropic_key';
+const ORC_ANTHROPIC_URL  = 'https://api.anthropic.com/v1/messages';
+const ORC_MODEL          = 'claude-sonnet-4-6';
+const ORC_KEY_STORE      = 'orcflex_anthropic_key';
+const ORC_CHANGES_STORE  = 'orcflex_changes';
+const ORC_REPORTS_STORE  = 'orcflex_reports';
 
 let orcState = {
-  spreadsheet:  null,
-  engine:       null,
-  activeSheet:  0,
-  selectedCell: null,
-  changes:      [],
-  pendingEdit:  null,
-  visible:      false
+  spreadsheet:    null,
+  engine:         null,
+  activeSheet:    0,
+  selectedCell:   null,
+  changes:        [],
+  pendingEdit:    null,
+  visible:        false,
+  expandedGroups: new Set()
 };
 
 /* ── Toggle orçamento overlay ─────────────────────────────────────────── */
@@ -3176,6 +3204,78 @@ function orcInitEngine(idx) {
   const rd = (sh.data&&sh.data[0]?.rowData) || [];
   orcState.engine = new OrcFormulaEngine();
   orcState.engine.load(rd);
+  orcLoadSavedChanges();
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   PERSISTENCE — changes + reports em localStorage
+══════════════════════════════════════════════════════════════════════════ */
+function orcSaveChanges() {
+  try { localStorage.setItem(ORC_CHANGES_STORE, JSON.stringify(orcState.changes)); } catch(e) {}
+}
+
+function orcLoadSavedChanges() {
+  try {
+    const raw = localStorage.getItem(ORC_CHANGES_STORE);
+    if(!raw) return;
+    const saved = JSON.parse(raw);
+    if(!Array.isArray(saved)||saved.length===0) return;
+    orcState.changes = saved;
+    for(const ch of saved) {
+      try { orcState.engine.set(ch.cellId, ch.newVal); } catch(e) {}
+    }
+    orcUpdateBadge();
+    orcStatus(`${saved.length} alteração(ões) restaurada(s) automaticamente.`);
+  } catch(e) { orcState.changes = []; }
+}
+
+function orcSaveReport(md) {
+  try {
+    const reports = orcGetSavedReports();
+    reports.unshift({
+      id: Date.now(),
+      date: new Date().toISOString(),
+      md,
+      changesCount: orcState.changes.length,
+      sheetName: orcState.spreadsheet?.sheets[orcState.activeSheet]?.properties?.title||'—'
+    });
+    localStorage.setItem(ORC_REPORTS_STORE, JSON.stringify(reports.slice(0,15)));
+  } catch(e) {}
+}
+
+function orcGetSavedReports() {
+  try { return JSON.parse(localStorage.getItem(ORC_REPORTS_STORE)||'[]'); } catch { return []; }
+}
+
+function orcDeleteReport(id) {
+  try { localStorage.setItem(ORC_REPORTS_STORE, JSON.stringify(orcGetSavedReports().filter(r=>r.id!==id))); } catch(e) {}
+  orcRefreshReportSidebar();
+}
+
+function orcRefreshReportSidebar() {
+  const list = document.getElementById('orc-rep-list');
+  const reports = orcGetSavedReports();
+  if(!reports.length) {
+    list.innerHTML='<div style="padding:16px 10px;color:var(--text-muted);font-size:.62rem;text-align:center;line-height:1.5">Nenhum relatório salvo.<br>Clique em<br><strong>Gerar Novo Relatório</strong>.</div>';
+    return;
+  }
+  list.innerHTML = reports.map(r=>`
+    <div class="orc-rep-item" id="repitem-${r.id}" onclick="orcShowSavedReport(${r.id})">
+      <button class="orc-rep-del" onclick="event.stopPropagation();orcDeleteReport(${r.id})">✕</button>
+      <div class="orc-rep-item-date">${new Date(r.date).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'})}</div>
+      <div class="orc-rep-item-info">${r.changesCount} alteração(ões)<br>${r.sheetName}</div>
+    </div>`).join('');
+}
+
+function orcShowSavedReport(id) {
+  const report = orcGetSavedReports().find(r=>r.id===id);
+  if(!report) return;
+  document.getElementById('orc-rep-empty').style.display='none';
+  document.getElementById('orc-rep-loading').style.display='none';
+  orcRenderReport(report.md, report.date, report.changesCount, report.sheetName);
+  document.querySelectorAll('.orc-rep-item').forEach(el=>el.classList.remove('active'));
+  const el = document.getElementById('repitem-'+id);
+  if(el) el.classList.add('active');
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
@@ -3224,44 +3324,85 @@ function orcRender(idx) {
     head.appendChild(hdrTr);
   }
 
-  // ── TBODY: todas as linhas de dados (exceto a linha de cabeçalho) ───
+  // ── TBODY: linhas de dados agrupadas por seção ──────────────────────
+  let currentGroupId = null;
   rd.forEach((row, r) => {
-    if(r===hdrRowIdx) return; // já está no thead
+    if(r===hdrRowIdx) return;
 
     const cells = row.values || [];
-    const tr = document.createElement('tr');
-    const rt = orcRowType(cells, r, hdrRowIdx);
-    if(rt) tr.className = rt;
+    const rt    = orcRowType(cells, r, hdrRowIdx);
+    const tr    = document.createElement('tr');
 
-    const numTd = document.createElement('td');
-    numTd.className = 'orc-row-num'; numTd.textContent = r+1; tr.appendChild(numTd);
+    if(rt === 'orc-row-section') {
+      // ── Linha de seção = cabeçalho de grupo colapsável ────────────
+      currentGroupId = `grp-${idx}-${r}`;
+      tr.className = 'orc-row-section';
+      tr.dataset.groupId = currentGroupId;
+      tr.onclick = (e) => { e.stopPropagation(); orcToggleGroup(currentGroupId, tr); };
 
-    for(let c=0;c<maxCols;c++){
-      const cd     = cells[c] || {};
-      const cellId = eng.id(r+1, c);
-      const td     = document.createElement('td');
-      td.style.position = 'relative';
-      if(c===0) td.classList.add('orc-col-label');
+      const numTd = document.createElement('td');
+      numTd.className='orc-row-num'; numTd.textContent=r+1; tr.appendChild(numTd);
 
-      const {display, isNum, align} = orcFormatCell(cd, eng, cellId);
-      const hasChange = orcState.changes.some(ch=>ch.cellId===cellId);
-      const hasAffect = orcState.changes.some(ch=>ch.affected&&ch.affected.some(a=>a.id===cellId));
-      if(hasChange) td.classList.add('orc-cell-changed');
-      if(hasAffect) td.classList.add('orc-cell-affected');
+      for(let c=0;c<maxCols;c++){
+        const cd=cells[c]||{};
+        const cellId=eng.id(r+1,c);
+        const td=document.createElement('td');
+        const {display}=orcFormatCell(cd,eng,cellId);
+        const inner=document.createElement('div');
+        inner.className='orc-cell';
+        if(c===0){
+          const chev=document.createElement('span');
+          chev.className='orc-chevron';
+          chev.id='chev-'+currentGroupId;
+          chev.textContent=orcState.expandedGroups.has(currentGroupId)?'▼':'▶';
+          inner.appendChild(chev);
+          inner.appendChild(document.createTextNode('\u00a0'+display));
+        } else {
+          inner.textContent=display;
+        }
+        td.appendChild(inner);
+        if(c===0) td.classList.add('orc-col-label');
+        td.dataset.cellId=cellId;
+        tr.appendChild(td);
+      }
+    } else {
+      // ── Linha de dados normal ──────────────────────────────────────
+      if(rt) tr.className=rt;
+      if(currentGroupId) {
+        tr.dataset.group=currentGroupId;
+        if(!orcState.expandedGroups.has(currentGroupId)) tr.style.display='none';
+      }
 
-      const editable = isNum && !rt?.includes('section');
-      if(editable) td.classList.add('orc-editable');
+      const numTd=document.createElement('td');
+      numTd.className='orc-row-num'; numTd.textContent=r+1; tr.appendChild(numTd);
 
-      const inner = document.createElement('div');
-      inner.className = 'orc-cell' + (align==='right'?' right':align==='center'?' center':'');
-      inner.textContent = display;
-      td.appendChild(inner);
+      for(let c=0;c<maxCols;c++){
+        const cd     = cells[c] || {};
+        const cellId = eng.id(r+1, c);
+        const td     = document.createElement('td');
+        td.style.position = 'relative';
+        if(c===0) td.classList.add('orc-col-label');
 
-      td.dataset.cellId=cellId; td.dataset.row=r; td.dataset.col=c;
-      td.onclick    = (e) => orcCellClick(e, r, c, cellId, cd, editable, display);
-      if(editable)
-        td.ondblclick = (e) => { e.stopPropagation(); orcStartInlineEdit(td, cellId); };
-      tr.appendChild(td);
+        const {display, isNum, align} = orcFormatCell(cd, eng, cellId);
+        const hasChange = orcState.changes.some(ch=>ch.cellId===cellId);
+        const hasAffect = orcState.changes.some(ch=>ch.affected&&ch.affected.some(a=>a.id===cellId));
+        if(hasChange) td.classList.add('orc-cell-changed');
+        if(hasAffect) td.classList.add('orc-cell-affected');
+
+        const editable = isNum && !rt?.includes('section');
+        if(editable) td.classList.add('orc-editable');
+
+        const inner = document.createElement('div');
+        inner.className = 'orc-cell' + (align==='right'?' right':align==='center'?' center':'');
+        inner.textContent = display;
+        td.appendChild(inner);
+
+        td.dataset.cellId=cellId; td.dataset.row=r; td.dataset.col=c;
+        td.onclick    = (e) => orcCellClick(e, r, c, cellId, cd, editable, display);
+        if(editable)
+          td.ondblclick = (e) => { e.stopPropagation(); orcStartInlineEdit(td, cellId); };
+        tr.appendChild(td);
+      }
     }
     body.appendChild(tr);
   });
@@ -3269,6 +3410,17 @@ function orcRender(idx) {
   document.getElementById('orc-scroll').style.display = 'block';
   document.getElementById('orc-loading').style.display = 'none';
   document.getElementById('orc-error').style.display = 'none';
+}
+
+function orcToggleGroup(groupId, sectionTr) {
+  const wasOpen = orcState.expandedGroups.has(groupId);
+  if(wasOpen) orcState.expandedGroups.delete(groupId);
+  else        orcState.expandedGroups.add(groupId);
+  const chev = document.getElementById('chev-'+groupId);
+  if(chev) chev.textContent = orcState.expandedGroups.has(groupId)?'▼':'▶';
+  document.querySelectorAll(`[data-group="${groupId}"]`).forEach(tr=>{
+    tr.style.display = orcState.expandedGroups.has(groupId) ? '' : 'none';
+  });
 }
 
 function orcDetectHeaderRow(rd) {
@@ -3463,6 +3615,7 @@ function orcConfirmEdit() {
   const actual = eng.set(cellId, newVal);
   orcState.changes = orcState.changes.filter(c=>c.cellId!==cellId);
   orcState.changes.push({cellId, label:orcRowLabel(eng.cells.get(cellId)?.row-1||0)||cellId, oldVal, newVal, affected:actual, reason, category:cat, timestamp:new Date().toISOString()});
+  orcSaveChanges();
   orcState.pendingEdit=null;
   document.getElementById('orc-dlg-reason').style.display='none';
   orcUpdateBadge();
@@ -3473,7 +3626,7 @@ function orcConfirmEdit() {
 function orcResetAll() {
   if(!confirm('Reverter todas as alterações ao orçamento original?')) return;
   if(orcState.engine) for(const[,c]of orcState.engine.cells) c.value=c.original;
-  orcState.changes=[]; orcUpdateBadge(); orcRender(orcState.activeSheet); orcStatus('Alterações revertidas.');
+  orcState.changes=[]; orcSaveChanges(); orcUpdateBadge(); orcRender(orcState.activeSheet); orcStatus('Alterações revertidas.');
 }
 
 function orcUpdateBadge() {
@@ -3495,33 +3648,48 @@ function orcOpenReport() {
   document.getElementById('orc-rep-content').innerHTML='';
   document.getElementById('orc-rep-loading').style.display='none';
   document.getElementById('orc-rep-empty').style.display='none';
-  if(orcState.changes.length===0){document.getElementById('orc-rep-empty').style.display='block';return;}
-  orcGenerateReport();
+  orcRefreshReportSidebar();
+  const reports = orcGetSavedReports();
+  if(reports.length>0) {
+    orcShowSavedReport(reports[0].id);
+  } else if(orcState.changes.length===0) {
+    document.getElementById('orc-rep-empty').style.display='block';
+  } else {
+    orcGenerateReport();
+  }
 }
 function orcCloseReport() { document.getElementById('orc-dlg-report').style.display='none'; }
 
 async function orcGenerateReport() {
+  if(orcState.changes.length===0){document.getElementById('orc-rep-empty').style.display='block';return;}
   let apiKey = localStorage.getItem(ORC_KEY_STORE)||'';
   if(!apiKey){
     apiKey = prompt('Informe sua Anthropic API Key (será salva para uso futuro):\n\nObtida em: console.anthropic.com → API Keys');
-    if(!apiKey){ orcCloseReport(); return; }
+    if(!apiKey){ return; }
     localStorage.setItem(ORC_KEY_STORE, apiKey.trim());
   }
 
   document.getElementById('orc-rep-loading').style.display='block';
   document.getElementById('orc-rep-content').innerHTML='';
+  document.getElementById('orc-rep-empty').style.display='none';
 
   try {
     const prompt = orcBuildPrompt();
     const resp = await fetch(ORC_ANTHROPIC_URL, {
       method:'POST',
       headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-      body:JSON.stringify({model:ORC_MODEL,max_tokens:2048,messages:[{role:'user',content:prompt}]})
+      body:JSON.stringify({model:ORC_MODEL,max_tokens:3000,messages:[{role:'user',content:prompt}]})
     });
     if(!resp.ok){const e=await resp.json().catch(()=>({error:{message:resp.statusText}}));throw new Error(e.error?.message||`Erro ${resp.status}`);}
     const data=await resp.json();
+    const md = data.content?.[0]?.text||'';
     document.getElementById('orc-rep-loading').style.display='none';
-    orcRenderReport(data.content?.[0]?.text||'');
+    orcRenderReport(md, new Date().toISOString(), orcState.changes.length, orcState.spreadsheet?.sheets[orcState.activeSheet]?.properties?.title||'—');
+    orcSaveReport(md);
+    orcRefreshReportSidebar();
+    // Mark first item active
+    const firstItem = document.querySelector('.orc-rep-item');
+    if(firstItem) firstItem.classList.add('active');
   } catch(e) {
     document.getElementById('orc-rep-loading').style.display='none';
     document.getElementById('orc-rep-content').innerHTML=`<div class="highlight" style="border-color:var(--danger)">Erro ao gerar relatório: ${e.message}</div>`;
@@ -3562,7 +3730,13 @@ Estruture o relatório em Markdown com:
 Use linguagem executiva, objetiva. Destaque números. Máximo 1.000 palavras.`;
 }
 
-function orcRenderReport(md) {
+function orcRenderReport(md, dateStr, changesCount, sheetName) {
+  const _date    = dateStr  ? new Date(dateStr).toLocaleString('pt-BR') : new Date().toLocaleString('pt-BR');
+  const _changes = changesCount ?? orcState.changes.length;
+  const _sheet   = sheetName ?? (orcState.spreadsheet?.sheets[orcState.activeSheet]?.properties?.title||'—');
+  _orcRenderReportInner(md, _date, _changes, _sheet);
+}
+function _orcRenderReportInner(md, dateStr, changesCount, sheetName) {
   let h = md
     .replace(/^### (.+)$/gm,'<h3>$1</h3>')
     .replace(/^## (.+)$/gm,'<h2>$1</h2>')
@@ -3590,7 +3764,7 @@ function orcRenderReport(md) {
   if(inTable) result.push(tableHtml+'</table>');
   h=result.join('\n');
   h=h.replace(/(\+R\$[\d.,]+)/g,'<span class="d-pos">$1</span>').replace(/(-R\$[\d.,]+)/g,'<span class="d-neg">$1</span>');
-  const meta=`<div class="orc-report-meta">Gerado em ${new Date().toLocaleString('pt-BR')} • ${orcState.changes.length} alteração(ões) • Planilha: ${orcState.spreadsheet?.sheets[orcState.activeSheet]?.properties?.title||'—'}</div>`;
+  const meta=`<div class="orc-report-meta">Gerado em ${dateStr} • ${changesCount} alteração(ões) • Planilha: ${sheetName}</div>`;
   document.getElementById('orc-rep-content').innerHTML=meta+'<p>'+h+'</p>';
 }
 
