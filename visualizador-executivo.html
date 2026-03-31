@@ -748,6 +748,13 @@
   .orc-table { border-collapse: collapse; table-layout: fixed; min-width: 900px; font-size: .68rem; }
   .orc-table thead th { position: sticky; top: 0; z-index: 20; background: var(--surface-h); padding: 4px 6px; text-align: center; font-weight: 600; color: var(--text-muted); font-size: .6rem; border-right: 1px solid var(--border); border-bottom: 2px solid var(--border); white-space: nowrap; user-select: none; }
   .orc-table thead th:first-child { position: sticky; left: 0; z-index: 30; border-right: 2px solid var(--border); }
+  /* Segunda linha do thead (cabeçalho de dados: DATA, meses...) */
+  .orc-table thead tr:nth-child(2) th,
+  .orc-table thead tr:nth-child(2) td { top: 26px; z-index: 18; background: var(--surface-h); font-weight: 700; font-size: .68rem; color: var(--text); border-bottom: 2px solid var(--border); }
+  .orc-table thead tr:nth-child(2) td.orc-row-num { position: sticky; left: 0; z-index: 28; background: var(--surface-h); }
+  .orc-table thead tr:nth-child(2) th:first-child { top: 26px; z-index: 28; }
+  /* Inline edit input dentro da célula */
+  .orc-inline-inp { width:100%; height:100%; border:none; outline:2px solid var(--accent); background:var(--surface); font:inherit; color:var(--text); padding:2px 6px; text-align:right; position:absolute; inset:0; z-index:10; }
   .orc-table td { border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 0; height: 24px; cursor: cell; position: relative; overflow: hidden; }
   .orc-table td.orc-row-num { position: sticky; left: 0; z-index: 10; background: var(--surface-h) !important; color: var(--text-muted); font-size: .58rem; text-align: center; width: 36px; min-width: 36px; border-right: 2px solid var(--border); cursor: default; }
   .orc-cell { padding: 2px 6px; width: 100%; height: 100%; display: flex; align-items: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; user-select: none; }
@@ -3092,17 +3099,41 @@ function orcRender(idx) {
   rd.forEach(r => { if(r.values) maxCols = Math.max(maxCols, r.values.length); });
   maxCols = Math.min(maxCols, 52);
 
-  // Header row
-  const hTr = document.createElement('tr');
-  const corner = document.createElement('th'); corner.textContent=''; hTr.appendChild(corner);
-  for(let c=0;c<maxCols;c++){const th=document.createElement('th');th.textContent=eng._col(c);th.style.minWidth=c===0?'220px':'88px';hTr.appendChild(th);}
-  head.appendChild(hTr);
-
-  // Detect header row (row with month names)
   const hdrRowIdx = orcDetectHeaderRow(rd);
 
-  // Data rows
+  // ── THEAD linha 1: letras das colunas (A, B, C…) ────────────────────
+  const letterTr = document.createElement('tr');
+  const corner = document.createElement('th'); corner.textContent=''; letterTr.appendChild(corner);
+  for(let c=0;c<maxCols;c++){
+    const th=document.createElement('th');
+    th.textContent=eng._col(c);
+    th.style.minWidth=c===0?'220px':'88px';
+    letterTr.appendChild(th);
+  }
+  head.appendChild(letterTr);
+
+  // ── THEAD linha 2: linha de cabeçalho de dados (DATA, meses…) — FIXO
+  if(hdrRowIdx>=0 && rd[hdrRowIdx]){
+    const cells = rd[hdrRowIdx].values || [];
+    const hdrTr = document.createElement('tr');
+    const numTh = document.createElement('th');
+    numTh.className='orc-row-num'; numTh.textContent=hdrRowIdx+1; hdrTr.appendChild(numTh);
+    for(let c=0;c<maxCols;c++){
+      const cd=cells[c]||{};
+      const th=document.createElement('th');
+      th.style.textAlign=c===0?'left':'center';
+      if(c===0) th.style.paddingLeft='8px';
+      th.textContent=(cd.formattedValue||'');
+      th.title=cd.formattedValue||'';
+      hdrTr.appendChild(th);
+    }
+    head.appendChild(hdrTr);
+  }
+
+  // ── TBODY: todas as linhas de dados (exceto a linha de cabeçalho) ───
   rd.forEach((row, r) => {
+    if(r===hdrRowIdx) return; // já está no thead
+
     const cells = row.values || [];
     const tr = document.createElement('tr');
     const rt = orcRowType(cells, r, hdrRowIdx);
@@ -3112,16 +3143,17 @@ function orcRender(idx) {
     numTd.className = 'orc-row-num'; numTd.textContent = r+1; tr.appendChild(numTd);
 
     for(let c=0;c<maxCols;c++){
-      const cd    = cells[c] || {};
+      const cd     = cells[c] || {};
       const cellId = eng.id(r+1, c);
-      const td    = document.createElement('td');
+      const td     = document.createElement('td');
+      td.style.position = 'relative';
       if(c===0) td.classList.add('orc-col-label');
 
       const {display, isNum, align} = orcFormatCell(cd, eng, cellId);
-      const hasChange  = orcState.changes.some(ch=>ch.cellId===cellId);
-      const hasAffect  = orcState.changes.some(ch=>ch.affected&&ch.affected.some(a=>a.id===cellId));
-      if(hasChange)  td.classList.add('orc-cell-changed');
-      if(hasAffect)  td.classList.add('orc-cell-affected');
+      const hasChange = orcState.changes.some(ch=>ch.cellId===cellId);
+      const hasAffect = orcState.changes.some(ch=>ch.affected&&ch.affected.some(a=>a.id===cellId));
+      if(hasChange) td.classList.add('orc-cell-changed');
+      if(hasAffect) td.classList.add('orc-cell-affected');
 
       const editable = isNum && !rt?.includes('section');
       if(editable) td.classList.add('orc-editable');
@@ -3131,8 +3163,10 @@ function orcRender(idx) {
       inner.textContent = display;
       td.appendChild(inner);
 
-      td.dataset.cellId = cellId; td.dataset.row=r; td.dataset.col=c;
-      td.onclick = (e) => orcCellClick(e, r, c, cellId, cd, editable, display);
+      td.dataset.cellId=cellId; td.dataset.row=r; td.dataset.col=c;
+      td.onclick    = (e) => orcCellClick(e, r, c, cellId, cd, editable, display);
+      if(editable)
+        td.ondblclick = (e) => { e.stopPropagation(); orcStartInlineEdit(td, cellId); };
       tr.appendChild(td);
     }
     body.appendChild(tr);
@@ -3169,21 +3203,33 @@ function orcRowType(cells, r, hdrIdx) {
 }
 
 function orcFormatCell(cd, eng, cellId) {
-  const ev  = cd.effectiveValue||{};
-  const fmt = (cd.userEnteredFormat||{}).numberFormat||{};
-  const cell= eng.cells.get(cellId);
-  const value = cell ? cell.value : (ev.numberValue ?? ev.stringValue ?? '');
-  let display = cell?.fmt || cd.formattedValue || '';
-  let isNum   = ev.numberValue !== undefined;
-  let align   = isNum ? 'right' : 'left';
+  const ev   = cd.effectiveValue||{};
+  const uev  = cd.userEnteredValue||{};
+  const fmt  = (cd.userEnteredFormat||{}).numberFormat||{};
+  const cell = eng.cells.get(cellId);
 
-  // Re-format if value changed
-  if(cell && cell.value !== cell.original && typeof cell.value==='number'){
-    if(fmt.type==='PERCENT') display=(cell.value*100).toFixed(1)+'%';
-    else if(fmt.type==='CURRENCY'||display.includes('R$')) display=orcBRL(cell.value);
-    else display=orcNum(cell.value);
+  // Valor a exibir: prefere o valor atual do engine (pode ter sido alterado)
+  const engineVal = cell?.value;
+  let display = cd.formattedValue || '';
+  // isNum: considera tanto effectiveValue quanto o tipo do engine
+  let isNum = ev.numberValue !== undefined || typeof engineVal === 'number';
+  let align = isNum ? 'right' : 'left';
+
+  // Re-formata se o engine tem valor diferente do original
+  if(cell && cell.value !== cell.original) {
+    const v = cell.value;
+    if(typeof v === 'number') {
+      if(fmt.type==='PERCENT') display=(v*100).toFixed(1)+'%';
+      else if(fmt.type==='CURRENCY'||display.includes('R$')||display.includes('R $')) display=orcBRL(v);
+      else display=orcNum(v);
+    } else {
+      display = String(v??'');
+    }
   }
-  if(!display&&!ev.numberValue&&!ev.stringValue){display='';isNum=false;align='left';}
+
+  if(!display && ev.numberValue===undefined && !ev.stringValue && !uev.formulaValue) {
+    display=''; isNum=false; align='left';
+  }
   return {display, isNum, align};
 }
 
@@ -3194,10 +3240,57 @@ function orcCellClick(e, row, col, cellId, cd, editable, display) {
   orcState.selectedCell = {row, col, cellId};
   const cell = orcState.engine.cells.get(cellId);
   document.getElementById('orc-cell-addr').textContent = cellId;
-  document.getElementById('orc-fbar-inp').value = cell?.formula || String(cell?.value ?? display ?? '');
+  const fbarInp = document.getElementById('orc-fbar-inp');
+  fbarInp.value = cell?.formula || String(cell?.value ?? display ?? '');
   const lbl = orcRowLabel(row);
   document.getElementById('orc-sel-info').textContent = cellId + (lbl?' — '+lbl:'') + (cell?.formula?' [fórmula]':'');
-  orcStatus(editable ? 'Célula editável — pressione Enter para editar' : 'Somente leitura');
+  if(editable) {
+    orcStatus('✏ Clique duplo para editar inline · ou edite na barra acima e pressione Enter');
+    // Foca o formula bar para permitir digitação imediata
+    fbarInp.focus();
+    fbarInp.select();
+  } else {
+    orcStatus('Somente leitura');
+  }
+}
+
+/* ── Inline edit — ativa input direto dentro da célula ───────────────── */
+function orcStartInlineEdit(td, cellId) {
+  // Evita abrir dois inputs
+  if(td.querySelector('.orc-inline-inp')) return;
+
+  const cell = orcState.engine.cells.get(cellId);
+  const currentVal = cell?.value ?? '';
+
+  // Salva o conteúdo original para restaurar se cancelar
+  const innerDiv = td.querySelector('.orc-cell');
+  if(innerDiv) innerDiv.style.visibility = 'hidden';
+
+  const inp = document.createElement('input');
+  inp.type = 'text';
+  inp.className = 'orc-inline-inp';
+  inp.value = typeof currentVal === 'number'
+    ? String(currentVal).replace('.', ',')
+    : String(currentVal);
+  td.appendChild(inp);
+  inp.focus();
+  inp.select();
+
+  const finish = (commit) => {
+    inp.remove();
+    if(innerDiv) innerDiv.style.visibility = '';
+    if(commit) {
+      const raw = inp.value.trim();
+      orcInitiateEdit(cellId, raw);
+    }
+  };
+
+  inp.onkeydown = (e) => {
+    if(e.key === 'Enter')  { e.preventDefault(); finish(true);  }
+    if(e.key === 'Escape') { e.preventDefault(); finish(false); }
+    if(e.key === 'Tab')    { e.preventDefault(); finish(true);  }
+  };
+  inp.onblur = () => finish(true);
 }
 
 function orcFormulaKeydown(e) {
