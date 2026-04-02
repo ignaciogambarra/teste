@@ -708,7 +708,7 @@
      MÓDULO ORÇAMENTO
   ══════════════════════════════════════════════════════════ */
   #orcamento-screen {
-    position: absolute; inset: 0; z-index: 50;
+    position: fixed; top: 40px; left: 0; right: 0; bottom: 0; z-index: 50;
     background: var(--bg); display: none; flex-direction: column; overflow: hidden;
   }
   #orcamento-screen.orc-visible { display: flex; }
@@ -3338,7 +3338,7 @@ function orcRender(idx) {
       currentGroupId = `grp-${idx}-${r}`;
       tr.className = 'orc-row-section';
       tr.dataset.groupId = currentGroupId;
-      tr.onclick = (e) => { e.stopPropagation(); orcToggleGroup(currentGroupId, tr); };
+      tr.onclick = (e) => { e.stopPropagation(); orcToggleGroup(tr.dataset.groupId, tr); };
 
       const numTd = document.createElement('td');
       numTd.className='orc-row-num'; numTd.textContent=r+1; tr.appendChild(numTd);
