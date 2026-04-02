@@ -761,7 +761,15 @@
   .orc-cell.right  { justify-content: flex-end; }
   .orc-cell.center { justify-content: center; }
   .orc-table td.orc-selected { outline: 2px solid var(--accent); outline-offset: -2px; z-index: 5; }
+  .orc-table td.orc-multi-sel { outline: 2px solid #f59e0b; outline-offset: -2px; z-index: 5; background: rgba(245,158,11,.12) !important; }
   .orc-table td.orc-editable:hover .orc-cell { background: rgba(91,79,232,.06); }
+  .orc-btn-zero { padding:3px 10px; border-radius:5px; border:1.5px solid #f59e0b; background:rgba(245,158,11,.12); color:#92400e; font-size:.62rem; font-weight:600; cursor:pointer; white-space:nowrap; }
+  .orc-btn-zero:hover { background:#f59e0b; color:#1c1004; }
+  .dark .orc-btn-zero { color:#fbbf24; }
+  .dark .orc-btn-zero:hover { background:#f59e0b; color:#1c1004; }
+  .orc-bulk-list { max-height:160px; overflow-y:auto; margin-top:8px; font-size:.65rem; }
+  .orc-bulk-row { display:flex; justify-content:space-between; padding:3px 0; border-bottom:1px solid var(--border); }
+  .orc-bulk-row:last-child { border-bottom:none; }
   /* Row type styles */
   .orc-row-section td { background: var(--accent) !important; color: #fff !important; font-weight: 700; font-size: .62rem; letter-spacing: .03em; }
   .orc-row-section td.orc-row-num { background: var(--accent-h) !important; color: rgba(255,255,255,.4) !important; }
@@ -1235,6 +1243,7 @@
   <!-- Status bar -->
   <div class="orc-statusbar">
     <span id="orc-status">Pronto</span>
+    <button id="orc-btn-zero" class="orc-btn-zero" onclick="orcInitiateBulkZero()" style="display:none;margin-left:10px"></button>
     <span id="orc-sel-info" style="margin-left:auto"></span>
   </div>
 </div>
@@ -2908,8 +2917,11 @@ let orcState = {
   engine:         null,
   activeSheet:    0,
   selectedCell:   null,
+  anchorCell:     null,   // for shift+click range
+  selection:      new Set(), // multi-selected cellIds
   changes:        [],
   pendingEdit:    null,
+  pendingBulkEdit:null,   // [{cellId,label,oldVal,newVal,affected}]
   visible:        false,
   expandedGroups: new Set()
 };
@@ -3288,6 +3300,7 @@ function orcRender(idx) {
   const head = document.getElementById('orc-thead');
   const body = document.getElementById('orc-tbody');
   head.innerHTML = ''; body.innerHTML = '';
+  // Re-sync multi-selection after re-render happens below via dataset lookup
 
   let maxCols = 0;
   rd.forEach(r => { if(r.values) maxCols = Math.max(maxCols, r.values.length); });
@@ -3410,6 +3423,8 @@ function orcRender(idx) {
   document.getElementById('orc-scroll').style.display = 'block';
   document.getElementById('orc-loading').style.display = 'none';
   document.getElementById('orc-error').style.display = 'none';
+  // Restore multi-selection highlights after DOM rebuild
+  if(orcState.selection.size>0) orcUpdateSelectionUI();
 }
 
 function orcToggleGroup(groupId, sectionTr) {
@@ -3479,8 +3494,59 @@ function orcFormatCell(cd, eng, cellId) {
   return {display, isNum, align};
 }
 
+/* ── Multi-selection helpers ──────────────────────────────────────────── */
+function orcClearSelection() {
+  orcState.selection.clear();
+  document.querySelectorAll('.orc-table td.orc-multi-sel').forEach(t=>t.classList.remove('orc-multi-sel'));
+  document.getElementById('orc-btn-zero').style.display='none';
+}
+
+function orcUpdateSelectionUI() {
+  // Sync DOM classes to orcState.selection
+  document.querySelectorAll('.orc-table td.orc-multi-sel').forEach(t=>t.classList.remove('orc-multi-sel'));
+  orcState.selection.forEach(id=>{
+    const td = document.querySelector(`.orc-table td[data-cell-id="${id}"]`);
+    if(td) td.classList.add('orc-multi-sel');
+  });
+  const n = orcState.selection.size;
+  const btn = document.getElementById('orc-btn-zero');
+  if(n>=2){ btn.textContent=`⊘ Zerar ${n} células`; btn.style.display='inline-block'; }
+  else btn.style.display='none';
+  if(n>=2) orcStatus(`${n} células selecionadas — Ctrl+clique para adicionar/remover · clique para cancelar`);
+}
+
+function orcSelectRange(r1,c1,r2,c2) {
+  orcState.selection.clear();
+  const minR=Math.min(r1,r2), maxR=Math.max(r1,r2);
+  const minC=Math.min(c1,c2), maxC=Math.max(c1,c2);
+  document.querySelectorAll('.orc-table tbody td.orc-editable').forEach(td=>{
+    const r=parseInt(td.dataset.row), c=parseInt(td.dataset.col);
+    if(r>=minR&&r<=maxR&&c>=minC&&c<=maxC) orcState.selection.add(td.dataset.cellId);
+  });
+}
+
 /* ── Cell interaction ─────────────────────────────────────────────────── */
 function orcCellClick(e, row, col, cellId, cd, editable, display) {
+  // ── Ctrl/Cmd+click: toggle individual cell in multi-selection ─────────
+  if((e.ctrlKey||e.metaKey) && editable) {
+    if(orcState.selection.has(cellId)) orcState.selection.delete(cellId);
+    else                               orcState.selection.add(cellId);
+    orcUpdateSelectionUI();
+    orcState.anchorCell = {row, col, cellId};
+    return;
+  }
+
+  // ── Shift+click: range from anchor to here ────────────────────────────
+  if(e.shiftKey && orcState.anchorCell && editable) {
+    orcSelectRange(orcState.anchorCell.row, orcState.anchorCell.col, row, col);
+    orcUpdateSelectionUI();
+    return;
+  }
+
+  // ── Plain click: clear multi-selection, single-select ─────────────────
+  orcClearSelection();
+  orcState.anchorCell = editable ? {row, col, cellId} : null;
+
   document.querySelectorAll('.orc-table td.orc-selected').forEach(t=>t.classList.remove('orc-selected'));
   e.currentTarget.classList.add('orc-selected');
   orcState.selectedCell = {row, col, cellId};
@@ -3491,10 +3557,8 @@ function orcCellClick(e, row, col, cellId, cd, editable, display) {
   const lbl = orcRowLabel(row);
   document.getElementById('orc-sel-info').textContent = cellId + (lbl?' — '+lbl:'') + (cell?.formula?' [fórmula]':'');
   if(editable) {
-    orcStatus('✏ Clique duplo para editar inline · ou edite na barra acima e pressione Enter');
-    // Foca o formula bar para permitir digitação imediata
-    fbarInp.focus();
-    fbarInp.select();
+    orcStatus('✏ Clique duplo para editar · Ctrl+clique para selecionar múltiplas · Shift+clique para intervalo');
+    fbarInp.focus(); fbarInp.select();
   } else {
     orcStatus('Somente leitura');
   }
@@ -3602,16 +3666,39 @@ function orcShowReasonDlg(cellId, oldVal, newVal, affected) {
   setTimeout(()=>document.getElementById('orc-txt-reason').focus(),80);
 }
 
-function orcCancelEdit() { orcState.pendingEdit=null; document.getElementById('orc-dlg-reason').style.display='none'; }
+function orcCancelEdit() {
+  orcState.pendingEdit=null; orcState.pendingBulkEdit=null;
+  document.getElementById('orc-dlg-reason').style.display='none';
+}
 
 function orcConfirmEdit() {
   const reason = document.getElementById('orc-txt-reason').value.trim();
   if(!reason){ document.getElementById('orc-txt-reason').style.borderColor='var(--danger)'; document.getElementById('orc-txt-reason').focus(); return; }
   document.getElementById('orc-txt-reason').style.borderColor='';
-  const {cellId,oldVal,newVal} = orcState.pendingEdit;
   const cat = document.getElementById('orc-sel-cat').value;
   const eng = orcState.engine;
-  eng.cells.get(cellId).value=newVal; eng.cells.get(cellId).formula='';
+
+  // ── Bulk mode ─────────────────────────────────────────────────────────
+  if(orcState.pendingBulkEdit) {
+    const items = orcState.pendingBulkEdit;
+    const ts = new Date().toISOString();
+    for(const it of items) {
+      const actual = eng.set(it.cellId, it.newVal);
+      orcState.changes = orcState.changes.filter(c=>c.cellId!==it.cellId);
+      orcState.changes.push({cellId:it.cellId, label:it.label, oldVal:it.oldVal, newVal:it.newVal, affected:actual, reason, category:cat, timestamp:ts});
+    }
+    orcSaveChanges();
+    orcState.pendingBulkEdit=null;
+    orcClearSelection();
+    document.getElementById('orc-dlg-reason').style.display='none';
+    orcUpdateBadge();
+    orcRender(orcState.activeSheet);
+    orcStatus(`${items.length} célula(s) zerada(s) com sucesso.`);
+    return;
+  }
+
+  // ── Single mode ───────────────────────────────────────────────────────
+  const {cellId,oldVal,newVal} = orcState.pendingEdit;
   const actual = eng.set(cellId, newVal);
   orcState.changes = orcState.changes.filter(c=>c.cellId!==cellId);
   orcState.changes.push({cellId, label:orcRowLabel(eng.cells.get(cellId)?.row-1||0)||cellId, oldVal, newVal, affected:actual, reason, category:cat, timestamp:new Date().toISOString()});
@@ -3621,6 +3708,43 @@ function orcConfirmEdit() {
   orcUpdateBadge();
   orcRender(orcState.activeSheet);
   orcStatus(`Alteração registrada: ${cellId} ${orcFmt(oldVal)} → ${orcFmt(newVal)}`);
+}
+
+/* ── Bulk zero ────────────────────────────────────────────────────────── */
+function orcInitiateBulkZero() {
+  const eng = orcState.engine;
+  const items = [];
+  for(const cellId of orcState.selection) {
+    const cell = eng.cells.get(cellId); if(!cell) continue;
+    const oldVal = cell.value;
+    if(oldVal===0||oldVal===''||oldVal===null) continue; // skip already-zero
+    items.push({cellId, label:orcRowLabel(cell.row-1)||cellId, oldVal, newVal:0});
+  }
+  if(!items.length){ orcStatus('Todas as células selecionadas já são zero.'); return; }
+  orcState.pendingBulkEdit = items;
+
+  // Build summary card
+  const totalDelta = items.reduce((s,it)=>s+(typeof it.oldVal==='number'?it.oldVal:0),0);
+  document.getElementById('orc-change-card').innerHTML = `
+    <div class="orc-cc-lbl">Zeragem em bloco — ${items.length} célula(s)</div>
+    <div class="orc-cc-name">Definir todas para R$&nbsp;0</div>
+    <div class="orc-vals">
+      <div class="orc-val-col"><div class="label">Células</div><div class="value v-old">${items.length}</div></div>
+      <div class="orc-val-col"><div class="label">Impacto total</div><div class="value v-neg">−${orcBRL(Math.abs(totalDelta))}</div></div>
+    </div>
+    <div class="orc-bulk-list">${items.slice(0,15).map(it=>`
+      <div class="orc-bulk-row">
+        <span style="color:var(--text-muted)">${it.cellId} — ${it.label.substring(0,30)}</span>
+        <span style="font-weight:600">${orcFmt(it.oldVal)} → R$&nbsp;0</span>
+      </div>`).join('')}
+      ${items.length>15?`<div class="orc-bulk-row" style="color:var(--text-muted)">…e mais ${items.length-15} células</div>`:''}
+    </div>`;
+
+  document.getElementById('orc-impact-box').style.display='none';
+  document.getElementById('orc-txt-reason').value='';
+  document.getElementById('orc-sel-cat').value='corte_despesa';
+  document.getElementById('orc-dlg-reason').style.display='flex';
+  setTimeout(()=>document.getElementById('orc-txt-reason').focus(),80);
 }
 
 function orcResetAll() {
