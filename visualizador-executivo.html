@@ -3003,6 +3003,7 @@ async function orcLoadSheetGrid(idx) {
   if (cached) {
     try {
       sheet.data = JSON.parse(cached);
+      await orcLoadCrossReferencedSheets(idx);
       orcInitEngine(idx);
       orcRender(idx);
       document.getElementById('orc-sheet-name').textContent = shName;
@@ -3023,17 +3024,72 @@ async function orcLoadSheetGrid(idx) {
     try { sessionStorage.setItem(cacheKey, JSON.stringify(found.data)); } catch(_) {}
   }
 
+  await orcLoadCrossReferencedSheets(idx);
   orcInitEngine(idx);
   orcRender(idx);
   document.getElementById('orc-sheet-name').textContent = shName;
   orcStatus('Planilha carregada');
 }
 
+/* ── Carrega abas referenciadas por fórmulas cruzadas ─────────────────── */
+async function orcLoadCrossReferencedSheets(idx) {
+  const sheet  = orcState.spreadsheet.sheets[idx];
+  const rd     = (sheet.data?.[0]?.rowData) || [];
+  const sheets = orcState.spreadsheet.sheets;
+
+  // Coleta nomes de abas referenciadas nas fórmulas ('Nome'!Ref ou Nome!Ref)
+  const refNames = new Set();
+  rd.forEach(row => {
+    (row.values||[]).forEach(cell => {
+      const f = cell.userEnteredValue?.formulaValue;
+      if(!f) return;
+      let m;
+      const re1 = /'([^']+)'!/g;
+      while((m=re1.exec(f))!==null) refNames.add(m[1]);
+      const re2 = /(?:^|[^'A-Za-z0-9_])([A-Za-z][A-Za-z0-9_]*)!/g;
+      while((m=re2.exec(f))!==null) refNames.add(m[1]);
+    });
+  });
+
+  for(const refName of refNames) {
+    const refIdx = sheets.findIndex(s => s.properties.title === refName);
+    if(refIdx < 0 || refIdx === idx || sheets[refIdx].data) continue;
+    await orcLoadCrossSheet(refIdx);
+  }
+}
+
+async function orcLoadCrossSheet(idx) {
+  const sheet  = orcState.spreadsheet.sheets[idx];
+  const shName = sheet.properties.title;
+  const shId   = sheet.properties.sheetId;
+  const cacheKey = `orc_${ORC_SHEET_ID}_${shId}`;
+  const cached = sessionStorage.getItem(cacheKey);
+  if(cached) {
+    try { sheet.data = JSON.parse(cached); return; } catch(_) { sessionStorage.removeItem(cacheKey); }
+  }
+  try {
+    orcStatus(`Carregando referências: "${shName}"…`);
+    const url  = `${API_BASE}/${ORC_SHEET_ID}?includeGridData=true&ranges=${encodeURIComponent(shName)}`;
+    const data = await orcApiFetch(url);
+    const found = data.sheets.find(s => s.properties.sheetId === shId);
+    if(found) {
+      sheet.data = found.data;
+      try { sessionStorage.setItem(cacheKey, JSON.stringify(found.data)); } catch(_) {}
+    }
+  } catch(e) {
+    console.warn(`[Orçamento] Não foi possível carregar aba referenciada "${shName}":`, e.message);
+  }
+}
+
 function orcReloadSheet() {
   // Limpa cache da aba atual antes de recarregar
   if (orcState.spreadsheet) {
-    const shId = orcState.spreadsheet.sheets[orcState.activeSheet]?.properties?.sheetId;
-    if (shId) sessionStorage.removeItem(`orc_${ORC_SHEET_ID}_${shId}`);
+    const sh = orcState.spreadsheet;
+    // Limpa cache de TODAS as abas (inclusive as referenciadas)
+    (sh.sheets||[]).forEach(s => {
+      sessionStorage.removeItem(`orc_${ORC_SHEET_ID}_${s.properties.sheetId}`);
+      delete s.data;
+    });
   }
   orcState.spreadsheet = null; orcState.changes = []; orcState.engine = null;
   orcUpdateBadge();
@@ -3248,6 +3304,28 @@ class OrcFormulaEngine {
         return{val:(isFinite(v)||typeof v==='string')?v:this._parse(a[1]||'0',0).val,pos:endPos};
       }catch{return{val:this._parse(a[1]||'0',0).val,pos:endPos};}
     }
+    if(name==='OFFSET'){
+      const a=this._splitArgs(inner);
+      if(a.length<3) return{val:0,pos:endPos};
+      const refStr=a[0].trim().replace(/\s/g,'');
+      let baseRow,baseCol,baseSheet=null;
+      const xm=refStr.match(/^'([^']+)'!\$?([A-Z]+)\$?(\d+)$/i)||refStr.match(/^([A-Za-z0-9_]+)!\$?([A-Z]+)\$?(\d+)$/i);
+      if(xm){baseSheet=xm[1];baseCol=this._colIdx(xm[2].toUpperCase());baseRow=parseInt(xm[3]);}
+      else{const cm=refStr.match(/^\$?([A-Z]+)\$?(\d+)$/i);if(cm){baseCol=this._colIdx(cm[1].toUpperCase());baseRow=parseInt(cm[2]);}else return{val:0,pos:endPos};}
+      const rowOff=Math.round(this._parse(a[1].trim()||'0',0).val);
+      const colOff=Math.round(this._parse(a[2].trim()||'0',0).val);
+      const height=a[3]?Math.max(1,Math.round(this._parse(a[3].trim(),0).val)):1;
+      const width =a[4]?Math.max(1,Math.round(this._parse(a[4].trim(),0).val)):1;
+      const nr=baseRow+rowOff,nc=baseCol+colOff;
+      if(baseSheet){
+        if(height===1&&width===1)return{val:this._xsheetRC(baseSheet,nr-1,nc),pos:endPos};
+        const arr=[];for(let r=0;r<height;r++)for(let c=0;c<width;c++)arr.push(this._xsheetRC(baseSheet,nr-1+r,nc+c));
+        return{val:arr,pos:endPos};
+      }
+      if(height===1&&width===1)return{val:this.get(this.id(nr,nc)),pos:endPos};
+      const arr=[];for(let r=0;r<height;r++)for(let c=0;c<width;c++)arr.push(this.get(this.id(nr+r,nc+c)));
+      return{val:arr,pos:endPos};
+    }
     // Range-aware functions: expand range args to arrays
     const _RANGE_FNS=new Set(['SUM','AVERAGE','MAX','MIN','COUNT','COUNTA','SUMIF','SUMIFS','COUNTIF','COUNTIFS','AVERAGEIF','AVERAGEIFS','SUMPRODUCT','PRODUCT','STDEV','STDEVP','VAR','VARP','LARGE','SMALL','RANK']);
     const rawArgs=this._splitArgs(inner);
@@ -3440,8 +3518,15 @@ class OrcFormulaEngine {
         const idx=rng.findIndex(v=>String(v).toLowerCase()===String(val).toLowerCase());
         return idx>=0?idx+1:0;
       }
-      case 'OFFSET': return 0; // dynamic ref, can't resolve
-      case 'INDIRECT':return 0;
+      case 'INDIRECT':{
+        const ref=String(args[0]||'').trim().replace(/\$/g,'');
+        // 'SheetName'!CellRef
+        const xm=ref.match(/^'([^']+)'!([A-Z]+\d+)$/i)||ref.match(/^([A-Za-z0-9_]+)!([A-Z]+\d+)$/i);
+        if(xm) return n(this._xsheet(xm[1],xm[2].toUpperCase()));
+        const cm=ref.match(/^([A-Z]+)(\d+)$/i);
+        if(cm) return n(this.get(cm[1].toUpperCase()+cm[2]));
+        return 0;
+      }
       case 'ROW':     return n(args[0]);
       case 'COLUMN':  return n(args[0]);
       case 'ROWS':    return Array.isArray(args[0])?args[0].length:1;
@@ -3506,7 +3591,7 @@ class OrcFormulaEngine {
     cells.sort((a,b)=>a.row-b.row||a.col-b.col);
     return cells.map(c=>c.value);
   }
-  /* Cross-sheet value lookup (uses loaded sheets in xSheetData map) */
+  /* Cross-sheet value lookup by cell reference string (e.g. "B5") */
   _xsheet(sheetName,cellRef){
     if(this.xSheetData){
       const m=cellRef.match(/^\$?([A-Z]+)\$?(\d+)$/i);
@@ -3520,6 +3605,14 @@ class OrcFormulaEngine {
       }
     }
     return 0;
+  }
+  /* Cross-sheet value lookup by 0-indexed (row, col) — used by OFFSET */
+  _xsheetRC(sheetName,row0,col0){
+    if(!this.xSheetData) return 0;
+    const rd=this.xSheetData.get(sheetName);
+    if(!rd) return 0;
+    const v=rd[row0]?.values?.[col0]?.effectiveValue;
+    return v?.numberValue??v?.stringValue??v?.boolValue??0;
   }
 }
 
