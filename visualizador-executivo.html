@@ -3040,6 +3040,30 @@ function orcSwitchSheet(idx) {
 /* ══════════════════════════════════════════════════════════════════════════
    FORMULA ENGINE
 ══════════════════════════════════════════════════════════════════════════ */
+/* ── Criterion matcher for SUMIF / COUNTIF etc. ─────────────────────── */
+function orcMatchCrit(val, crit) {
+  if(crit===undefined||crit===null) return false;
+  const s = String(crit);
+  const opM = s.match(/^(>=|<=|<>|<>|!=|>|<|=)\s*(.+)$/);
+  if(opM) {
+    const cv = isNaN(opM[2]) ? opM[2].replace(/^"|"$/g,'') : Number(opM[2]);
+    const nv = Number(val)||0;
+    switch(opM[1]) {
+      case '>':  return nv > Number(cv);
+      case '>=': return nv >= Number(cv);
+      case '<':  return nv < Number(cv);
+      case '<=': return nv <= Number(cv);
+      case '<>': case '!=': return String(val).toLowerCase()!==String(cv).toLowerCase();
+      case '=':  return String(val).toLowerCase()===String(cv).toLowerCase();
+    }
+  }
+  if(s.includes('*')||s.includes('?')) {
+    const re=new RegExp('^'+s.replace(/[.+^${}()|[\]\\]/g,c=>'\\'+c).replace(/\*/g,'.*').replace(/\?/g,'.')+'$','i');
+    return re.test(String(val??''));
+  }
+  return String(val??'').toLowerCase()===String(crit).toLowerCase();
+}
+
 class OrcFormulaEngine {
   constructor() { this.cells = new Map(); this.deps = new Map(); }
   load(rowData) {
@@ -3059,10 +3083,19 @@ class OrcFormulaEngine {
   _col(n) { let s='', num=n+1; while(num>0){const r=(num-1)%26;s=String.fromCharCode(65+r)+s;num=Math.floor((num-1)/26);} return s; }
   _colIdx(s) { let n=0; for(const c of s) n=n*26+(c.charCodeAt(0)-64); return n-1; }
   _extractRefs(f) {
-    const refs=new Set(), re=/\$?([A-Z]+)\$?(\d+)(?::\$?([A-Z]+)\$?(\d+))?/g; let m;
-    while((m=re.exec(f))!==null){
-      if(m[3]){const c1=this._colIdx(m[1]),r1=parseInt(m[2]),c2=this._colIdx(m[3]),r2=parseInt(m[4]);for(let c=c1;c<=c2;c++)for(let r=r1;r<=r2;r++)refs.add(this.id(r,c));}
-      else refs.add(m[1]+m[2]);
+    const refs=new Set();
+    // Strip cross-sheet prefix e.g. 'Sheet'! or Sheet! so the cell refs are still found
+    const clean=f.replace(/'[^']*'!/g,'').replace(/[A-Za-z0-9_ ]+!/g,'');
+    const re=/\$?([A-Z]+)\$?(\d+)(?::\$?([A-Z]+)\$?(\d+))?/gi; let m;
+    while((m=re.exec(clean))!==null){
+      if(m[3]){const c1=this._colIdx(m[1].toUpperCase()),r1=parseInt(m[2]),c2=this._colIdx(m[3].toUpperCase()),r2=parseInt(m[4]);for(let c=c1;c<=c2;c++)for(let r=r1;r<=r2;r++)refs.add(this.id(r,c));}
+      else refs.add(m[1].toUpperCase()+m[2]);
+    }
+    // Whole-column refs like A:A or B:C — add all cells in those columns
+    const colRe=/\$?([A-Z]+):\$?([A-Z]+)/gi;
+    while((m=colRe.exec(clean))!==null){
+      const ci1=this._colIdx(m[1].toUpperCase()),ci2=this._colIdx(m[2].toUpperCase());
+      for(const[id,cell] of this.cells){if(cell.col>=ci1&&cell.col<=ci2)refs.add(id);}
     }
     return refs;
   }
@@ -3124,6 +3157,19 @@ class OrcFormulaEngine {
   }
   _pPrimary(x,p){
     p=this._ws(x,p);
+    // Cross-sheet ref with quoted name: 'Sheet Name'!CellRef
+    if(x[p]==="'"){
+      let i=p+1,sn='';
+      while(i<x.length&&x[i]!=="'")sn+=x[i++];
+      i++; // skip closing '
+      if(x[i]==='!'){
+        i++;
+        let j=i;
+        while(j<x.length&&/[\w$]/.test(x[j]))j++;
+        return{val:this._xsheet(sn,x.slice(i,j)),pos:j};
+      }
+      return{val:sn,pos:i};
+    }
     if(x[p]==='"'){let i=p+1,s='';while(i<x.length&&x[i]!=='"')s+=x[i++];return{val:s,pos:i+1};}
     if(x[p]==='('){const r=this._parse(x,p+1);const ep=this._ws(x,r.pos);return{val:r.val,pos:ep+1};}
     const nm=x.slice(p).match(/^[\d.]+/);
@@ -3135,10 +3181,21 @@ class OrcFormulaEngine {
     while(i<x.length&&/[\w$]/.test(x[i]))i++;
     const name=x.slice(p,i);i=this._ws(x,i);
     if(x[i]==='(')return this._pFunc(name.toUpperCase(),x,i+1);
+    // Unquoted cross-sheet ref: SheetName!CellRef
+    if(x[i]==='!'){
+      let j=i+1;
+      while(j<x.length&&/[\w$]/.test(x[j]))j++;
+      return{val:this._xsheet(name,x.slice(i+1,j)),pos:j};
+    }
     if(x[i]===':'){
       let j=this._ws(x,i+1),k=j;
       while(k<x.length&&/[\w$]/.test(x[k]))k++;
       const ref2=x.slice(j,k);
+      // Whole-column range e.g. A:A — return array for use in SUM context
+      if(!/\d/.test(name)&&!/\d/.test(ref2)){
+        const arr=this._colRangeArr(name,ref2);
+        return{val:arr.reduce((s,v)=>s+(Number(v)||0),0),pos:k,arr};
+      }
       const val=Array.from(this._extractRefs('='+name+':'+ref2)).reduce((s,r)=>s+(Number(this.get(r))||0),0);
       return{val,pos:k};
     }
@@ -3149,53 +3206,235 @@ class OrcFormulaEngine {
     return{val:0,pos:i};
   }
   _pFunc(name,x,p){
-    /* find matching ')' — p is already past the opening '(' */
     let d=1,i=p;
     while(i<x.length&&d>0){if(x[i]==='(')d++;else if(x[i]===')'){if(--d===0)break;}i++;}
     const inner=x.slice(p,i),endPos=i+1;
-    /* lazy eval for IF / IFERROR */
     if(name==='IF'){
       const a=this._splitArgs(inner);
       const cond=this._parse(a[0]||'0',0).val;
       return{val:cond?this._parse(a[1]||'0',0).val:this._parse(a[2]||'0',0).val,pos:endPos};
     }
-    if(name==='IFERROR'){
+    if(name==='IFERROR'||name==='IFNA'){
       const a=this._splitArgs(inner);
       try{
         const v=this._parse(a[0]||'0',0).val;
         return{val:(isFinite(v)||typeof v==='string')?v:this._parse(a[1]||'0',0).val,pos:endPos};
       }catch{return{val:this._parse(a[1]||'0',0).val,pos:endPos};}
     }
-    const args=this._splitArgs(inner).map(a=>this._parse(a.trim()||'0',0).val);
+    // Range-aware functions: expand range args to arrays
+    const _RANGE_FNS=new Set(['SUM','AVERAGE','MAX','MIN','COUNT','COUNTA','SUMIF','SUMIFS','COUNTIF','COUNTIFS','AVERAGEIF','AVERAGEIFS','SUMPRODUCT','PRODUCT','STDEV','STDEVP','VAR','VARP','LARGE','SMALL','RANK']);
+    const rawArgs=this._splitArgs(inner);
+    const args=_RANGE_FNS.has(name)?rawArgs.map(a=>this._evalArg(a.trim())):rawArgs.map(a=>this._parse(a.trim()||'0',0).val);
     return{val:this._fn(name,args),pos:endPos};
   }
   _fn(name,args){
-    const n=v=>Number(v)||0;
+    const n=v=>Number(Array.isArray(v)?v.reduce((s,x)=>s+(Number(x)||0),0):v)||0;
+    const flat=v=>Array.isArray(v)?v.map(x=>Number(x)||0):[];
+    const nums=v=>Array.isArray(v)?v.filter(x=>!isNaN(Number(x))&&x!=='').map(Number):[Number(v)].filter(x=>!isNaN(x));
     switch(name){
-      case 'SUM':       return args.reduce((s,v)=>s+n(v),0);
-      case 'AVERAGE':   {const ns=args.map(n).filter(v=>!isNaN(v));return ns.length?ns.reduce((a,b)=>a+b,0)/ns.length:0;}
-      case 'MAX':       return args.length?Math.max(...args.map(n)):0;
-      case 'MIN':       return args.length?Math.min(...args.map(n)):0;
+      /* ── Arithmetic ──────────────────────────────────────── */
+      case 'SUM':{
+        let s=0;for(const a of args){if(Array.isArray(a))for(const v of a)s+=(Number(v)||0);else s+=(Number(a)||0);}return s;
+      }
+      case 'AVERAGE':{
+        const ns=args.flatMap(a=>Array.isArray(a)?a.map(v=>Number(v)).filter(v=>!isNaN(v)):[Number(a)]).filter(v=>!isNaN(v));
+        return ns.length?ns.reduce((a,b)=>a+b,0)/ns.length:0;
+      }
+      case 'MAX':{const vs=args.flatMap(a=>Array.isArray(a)?a:[a]).map(Number).filter(v=>!isNaN(v));return vs.length?Math.max(...vs):0;}
+      case 'MIN':{const vs=args.flatMap(a=>Array.isArray(a)?a:[a]).map(Number).filter(v=>!isNaN(v));return vs.length?Math.min(...vs):0;}
+      case 'PRODUCT':{
+        let p=1;for(const a of args){if(Array.isArray(a))for(const v of a)p*=(Number(v)||1);else p*=(Number(a)||1);}return p;
+      }
       case 'ABS':       return Math.abs(n(args[0]));
       case 'INT':       return Math.trunc(n(args[0]));
-      case 'ROUND':     {const d=parseInt(args[1])||0;return Math.round(n(args[0])*10**d)/10**d;}
-      case 'ROUNDUP':   {const d=parseInt(args[1])||0;return Math.ceil(n(args[0])*10**d)/10**d;}
-      case 'ROUNDDOWN': {const d=parseInt(args[1])||0;return Math.floor(n(args[0])*10**d)/10**d;}
-      case 'NOT':       return !args[0];
-      case 'AND':       return args.every(Boolean);
-      case 'OR':        return args.some(Boolean);
+      case 'TRUNC':     {const d=parseInt(args[1]??0);const f=10**d;return Math.trunc(n(args[0])*f)/f;}
+      case 'ROUND':     {const d=parseInt(args[1]??0);return Math.round(n(args[0])*10**d)/10**d;}
+      case 'ROUNDUP':   {const d=parseInt(args[1]??0);return Math.ceil(n(args[0])*10**d)/10**d;}
+      case 'ROUNDDOWN': {const d=parseInt(args[1]??0);return Math.floor(n(args[0])*10**d)/10**d;}
+      case 'FLOOR':     {const sig=n(args[1]||1);return sig?Math.floor(n(args[0])/sig)*sig:0;}
+      case 'CEILING':   {const sig=n(args[1]||1);return sig?Math.ceil(n(args[0])/sig)*sig:0;}
+      case 'MOD':       {const div=n(args[1]);return div?n(args[0])%div:0;}
+      case 'POWER':case 'POW': return Math.pow(n(args[0]),n(args[1]));
+      case 'SQRT':      return Math.sqrt(Math.abs(n(args[0])));
+      case 'LOG':       return Math.log(n(args[0]))/Math.log(n(args[1]||10));
+      case 'LOG10':     return Math.log10(n(args[0]));
+      case 'LN':        return Math.log(n(args[0]));
+      case 'EXP':       return Math.exp(n(args[0]));
+      case 'PI':        return Math.PI;
+      case 'SIGN':      {const v=n(args[0]);return v>0?1:v<0?-1:0;}
+      /* ── Stats ───────────────────────────────────────────── */
+      case 'COUNT':{let c=0;for(const a of args){if(Array.isArray(a))for(const v of a){if(!isNaN(Number(v))&&v!=='')c++;}else if(!isNaN(Number(a))&&a!=='')c++;}return c;}
+      case 'COUNTA':{let c=0;for(const a of args){if(Array.isArray(a))for(const v of a){if(v!==''&&v!==null&&v!==undefined)c++;}else if(a!==''&&a!==null&&a!==undefined)c++;}return c;}
+      case 'LARGE':{const vs=args[0] instanceof Array?args[0].map(Number).filter(v=>!isNaN(v)):[];vs.sort((a,b)=>b-a);return vs[n(args[1])-1]??0;}
+      case 'SMALL':{const vs=args[0] instanceof Array?args[0].map(Number).filter(v=>!isNaN(v)):[];vs.sort((a,b)=>a-b);return vs[n(args[1])-1]??0;}
+      case 'STDEV':case 'STDEVP':{
+        const ns=args.flatMap(a=>Array.isArray(a)?a:[a]).map(Number).filter(v=>!isNaN(v));
+        if(ns.length<2)return 0;const avg=ns.reduce((a,b)=>a+b,0)/ns.length;
+        return Math.sqrt(ns.reduce((s,v)=>s+(v-avg)**2,0)/(name==='STDEV'?ns.length-1:ns.length));
+      }
+      case 'VAR':case 'VARP':{
+        const ns=args.flatMap(a=>Array.isArray(a)?a:[a]).map(Number).filter(v=>!isNaN(v));
+        if(ns.length<2)return 0;const avg=ns.reduce((a,b)=>a+b,0)/ns.length;
+        return ns.reduce((s,v)=>s+(v-avg)**2,0)/(name==='VAR'?ns.length-1:ns.length);
+      }
+      case 'RANK':{
+        const v=n(args[0]);const rng=Array.isArray(args[1])?args[1].map(Number):[n(args[1])];
+        const order=n(args[2]);const sorted=[...rng].sort((a,b)=>order?a-b:b-a);
+        return sorted.indexOf(v)+1||0;
+      }
+      /* ── Conditional aggregates ──────────────────────────── */
+      case 'SUMIF':{
+        const range=Array.isArray(args[0])?args[0]:[args[0]];
+        const crit=args[1];
+        const sumR=Array.isArray(args[2])?args[2]:(args[2]!==undefined?[args[2]]:range);
+        return range.reduce((s,v,i)=>orcMatchCrit(v,crit)?s+(Number(sumR[i]??0)||0):s,0);
+      }
+      case 'SUMIFS':{
+        const sumR=Array.isArray(args[0])?args[0]:[args[0]];
+        return sumR.reduce((s,sv,i)=>{
+          for(let j=1;j<args.length-1;j+=2){
+            const cr=Array.isArray(args[j])?args[j]:[args[j]];
+            if(!orcMatchCrit(cr[i],args[j+1]))return s;
+          }
+          return s+(Number(sv)||0);
+        },0);
+      }
+      case 'COUNTIF':{
+        const range=Array.isArray(args[0])?args[0]:[args[0]];
+        return range.filter(v=>orcMatchCrit(v,args[1])).length;
+      }
+      case 'COUNTIFS':{
+        const ranges=[];
+        for(let j=0;j<args.length;j+=2)ranges.push({r:Array.isArray(args[j])?args[j]:[args[j]],c:args[j+1]});
+        const len=ranges[0]?.r.length||0;let count=0;
+        for(let i=0;i<len;i++){if(ranges.every(({r,c})=>orcMatchCrit(r[i],c)))count++;}
+        return count;
+      }
+      case 'AVERAGEIF':{
+        const range=Array.isArray(args[0])?args[0]:[args[0]];
+        const sumR=Array.isArray(args[2])?args[2]:(args[2]!==undefined?[args[2]]:range);
+        const vs=range.reduce((a,v,i)=>orcMatchCrit(v,args[1])?[...a,Number(sumR[i]??0)||0]:a,[]);
+        return vs.length?vs.reduce((a,b)=>a+b,0)/vs.length:0;
+      }
+      case 'AVERAGEIFS':{
+        const sumR=Array.isArray(args[0])?args[0]:[args[0]];
+        const vs=sumR.filter((_,i)=>{
+          for(let j=1;j<args.length-1;j+=2){const cr=Array.isArray(args[j])?args[j]:[args[j]];if(!orcMatchCrit(cr[i],args[j+1]))return false;}
+          return true;
+        }).map(Number);
+        return vs.length?vs.reduce((a,b)=>a+b,0)/vs.length:0;
+      }
+      case 'SUMPRODUCT':{
+        if(!args.length)return 0;
+        const arrs=args.map(a=>Array.isArray(a)?a.map(v=>Number(v)||0):[Number(a)||0]);
+        const len=Math.max(...arrs.map(a=>a.length));
+        let sum=0;
+        for(let i=0;i<len;i++){let p=1;for(const a of arrs)p*=(a[i]??0);sum+=p;}
+        return sum;
+      }
+      /* ── Logic ───────────────────────────────────────────── */
+      case 'NOT':     return !args[0];
+      case 'AND':     return args.flatMap(a=>Array.isArray(a)?a:[a]).every(Boolean);
+      case 'OR':      return args.flatMap(a=>Array.isArray(a)?a:[a]).some(Boolean);
+      case 'XOR':     return args.flatMap(a=>Array.isArray(a)?a:[a]).filter(Boolean).length%2===1;
+      case 'TRUE':    return true;
+      case 'FALSE':   return false;
+      case 'IF':      return args[0]?(args[1]??0):(args[2]??0);
+      case 'IFS':{
+        for(let i=0;i<args.length-1;i+=2){if(args[i])return args[i+1]??0;}return 0;
+      }
+      case 'SWITCH':{
+        const val=args[0];
+        for(let i=1;i<args.length-1;i+=2){if(args[i]==val)return args[i+1]??0;}
+        return args.length%2===0?args[args.length-1]:0;
+      }
+      case 'CHOOSE':{const idx=parseInt(n(args[0]));return args[idx]??0;}
+      /* ── Info ────────────────────────────────────────────── */
       case 'ISBLANK':   return args[0]===''||args[0]===null||args[0]===undefined;
-      case 'ISNUMBER':  return !isNaN(n(args[0]))&&args[0]!=='';
-      case 'COUNTA':    return args.filter(v=>v!==''&&v!=null).length;
-      case 'COUNT':     return args.filter(v=>!isNaN(n(v))&&v!=='').length;
-      case 'LEN':       return String(args[0]??'').length;
-      case 'LEFT':      {const s=String(args[0]??'');const l=parseInt(args[1]??1)||0;return s.slice(0,l);}
-      case 'RIGHT':     {const s=String(args[0]??'');const l=parseInt(args[1]??1)||0;return l?s.slice(-l):s;}
-      case 'MID':       {const s=String(args[0]??'');return s.slice(n(args[1])-1,n(args[1])-1+n(args[2]));}
-      case 'CONCATENATE':case 'CONCAT':return args.map(v=>v??'').join('');
-      case 'TEXT':      return String(args[0]??'');
-      case 'VALUE':     return n(args[0]);
-      default:          return 0;
+      case 'ISNUMBER':  {const v=args[0];return v!==''&&v!==null&&v!==undefined&&!isNaN(Number(v));}
+      case 'ISTEXT':    return typeof args[0]==='string'&&args[0]!=='';
+      case 'ISERROR':   return false;
+      case 'ISERR':     return false;
+      case 'ISNA':      return false;
+      case 'NA':        return 0;
+      case 'N':         return n(args[0]);
+      case 'TYPE':      {const v=args[0];return typeof v==='number'?1:typeof v==='string'?2:typeof v==='boolean'?4:64;}
+      /* ── Text ────────────────────────────────────────────── */
+      case 'LEN':     return String(args[0]??'').length;
+      case 'LEFT':    {const s=String(args[0]??'');const l=parseInt(args[1]??1)||0;return s.slice(0,l);}
+      case 'RIGHT':   {const s=String(args[0]??'');const l=parseInt(args[1]??1)||0;return l?s.slice(-l):s;}
+      case 'MID':     {const s=String(args[0]??'');const st=n(args[1])-1;return s.slice(st,st+n(args[2]));}
+      case 'LOWER':   return String(args[0]??'').toLowerCase();
+      case 'UPPER':   return String(args[0]??'').toUpperCase();
+      case 'PROPER':  return String(args[0]??'').replace(/\b\w/g,c=>c.toUpperCase());
+      case 'TRIM':    return String(args[0]??'').trim().replace(/\s+/g,' ');
+      case 'CLEAN':   return String(args[0]??'').replace(/[\x00-\x1F]/g,'');
+      case 'REPT':    return String(args[0]??'').repeat(Math.max(0,parseInt(n(args[1]))));
+      case 'SUBSTITUTE':{const s=String(args[0]??'');const old=String(args[1]??'');const nw=String(args[2]??'');return args[3]!==undefined?s.split(old).reduce((a,p,i)=>a+(i>0?(i===n(args[3])?nw:old):'')+p,''):s.split(old).join(nw);}
+      case 'REPLACE':  {const s=String(args[0]??'');return s.slice(0,n(args[1])-1)+String(args[3]??'')+s.slice(n(args[1])-1+n(args[2]));}
+      case 'FIND':    {const idx=String(args[1]??'').indexOf(String(args[0]??''),args[2]?n(args[2])-1:0);return idx>=0?idx+1:0;}
+      case 'SEARCH':  {const idx=String(args[1]??'').toLowerCase().indexOf(String(args[0]??'').toLowerCase(),args[2]?n(args[2])-1:0);return idx>=0?idx+1:0;}
+      case 'CONCATENATE':case 'CONCAT':case 'TEXTJOIN':{
+        if(name==='TEXTJOIN'){const delim=String(args[0]??'');const ignore=args[1];return args.slice(2).flatMap(a=>Array.isArray(a)?a:[a]).filter(v=>!(ignore&&(v===''||v===null||v===undefined))).join(delim);}
+        return args.flatMap(a=>Array.isArray(a)?a:[a]).map(v=>v??'').join('');
+      }
+      case 'TEXT':    return String(args[0]??'');
+      case 'VALUE':   return n(args[0]);
+      case 'CHAR':    return String.fromCharCode(n(args[0]));
+      case 'CODE':    return String(args[0]??'').charCodeAt(0)||0;
+      case 'EXACT':   return String(args[0]??'')===String(args[1]??'');
+      case 'NUMBERVALUE':{const s=String(args[0]??'').replace(',','.');return isNaN(parseFloat(s))?0:parseFloat(s);}
+      /* ── Date ────────────────────────────────────────────── */
+      case 'TODAY':   return Math.floor((Date.now()-new Date(1899,11,30))/86400000);
+      case 'NOW':     return (Date.now()-new Date(1899,11,30).getTime())/86400000;
+      case 'DATE':    {const d=new Date(n(args[0]),n(args[1])-1,n(args[2]));return Math.floor((d-new Date(1899,11,30))/86400000);}
+      case 'YEAR':    {const d=new Date(1899,11,30);d.setDate(d.getDate()+n(args[0]));return d.getFullYear();}
+      case 'MONTH':   {const d=new Date(1899,11,30);d.setDate(d.getDate()+n(args[0]));return d.getMonth()+1;}
+      case 'DAY':     {const d=new Date(1899,11,30);d.setDate(d.getDate()+n(args[0]));return d.getDate();}
+      case 'WEEKDAY': {const d=new Date(1899,11,30);d.setDate(d.getDate()+n(args[0]));const w=d.getDay();return args[1]?n(args[1])===2?w===0?7:w:w+1:w+1;}
+      case 'EOMONTH': {const d=new Date(1899,11,30);d.setDate(d.getDate()+n(args[0]));d.setMonth(d.getMonth()+1+n(args[1]),0);return Math.floor((d-new Date(1899,11,30))/86400000);}
+      case 'EDATE':   {const d=new Date(1899,11,30);d.setDate(d.getDate()+n(args[0]));d.setMonth(d.getMonth()+n(args[1]));return Math.floor((d-new Date(1899,11,30))/86400000);}
+      case 'DAYS':    return n(args[0])-n(args[1]);
+      case 'NETWORKDAYS':return n(args[0])-n(args[1]); // simplified
+      /* ── Lookup ──────────────────────────────────────────── */
+      case 'VLOOKUP':{
+        const val=args[0],tbl=Array.isArray(args[1])?args[1]:[],col=n(args[2])-1,exact=args[3]===false||args[3]===0;
+        // tbl is flat array from range, need to reconstruct rows
+        // Without knowing ncols we approximate — skip VLOOKUP for now
+        return 0;
+      }
+      case 'INDEX':{
+        const arr=args[0],row=n(args[1]),col=n(args[2]);
+        if(!Array.isArray(arr))return n(arr);
+        return Number(arr[(row-1)+(col>0?col-1:0)])||0;
+      }
+      case 'MATCH':{
+        const val=args[0],rng=Array.isArray(args[1])?args[1]:[];
+        const idx=rng.findIndex(v=>String(v).toLowerCase()===String(val).toLowerCase());
+        return idx>=0?idx+1:0;
+      }
+      case 'OFFSET': return 0; // dynamic ref, can't resolve
+      case 'INDIRECT':return 0;
+      case 'ROW':     return n(args[0]);
+      case 'COLUMN':  return n(args[0]);
+      case 'ROWS':    return Array.isArray(args[0])?args[0].length:1;
+      case 'COLUMNS': return 1;
+      /* ── Financial ───────────────────────────────────────── */
+      case 'PMT':{
+        const rate=n(args[0]),nper=n(args[1]),pv=n(args[2]),fv=n(args[3]||0),type=n(args[4]||0);
+        if(rate===0)return-(pv+fv)/nper;
+        const q=Math.pow(1+rate,nper);
+        return-(pv*q+fv)*rate/(q-1)/(1+type*rate);
+      }
+      case 'NPV':{
+        const rate=n(args[0]);return args.slice(1).reduce((s,v,i)=>s+n(v)/Math.pow(1+rate,i+1),0);
+      }
+      case 'FV':{
+        const rate=n(args[0]),nper=n(args[1]),pmt=n(args[2]),pv=n(args[3]||0),type=n(args[4]||0);
+        if(rate===0)return-pv-pmt*nper;
+        const q=Math.pow(1+rate,nper);return-pv*q-pmt*(1+rate*type)*(q-1)/rate;
+      }
+      default: return 0;
     }
   }
   _splitArgs(str){
@@ -3209,12 +3448,64 @@ class OrcFormulaEngine {
     if(cur.trim())a.push(cur.trim());return a;
   }
   _args(str){return this._splitArgs(str);}
+  /* Evaluate an argument as either a scalar or an array (for range args) */
+  _evalArg(a){
+    if(!a) return 0;
+    // 'Sheet'!CellRef or 'Sheet'!Range
+    const xsM=a.match(/^'([^']*)'!(.+)$/i);
+    if(xsM){
+      const rangeM=xsM[2].match(/^\$?([A-Z]+)\$?(\d+):\$?([A-Z]+)\$?(\d+)$/i);
+      if(rangeM)return this._rangeToArray(rangeM[1],parseInt(rangeM[2]),rangeM[3],parseInt(rangeM[4]));
+      return this._xsheet(xsM[1],xsM[2]);
+    }
+    // Range A1:B10
+    const rangeM=a.match(/^\$?([A-Z]+)\$?(\d+):\$?([A-Z]+)\$?(\d+)$/i);
+    if(rangeM)return this._rangeToArray(rangeM[1],parseInt(rangeM[2]),rangeM[3],parseInt(rangeM[4]));
+    // Whole-column A:A
+    const colM=a.match(/^\$?([A-Z]+):\$?([A-Z]+)$/i);
+    if(colM)return this._colRangeArr(colM[1],colM[2]);
+    return this._parse(a||'0',0).val;
+  }
+  _rangeToArray(c1,r1,c2,r2){
+    const arr=[];
+    const ci1=this._colIdx(c1.toUpperCase()),ci2=this._colIdx(c2.toUpperCase());
+    for(let r=r1;r<=r2;r++)for(let c=ci1;c<=ci2;c++)arr.push(this.get(this.id(r,c)));
+    return arr;
+  }
+  _colRangeArr(c1,c2){
+    const ci1=this._colIdx(c1.toUpperCase()),ci2=this._colIdx(c2.toUpperCase());
+    const cells=[];
+    for(const[,cell]of this.cells)if(cell.col>=ci1&&cell.col<=ci2)cells.push(cell);
+    cells.sort((a,b)=>a.row-b.row||a.col-b.col);
+    return cells.map(c=>c.value);
+  }
+  /* Cross-sheet value lookup (uses loaded sheets in xSheetData map) */
+  _xsheet(sheetName,cellRef){
+    if(this.xSheetData){
+      const m=cellRef.match(/^\$?([A-Z]+)\$?(\d+)$/i);
+      if(m){
+        const rd=this.xSheetData.get(sheetName);
+        if(rd){
+          const row=parseInt(m[2])-1,col=this._colIdx(m[1].toUpperCase());
+          const v=rd[row]?.values?.[col]?.effectiveValue;
+          return v?.numberValue??v?.stringValue??v?.boolValue??0;
+        }
+      }
+    }
+    return 0;
+  }
 }
 
 function orcInitEngine(idx) {
   const sh = orcState.spreadsheet.sheets[idx];
   const rd = (sh.data&&sh.data[0]?.rowData) || [];
   orcState.engine = new OrcFormulaEngine();
+  // Pass all loaded sheets so cross-sheet refs resolve correctly
+  const xd = new Map();
+  (orcState.spreadsheet.sheets||[]).forEach(s=>{
+    if(s.data&&s.data[0]?.rowData) xd.set(s.properties.title, s.data[0].rowData);
+  });
+  orcState.engine.xSheetData = xd;
   orcState.engine.load(rd);
   orcLoadSavedChanges();
 }
