@@ -789,11 +789,9 @@
   .orc-chevron { display:inline-block; width:14px; font-size:.6rem; opacity:.75; transition:transform .15s; flex-shrink:0; }
   .orc-row-section { cursor:pointer; user-select:none; }
   .orc-row-section:hover td:not(.orc-row-num) { filter:brightness(1.12); }
-  /* Section "+" add row button */
-  .orc-btn-add-row { display:none; margin-left:auto; padding:1px 6px; border-radius:4px; border:1.5px solid rgba(255,255,255,.45); background:rgba(255,255,255,.15); color:#fff; font-size:.68rem; font-weight:700; cursor:pointer; line-height:1.4; transition:background .15s; flex-shrink:0; }
-  .orc-btn-add-row:hover { background:rgba(255,255,255,.35); }
-  .orc-row-section:hover .orc-btn-add-row { display:inline-flex; }
-  .orc-row-section td:first-child .orc-cell { gap:4px; }
+  /* Section "+" add row button — always visible, positioned absolute on right of label TD */
+  .orc-btn-add-row { position:absolute; right:4px; top:50%; transform:translateY(-50%); padding:1px 7px; border-radius:4px; border:1.5px solid rgba(255,255,255,.5); background:rgba(255,255,255,.18); color:#fff; font-size:.65rem; font-weight:700; cursor:pointer; line-height:1.5; transition:background .15s,border-color .15s; z-index:5; white-space:nowrap; }
+  .orc-btn-add-row:hover { background:rgba(255,255,255,.40); border-color:rgba(255,255,255,.9); }
   /* Virtual rows */
   .orc-row-virtual td { background:rgba(91,79,232,.04) !important; border-bottom:1px dashed var(--border) !important; }
   .orc-row-virtual td.orc-row-num { background:var(--surface-h) !important; }
@@ -3850,19 +3848,23 @@ function orcRender(idx) {
           chev.textContent=orcState.expandedGroups.has(currentGroupId)?'▼':'▶';
           inner.appendChild(chev);
           inner.appendChild(document.createTextNode('\u00a0'+display));
-          // "+" add-row button
-          const addBtn=document.createElement('button');
-          addBtn.className='orc-btn-add-row';
-          addBtn.title='Adicionar linha neste grupo';
-          addBtn.textContent='+ linha';
-          const _gid=currentGroupId, _sr=currentSectionRow, _mc=maxCols, _sidx=idx;
-          addBtn.onclick=(e)=>{e.stopPropagation();orcShowAddRowForm(_gid,_sr,_mc,_sidx,colLabels);};
-          inner.appendChild(addBtn);
+          td.style.position='relative';
+          td.style.paddingRight='58px'; // reserve space for "+" button
         } else {
           inner.textContent=display;
         }
         td.appendChild(inner);
-        if(c===0) td.classList.add('orc-col-label');
+        if(c===0){
+          td.classList.add('orc-col-label');
+          // "+" add-row button — appended to TD (not inner div) to avoid overflow:hidden clipping
+          const addBtn=document.createElement('button');
+          addBtn.className='orc-btn-add-row';
+          addBtn.title='Adicionar nova linha neste grupo';
+          addBtn.textContent='+ linha';
+          const _gid=currentGroupId, _sr=currentSectionRow, _mc=maxCols, _sidx=idx;
+          addBtn.onclick=(e)=>{e.stopPropagation();orcShowAddRowForm(_gid,_sr,_mc,_sidx,colLabels);};
+          td.appendChild(addBtn);
+        }
         td.dataset.cellId=cellId;
         tr.appendChild(td);
       }
