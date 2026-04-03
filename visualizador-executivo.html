@@ -796,9 +796,9 @@
   .orc-row-virtual td { background:rgba(91,79,232,.04) !important; border-bottom:1px dashed var(--border) !important; }
   .orc-row-virtual td.orc-row-num { background:var(--surface-h) !important; }
   .orc-row-virtual .orc-vr-label { font-style:italic; color:var(--text-muted); font-size:.67rem; }
-  .orc-row-virtual .orc-vr-del { display:none; position:absolute; right:2px; top:50%; transform:translateY(-50%); background:none; border:none; color:var(--danger); font-size:.65rem; cursor:pointer; padding:1px 4px; border-radius:3px; line-height:1; }
+  .orc-row-virtual .orc-vr-del { position:absolute; right:4px; top:50%; transform:translateY(-50%); background:rgba(229,62,62,.1); border:1px solid rgba(229,62,62,.3); color:var(--danger); font-size:.6rem; font-weight:700; cursor:pointer; padding:1px 5px; border-radius:3px; line-height:1.4; z-index:5; white-space:nowrap; transition:background .15s; }
+  .orc-row-virtual .orc-vr-del:hover { background:var(--danger); color:#fff; border-color:var(--danger); }
   .orc-row-virtual:hover td { background:rgba(91,79,232,.09) !important; }
-  .orc-row-virtual:hover .orc-vr-del { display:block; }
   /* Add-row form row */
   .orc-add-row-tr td { background:rgba(91,79,232,.03) !important; border-bottom:2px dashed var(--accent) !important; padding:3px 4px !important; height:auto !important; }
   .orc-add-row-tr input[type=text], .orc-add-row-tr input[type=number] { width:100%; padding:3px 5px; border:1.5px solid var(--border); border-radius:4px; font-family:inherit; font-size:.66rem; color:var(--text); background:var(--surface); outline:none; text-align:right; }
@@ -3773,6 +3773,8 @@ function orcRender(idx) {
         td.style.position='relative';
         if(c===0){
           td.classList.add('orc-col-label');
+          td.style.position='relative';
+          td.style.paddingRight='42px'; // reserve space for ✕ button
           const inner=document.createElement('div');
           inner.className='orc-cell orc-vr-label';
           inner.textContent=vr.label||'Nova linha';
@@ -3780,10 +3782,11 @@ function orcRender(idx) {
           // Inline edit label on dblclick
           inner.ondblclick=(e)=>{e.stopPropagation();orcEditVirtualRowLabel(inner,vr.id);};
           td.appendChild(inner);
+          // ✕ button appended to TD (not inner) to avoid overflow:hidden clipping
           const delBtn=document.createElement('button');
           delBtn.className='orc-vr-del';
           delBtn.title='Remover linha virtual';
-          delBtn.textContent='✕';
+          delBtn.textContent='✕ remover';
           delBtn.onclick=(e)=>{e.stopPropagation();orcDeleteVirtualRow(vr.id,idx);};
           td.appendChild(delBtn);
         } else {
