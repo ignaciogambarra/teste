@@ -789,26 +789,36 @@
   .orc-chevron { display:inline-block; width:14px; font-size:.6rem; opacity:.75; transition:transform .15s; flex-shrink:0; }
   .orc-row-section { cursor:pointer; user-select:none; }
   .orc-row-section:hover td:not(.orc-row-num) { filter:brightness(1.12); }
-  /* Section "+" add row button — always visible, positioned absolute on right of label TD */
-  .orc-btn-add-row { position:absolute; right:4px; top:50%; transform:translateY(-50%); padding:1px 7px; border-radius:4px; border:1.5px solid rgba(255,255,255,.5); background:rgba(255,255,255,.18); color:#fff; font-size:.65rem; font-weight:700; cursor:pointer; line-height:1.5; transition:background .15s,border-color .15s; z-index:5; white-space:nowrap; }
-  .orc-btn-add-row:hover { background:rgba(255,255,255,.40); border-color:rgba(255,255,255,.9); }
   /* Virtual rows */
-  .orc-row-virtual td { background:rgba(91,79,232,.04) !important; border-bottom:1px dashed var(--border) !important; }
-  .orc-row-virtual td.orc-row-num { background:var(--surface-h) !important; }
-  .orc-row-virtual .orc-vr-label { font-style:italic; color:var(--text-muted); font-size:.67rem; }
-  .orc-row-virtual .orc-vr-del { position:absolute; right:4px; top:50%; transform:translateY(-50%); background:rgba(229,62,62,.1); border:1px solid rgba(229,62,62,.3); color:var(--danger); font-size:.6rem; font-weight:700; cursor:pointer; padding:1px 5px; border-radius:3px; line-height:1.4; z-index:5; white-space:nowrap; transition:background .15s; }
-  .orc-row-virtual .orc-vr-del:hover { background:var(--danger); color:#fff; border-color:var(--danger); }
-  .orc-row-virtual:hover td { background:rgba(91,79,232,.09) !important; }
-  /* Add-row form row */
-  .orc-add-row-tr td { background:rgba(91,79,232,.03) !important; border-bottom:2px dashed var(--accent) !important; padding:3px 4px !important; height:auto !important; }
-  .orc-add-row-tr input[type=text], .orc-add-row-tr input[type=number] { width:100%; padding:3px 5px; border:1.5px solid var(--border); border-radius:4px; font-family:inherit; font-size:.66rem; color:var(--text); background:var(--surface); outline:none; text-align:right; }
-  .orc-add-row-tr input[type=text] { text-align:left; }
-  .orc-add-row-tr input:focus { border-color:var(--accent); }
-  .orc-add-row-tr .orc-add-actions { display:flex; gap:4px; align-items:center; justify-content:center; padding:0 4px; }
-  .orc-add-row-tr .orc-btn-confirm-add { padding:3px 10px; border-radius:4px; border:none; background:var(--accent); color:#fff; font-size:.62rem; font-weight:600; cursor:pointer; }
-  .orc-add-row-tr .orc-btn-confirm-add:hover { background:var(--accent-h); }
-  .orc-add-row-tr .orc-btn-cancel-add { padding:3px 8px; border-radius:4px; border:1.5px solid var(--border); background:transparent; color:var(--text-muted); font-size:.62rem; cursor:pointer; }
-  .orc-add-row-tr .orc-btn-cancel-add:hover { border-color:var(--danger); color:var(--danger); }
+  .orc-row-virtual td { background:rgba(91,79,232,.05) !important; border-bottom:1px dashed rgba(91,79,232,.2) !important; }
+  .orc-row-virtual td.orc-row-num { background:var(--surface-h) !important; color:var(--accent) !important; font-size:.6rem !important; }
+  .orc-row-virtual .orc-vr-label { font-style:italic; color:var(--text); font-size:.67rem; }
+  .orc-row-virtual:hover td { background:rgba(91,79,232,.11) !important; }
+  .orc-vr-del-btn { padding:2px 8px; border-radius:4px; border:1px solid rgba(229,62,62,.35); background:rgba(229,62,62,.08); color:var(--danger); font-size:.58rem; font-weight:600; cursor:pointer; white-space:nowrap; transition:background .15s; }
+  .orc-vr-del-btn:hover { background:var(--danger); color:#fff; }
+  /* Add-row trigger row (always shown when group expanded) */
+  .orc-add-trigger-tr td { background:transparent !important; border-bottom:none !important; border-top:1px dashed rgba(91,79,232,.25) !important; padding:0 !important; height:28px !important; cursor:pointer; }
+  .orc-add-trigger-tr:hover td { background:rgba(91,79,232,.06) !important; }
+  .orc-add-trigger-cell { display:flex; align-items:center; gap:5px; padding:0 8px; height:100%; color:var(--accent); font-size:.64rem; font-weight:600; opacity:.7; transition:opacity .15s; }
+  .orc-add-trigger-tr:hover .orc-add-trigger-cell { opacity:1; }
+  /* Add-row modal */
+  .orc-addrow-modal { position:fixed; inset:0; z-index:500; background:rgba(0,0,0,.5); backdrop-filter:blur(4px); display:flex; align-items:center; justify-content:center; }
+  .orc-addrow-box { background:var(--surface); border-radius:12px; box-shadow:0 20px 60px rgba(0,0,0,.3); width:520px; max-width:95vw; display:flex; flex-direction:column; animation:orc-dlg .18s ease; }
+  .orc-addrow-hdr { padding:18px 20px 14px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px; }
+  .orc-addrow-hdr h3 { font-size:.84rem; font-weight:700; color:var(--text); flex:1; margin:0; }
+  .orc-addrow-hdr button { background:none; border:none; color:var(--text-muted); font-size:.9rem; cursor:pointer; padding:2px 6px; border-radius:4px; }
+  .orc-addrow-hdr button:hover { background:var(--surface-h); color:var(--text); }
+  .orc-addrow-body { padding:16px 20px; display:flex; flex-direction:column; gap:12px; max-height:65vh; overflow-y:auto; }
+  .orc-addrow-field { display:flex; flex-direction:column; gap:4px; }
+  .orc-addrow-field label { font-size:.6rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:.05em; }
+  .orc-addrow-field input { padding:7px 10px; border:1.5px solid var(--border); border-radius:6px; font-family:inherit; font-size:.74rem; color:var(--text); background:var(--surface-h); outline:none; }
+  .orc-addrow-field input:focus { border-color:var(--accent); background:var(--surface); }
+  .orc-addrow-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(110px,1fr)); gap:8px; }
+  .orc-addrow-col-inp { display:flex; flex-direction:column; gap:3px; }
+  .orc-addrow-col-inp label { font-size:.57rem; font-weight:600; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .orc-addrow-col-inp input { padding:5px 8px; border:1.5px solid var(--border); border-radius:5px; font-family:inherit; font-size:.7rem; color:var(--text); background:var(--surface-h); outline:none; text-align:right; }
+  .orc-addrow-col-inp input:focus { border-color:var(--accent); background:var(--surface); }
+  .orc-addrow-ftr { padding:14px 20px; border-top:1px solid var(--border); display:flex; justify-content:flex-end; gap:8px; flex-shrink:0; }
   /* Report sidebar */
   .orc-rep-sidebar { width:210px; border-right:1px solid var(--border); display:flex; flex-direction:column; flex-shrink:0; }
   .orc-rep-sidebar-hdr { padding:10px 12px 8px; font-size:.58rem; font-weight:700; color:var(--text-muted); letter-spacing:.05em; text-transform:uppercase; border-bottom:1px solid var(--border); flex-shrink:0; }
@@ -3845,10 +3855,12 @@ function orcRender(idx) {
     for(let c=0;c<maxCols;c++) colLabels.push(eng._col(c));
   }
 
-  // ── Helper: append virtual rows + add-row-form row for a group ────────
-  const appendGroupExtras = (groupId, sectionRow) => {
+  // ── Helper: append virtual rows + add-trigger row for a group ───────
+  const appendGroupExtras = (groupId, sectionRow, groupLabel) => {
     if(!groupId) return;
     const isOpen = orcState.expandedGroups.has(groupId);
+
+    // Virtual rows
     const vrs = orcState.virtualRows.filter(vr=>vr.groupId===groupId);
     for(const vr of vrs) {
       const vtr = document.createElement('tr');
@@ -3856,59 +3868,64 @@ function orcRender(idx) {
       vtr.dataset.group=groupId;
       vtr.dataset.vrId=vr.id;
       if(!isOpen) vtr.style.display='none';
-      // Row num
+      // Row num cell
       const numTd=document.createElement('td');
       numTd.className='orc-row-num';
-      numTd.innerHTML='<span style="font-size:.55rem;opacity:.5">+</span>';
+      numTd.textContent='↳';
       vtr.appendChild(numTd);
-      for(let c=0;c<maxCols;c++){
+      // Label cell (col 0)
+      const labelTd=document.createElement('td');
+      labelTd.classList.add('orc-col-label');
+      const labelDiv=document.createElement('div');
+      labelDiv.className='orc-cell orc-vr-label';
+      labelDiv.textContent=vr.label||'Nova linha';
+      labelDiv.title='Duplo clique para renomear';
+      labelDiv.ondblclick=(e)=>{e.stopPropagation();orcEditVirtualRowLabel(labelDiv,vr.id);};
+      labelTd.appendChild(labelDiv);
+      vtr.appendChild(labelTd);
+      // Value cells (cols 1+)
+      for(let c=1;c<maxCols;c++){
         const td=document.createElement('td');
-        td.style.position='relative';
-        if(c===0){
-          td.classList.add('orc-col-label');
-          td.style.position='relative';
-          td.style.paddingRight='42px'; // reserve space for ✕ button
-          const inner=document.createElement('div');
-          inner.className='orc-cell orc-vr-label';
-          inner.textContent=vr.label||'Nova linha';
-          inner.title=vr.label||'';
-          // Inline edit label on dblclick
-          inner.ondblclick=(e)=>{e.stopPropagation();orcEditVirtualRowLabel(inner,vr.id);};
-          td.appendChild(inner);
-          // ✕ button appended to TD (not inner) to avoid overflow:hidden clipping
-          const delBtn=document.createElement('button');
-          delBtn.className='orc-vr-del';
-          delBtn.title='Remover linha virtual';
-          delBtn.textContent='✕ remover';
-          delBtn.onclick=(e)=>{e.stopPropagation();orcDeleteVirtualRow(vr.id,idx);};
-          td.appendChild(delBtn);
-        } else {
-          const val=vr.colValues?.[c];
-          const inner=document.createElement('div');
-          inner.className='orc-cell right';
-          inner.textContent=val!=null&&val!==''?orcBRL(Number(val)):'';
-          td.appendChild(inner);
-        }
+        const val=vr.colValues?.[c];
+        const inner=document.createElement('div');
+        inner.className='orc-cell right';
+        inner.textContent=val!=null&&val!==''?orcBRL(Number(val)):'';
+        td.appendChild(inner);
         vtr.appendChild(td);
       }
+      // Delete button cell (last)
+      const delTd=document.createElement('td');
+      delTd.style.textAlign='center'; delTd.style.padding='0 4px'; delTd.style.width='80px';
+      const delBtn=document.createElement('button');
+      delBtn.className='orc-vr-del-btn';
+      delBtn.textContent='✕ remover';
+      delBtn.onclick=(e)=>{e.stopPropagation();orcDeleteVirtualRow(vr.id,idx);};
+      delTd.appendChild(delBtn);
+      vtr.appendChild(delTd);
       body.appendChild(vtr);
     }
-    // Add-row form row (hidden by default)
-    const formTr=document.createElement('tr');
-    formTr.className='orc-add-row-tr';
-    formTr.id='add-row-form-'+groupId;
-    formTr.dataset.group=groupId;
-    formTr.style.display='none';
-    // We'll build the form cells lazily when shown
-    formTr.dataset.sectionRow=sectionRow;
-    formTr.dataset.maxCols=maxCols;
-    formTr.dataset.sheetIdx=idx;
-    body.appendChild(formTr);
+
+    // "+ Adicionar linha" trigger row — always visible when group is open
+    const trigTr=document.createElement('tr');
+    trigTr.className='orc-add-trigger-tr';
+    trigTr.dataset.group=groupId;
+    if(!isOpen) trigTr.style.display='none';
+    const trigTd=document.createElement('td');
+    trigTd.colSpan=maxCols+2; // +1 row-num +1 del col
+    const trigDiv=document.createElement('div');
+    trigDiv.className='orc-add-trigger-cell';
+    trigDiv.innerHTML='<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="6.5" r="6" stroke="currentColor" stroke-width="1.3"/><path d="M6.5 3.5v6M3.5 6.5h6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg> Adicionar linha neste grupo';
+    trigTd.appendChild(trigDiv);
+    trigTr.appendChild(trigTd);
+    const _gid=groupId, _sr=sectionRow, _gl=groupLabel;
+    trigTr.onclick=()=>orcOpenAddRowModal(_gid,_sr,_gl,colLabels,idx);
+    body.appendChild(trigTr);
   };
 
   // ── TBODY: linhas de dados agrupadas por seção ──────────────────────
   let currentGroupId   = null;
   let currentSectionRow= -1;
+  let currentGroupLabel= '';
   rd.forEach((row, r) => {
     if(r===hdrRowIdx) return;
 
@@ -3918,11 +3935,12 @@ function orcRender(idx) {
 
     if(rt === 'orc-row-section') {
       // Before starting new section: append virtual rows for previous group
-      appendGroupExtras(currentGroupId, currentSectionRow);
+      appendGroupExtras(currentGroupId, currentSectionRow, currentGroupLabel);
 
       // ── Linha de seção = cabeçalho de grupo colapsável ────────────
       currentGroupId    = `grp-${idx}-${r}`;
-      currentSectionRow = r+1;   // 1-indexed engine row
+      currentSectionRow = r+1;
+      currentGroupLabel = (cells[0]?.formattedValue||'').trim();
       tr.className = 'orc-row-section';
       tr.dataset.groupId = currentGroupId;
       tr.onclick = (e) => { e.stopPropagation(); orcToggleGroup(tr.dataset.groupId, tr); };
@@ -3944,23 +3962,11 @@ function orcRender(idx) {
           chev.textContent=orcState.expandedGroups.has(currentGroupId)?'▼':'▶';
           inner.appendChild(chev);
           inner.appendChild(document.createTextNode('\u00a0'+display));
-          td.style.position='relative';
-          td.style.paddingRight='58px'; // reserve space for "+" button
         } else {
           inner.textContent=display;
         }
         td.appendChild(inner);
-        if(c===0){
-          td.classList.add('orc-col-label');
-          // "+" add-row button — appended to TD (not inner div) to avoid overflow:hidden clipping
-          const addBtn=document.createElement('button');
-          addBtn.className='orc-btn-add-row';
-          addBtn.title='Adicionar nova linha neste grupo';
-          addBtn.textContent='+ linha';
-          const _gid=currentGroupId, _sr=currentSectionRow, _mc=maxCols, _sidx=idx;
-          addBtn.onclick=(e)=>{e.stopPropagation();orcShowAddRowForm(_gid,_sr,_mc,_sidx,colLabels);};
-          td.appendChild(addBtn);
-        }
+        if(c===0) td.classList.add('orc-col-label');
         td.dataset.cellId=cellId;
         tr.appendChild(td);
       }
@@ -4007,7 +4013,7 @@ function orcRender(idx) {
   });
 
   // Append extras for the last group
-  appendGroupExtras(currentGroupId, currentSectionRow);
+  appendGroupExtras(currentGroupId, currentSectionRow, currentGroupLabel);
 
   document.getElementById('orc-scroll').style.display = 'block';
   document.getElementById('orc-loading').style.display = 'none';
@@ -4023,12 +4029,7 @@ function orcToggleGroup(groupId, sectionTr) {
   const chev = document.getElementById('chev-'+groupId);
   if(chev) chev.textContent = orcState.expandedGroups.has(groupId)?'▼':'▶';
   document.querySelectorAll(`[data-group="${groupId}"]`).forEach(tr=>{
-    // Don't show the add-row form just by toggling — only show if explicitly opened
-    if(tr.id && tr.id.startsWith('add-row-form-')) {
-      if(!orcState.expandedGroups.has(groupId)) tr.style.display='none';
-    } else {
-      tr.style.display = orcState.expandedGroups.has(groupId) ? '' : 'none';
-    }
+    tr.style.display = orcState.expandedGroups.has(groupId) ? '' : 'none';
   });
 }
 
@@ -4036,65 +4037,88 @@ function orcToggleGroup(groupId, sectionTr) {
    VIRTUAL ROWS — add / delete / manage
 ══════════════════════════════════════════════════════════════════════════ */
 
-function orcShowAddRowForm(groupId, sectionRow, maxCols, sheetIdx, colLabels) {
-  // Expand the group first if needed
-  if(!orcState.expandedGroups.has(groupId)) orcToggleGroup(groupId);
+function orcOpenAddRowModal(groupId, sectionRow, groupLabel, colLabels, sheetIdx) {
+  // Remove any existing modal
+  const old=document.getElementById('orc-addrow-modal');
+  if(old) old.remove();
 
-  const formTr = document.getElementById('add-row-form-'+groupId);
-  if(!formTr) return;
-  if(formTr.style.display!=='none') { formTr.style.display='none'; return; } // toggle
+  const modal=document.createElement('div');
+  modal.className='orc-addrow-modal';
+  modal.id='orc-addrow-modal';
 
-  formTr.innerHTML=''; // rebuild
+  const box=document.createElement('div');
+  box.className='orc-addrow-box';
 
-  // Row num cell
-  const numTd=document.createElement('td');
-  numTd.className='orc-row-num';
-  numTd.innerHTML='<span style="font-size:.7rem;color:var(--accent);font-weight:700">+</span>';
-  formTr.appendChild(numTd);
+  // Header
+  const hdr=document.createElement('div');
+  hdr.className='orc-addrow-hdr';
+  hdr.innerHTML=`<svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="color:var(--accent)"><circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.5"/><path d="M8 4.5v7M4.5 8h7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>`;
+  const title=document.createElement('h3');
+  title.textContent='Adicionar linha — '+(groupLabel||'Grupo');
+  const closeBtn=document.createElement('button');
+  closeBtn.textContent='✕'; closeBtn.onclick=()=>modal.remove();
+  hdr.appendChild(title); hdr.appendChild(closeBtn);
+  box.appendChild(hdr);
 
-  // Label input (col 0)
-  const labelTd=document.createElement('td');
-  labelTd.classList.add('orc-col-label');
+  // Body
+  const body=document.createElement('div');
+  body.className='orc-addrow-body';
+
+  // Label field
+  const lf=document.createElement('div'); lf.className='orc-addrow-field';
+  const ll=document.createElement('label'); ll.textContent='Descrição';
   const labelInp=document.createElement('input');
-  labelInp.type='text'; labelInp.placeholder='Descrição da linha…';
-  labelInp.id='vr-inp-label-'+groupId;
-  labelTd.appendChild(labelInp);
-  formTr.appendChild(labelTd);
+  labelInp.type='text'; labelInp.placeholder='Ex: Novo custo de marketing…';
+  labelInp.id='vr-modal-label';
+  lf.appendChild(ll); lf.appendChild(labelInp);
+  body.appendChild(lf);
 
-  // Value inputs for each numeric column
+  // Values grid (only cols with a non-empty header)
+  const vf=document.createElement('div'); vf.className='orc-addrow-field';
+  const vl=document.createElement('label'); vl.textContent='Valores por coluna (deixe em branco para zero)';
+  vf.appendChild(vl);
+  const grid=document.createElement('div'); grid.className='orc-addrow-grid';
   const inps=[];
-  for(let c=1;c<maxCols;c++){
-    const td=document.createElement('td');
+  for(let c=1;c<colLabels.length;c++){
+    const lbl=colLabels[c]||'';
+    if(!lbl) continue;
+    const wrap=document.createElement('div'); wrap.className='orc-addrow-col-inp';
+    const cl=document.createElement('label'); cl.textContent=lbl; cl.title=lbl;
     const inp=document.createElement('input');
     inp.type='number'; inp.step='any'; inp.placeholder='0';
-    inp.id=`vr-inp-col-${groupId}-${c}`;
-    inp.title=colLabels[c]||'';
     inps.push({c, inp});
-    td.appendChild(inp);
-    formTr.appendChild(td);
+    wrap.appendChild(cl); wrap.appendChild(inp);
+    grid.appendChild(wrap);
   }
+  vf.appendChild(grid);
+  body.appendChild(vf);
+  box.appendChild(body);
 
-  // Last cell: action buttons
-  const actTd=document.createElement('td');
-  actTd.style.minWidth='120px';
-  const actDiv=document.createElement('div');
-  actDiv.className='orc-add-actions';
-  const confirmBtn=document.createElement('button');
-  confirmBtn.className='orc-btn-confirm-add'; confirmBtn.textContent='Adicionar';
-  confirmBtn.onclick=()=>orcConfirmAddVirtualRow(groupId,sectionRow,sheetIdx,maxCols,inps);
+  // Footer
+  const ftr=document.createElement('div'); ftr.className='orc-addrow-ftr';
   const cancelBtn=document.createElement('button');
-  cancelBtn.className='orc-btn-cancel-add'; cancelBtn.textContent='Cancelar';
-  cancelBtn.onclick=()=>{formTr.style.display='none';};
-  actDiv.appendChild(confirmBtn); actDiv.appendChild(cancelBtn);
-  actTd.appendChild(actDiv);
-  formTr.appendChild(actTd);
+  cancelBtn.className='orc-btn'; cancelBtn.textContent='Cancelar';
+  cancelBtn.onclick=()=>modal.remove();
+  const confirmBtn=document.createElement('button');
+  confirmBtn.className='orc-btn orc-btn-primary'; confirmBtn.textContent='Adicionar linha';
+  confirmBtn.onclick=()=>orcConfirmAddVirtualRow(groupId,sectionRow,sheetIdx,inps,modal);
+  ftr.appendChild(cancelBtn); ftr.appendChild(confirmBtn);
+  box.appendChild(ftr);
 
-  formTr.style.display='';
-  setTimeout(()=>labelInp.focus(), 50);
+  modal.appendChild(box);
+  // Click backdrop to close
+  modal.onclick=(e)=>{if(e.target===modal)modal.remove();};
+  // Esc to close
+  modal._keydown=(e)=>{if(e.key==='Escape')modal.remove();};
+  document.addEventListener('keydown', modal._keydown);
+  modal.addEventListener('remove', ()=>document.removeEventListener('keydown', modal._keydown), {once:true});
+
+  document.body.appendChild(modal);
+  setTimeout(()=>labelInp.focus(), 60);
 }
 
-function orcConfirmAddVirtualRow(groupId, sectionRow, sheetIdx, maxCols, inps) {
-  const labelInp=document.getElementById('vr-inp-label-'+groupId);
+function orcConfirmAddVirtualRow(groupId, sectionRow, sheetIdx, inps, modal) {
+  const labelInp=document.getElementById('vr-modal-label');
   const label=(labelInp?.value||'').trim()||'Nova linha';
   const colValues={};
   for(const {c, inp} of inps) {
@@ -4102,27 +4126,24 @@ function orcConfirmAddVirtualRow(groupId, sectionRow, sheetIdx, maxCols, inps) {
     if(!isNaN(v) && v!==0) colValues[c]=v;
   }
   if(Object.keys(colValues).length===0) {
-    orcStatus('Informe ao menos um valor numérico para adicionar a linha.'); return;
+    labelInp?.parentElement?.querySelector('input[type=number]')?.focus();
+    orcStatus('Informe ao menos um valor para adicionar a linha.'); return;
   }
+  modal?.remove();
   const vr={ id: Date.now()+Math.random(), groupId, sectionRow, label, colValues };
   orcState.virtualRows.push(vr);
   orcSaveVirtualRows();
   orcComputeVirtualAdds();
   orcApplyVirtualAdds();
   orcRender(sheetIdx);
-  // Re-expand the group and re-open check
-  if(orcState.expandedGroups.has(groupId)) {
-    document.querySelectorAll(`[data-group="${groupId}"]`).forEach(tr=>{
-      if(!(tr.id && tr.id.startsWith('add-row-form-'))) tr.style.display='';
-    });
-  }
-  orcStatus(`Linha "${label}" adicionada ao grupo.`);
+  // Ensure group stays expanded
+  if(!orcState.expandedGroups.has(groupId)) orcToggleGroup(groupId);
+  orcStatus(`Linha "${label}" adicionada.`);
 }
 
 function orcDeleteVirtualRow(vrId, sheetIdx) {
   const vr=orcState.virtualRows.find(v=>v.id===vrId);
   if(!vr) return;
-  if(!confirm(`Remover a linha virtual "${vr.label}"?`)) return;
   orcState.virtualRows=orcState.virtualRows.filter(v=>v.id!==vrId);
   orcSaveVirtualRows();
   orcComputeVirtualAdds();
