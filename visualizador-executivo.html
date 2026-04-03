@@ -779,6 +779,7 @@
   /* Changed cells */
   .orc-cell-changed { background: rgba(245,158,11,.18) !important; color: #92400e !important; font-weight: 700; }
   .orc-cell-affected { background: rgba(245,158,11,.07) !important; }
+  .orc-cell-virt-aff { background: rgba(91,79,232,.09) !important; }
   .dark .orc-cell-changed { background: rgba(245,158,11,.25) !important; color: #fbbf24 !important; }
   /* Dialogs */
   .orc-overlay { position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,.55); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: 16px; }
@@ -788,6 +789,28 @@
   .orc-chevron { display:inline-block; width:14px; font-size:.6rem; opacity:.75; transition:transform .15s; flex-shrink:0; }
   .orc-row-section { cursor:pointer; user-select:none; }
   .orc-row-section:hover td:not(.orc-row-num) { filter:brightness(1.12); }
+  /* Section "+" add row button */
+  .orc-btn-add-row { display:none; margin-left:auto; padding:1px 6px; border-radius:4px; border:1.5px solid rgba(255,255,255,.45); background:rgba(255,255,255,.15); color:#fff; font-size:.68rem; font-weight:700; cursor:pointer; line-height:1.4; transition:background .15s; flex-shrink:0; }
+  .orc-btn-add-row:hover { background:rgba(255,255,255,.35); }
+  .orc-row-section:hover .orc-btn-add-row { display:inline-flex; }
+  .orc-row-section td:first-child .orc-cell { gap:4px; }
+  /* Virtual rows */
+  .orc-row-virtual td { background:rgba(91,79,232,.04) !important; border-bottom:1px dashed var(--border) !important; }
+  .orc-row-virtual td.orc-row-num { background:var(--surface-h) !important; }
+  .orc-row-virtual .orc-vr-label { font-style:italic; color:var(--text-muted); font-size:.67rem; }
+  .orc-row-virtual .orc-vr-del { display:none; position:absolute; right:2px; top:50%; transform:translateY(-50%); background:none; border:none; color:var(--danger); font-size:.65rem; cursor:pointer; padding:1px 4px; border-radius:3px; line-height:1; }
+  .orc-row-virtual:hover td { background:rgba(91,79,232,.09) !important; }
+  .orc-row-virtual:hover .orc-vr-del { display:block; }
+  /* Add-row form row */
+  .orc-add-row-tr td { background:rgba(91,79,232,.03) !important; border-bottom:2px dashed var(--accent) !important; padding:3px 4px !important; height:auto !important; }
+  .orc-add-row-tr input[type=text], .orc-add-row-tr input[type=number] { width:100%; padding:3px 5px; border:1.5px solid var(--border); border-radius:4px; font-family:inherit; font-size:.66rem; color:var(--text); background:var(--surface); outline:none; text-align:right; }
+  .orc-add-row-tr input[type=text] { text-align:left; }
+  .orc-add-row-tr input:focus { border-color:var(--accent); }
+  .orc-add-row-tr .orc-add-actions { display:flex; gap:4px; align-items:center; justify-content:center; padding:0 4px; }
+  .orc-add-row-tr .orc-btn-confirm-add { padding:3px 10px; border-radius:4px; border:none; background:var(--accent); color:#fff; font-size:.62rem; font-weight:600; cursor:pointer; }
+  .orc-add-row-tr .orc-btn-confirm-add:hover { background:var(--accent-h); }
+  .orc-add-row-tr .orc-btn-cancel-add { padding:3px 8px; border-radius:4px; border:1.5px solid var(--border); background:transparent; color:var(--text-muted); font-size:.62rem; cursor:pointer; }
+  .orc-add-row-tr .orc-btn-cancel-add:hover { border-color:var(--danger); color:var(--danger); }
   /* Report sidebar */
   .orc-rep-sidebar { width:210px; border-right:1px solid var(--border); display:flex; flex-direction:column; flex-shrink:0; }
   .orc-rep-sidebar-hdr { padding:10px 12px 8px; font-size:.58rem; font-weight:700; color:var(--text-muted); letter-spacing:.05em; text-transform:uppercase; border-bottom:1px solid var(--border); flex-shrink:0; }
@@ -2909,8 +2932,9 @@ const ORC_TARGET_GID    = 1343684023;
 const ORC_ANTHROPIC_URL  = 'https://api.anthropic.com/v1/messages';
 const ORC_MODEL          = 'claude-sonnet-4-6';
 const ORC_KEY_STORE      = 'orcflex_anthropic_key';
-const ORC_CHANGES_STORE  = 'orcflex_changes';
-const ORC_REPORTS_STORE  = 'orcflex_reports';
+const ORC_CHANGES_STORE       = 'orcflex_changes';
+const ORC_REPORTS_STORE       = 'orcflex_reports';
+const ORC_VIRTUAL_ROWS_STORE  = 'orcflex_virtual_rows';
 
 let orcState = {
   spreadsheet:    null,
@@ -2923,7 +2947,8 @@ let orcState = {
   pendingEdit:    null,
   pendingBulkEdit:null,   // [{cellId,label,oldVal,newVal,affected}]
   visible:        false,
-  expandedGroups: new Set()
+  expandedGroups: new Set(),
+  virtualRows:    []
 };
 
 /* ── Toggle orçamento overlay ─────────────────────────────────────────── */
@@ -3113,7 +3138,11 @@ class OrcFormulaEngine {
     for(const dep of deps){
       if(vis.has(dep)) continue; vis.add(dep);
       const c=this.cells.get(dep); if(!c||!c.formula) continue;
-      try{c.value=this._evalF(c.formula);aff.push({id:dep,value:c.value});}catch{c.value='#ERRO!';aff.push({id:dep,value:'#ERRO!'});}
+      try{
+        let v=this._evalF(c.formula);
+        if(this.virtualAdds && this.virtualAdds.has(dep)) v+=(this.virtualAdds.get(dep)||0);
+        c.value=v; aff.push({id:dep,value:c.value});
+      }catch{c.value='#ERRO!';aff.push({id:dep,value:'#ERRO!'});}
       this._prop(dep,aff,vis);
     }
   }
@@ -3506,12 +3535,14 @@ function orcInitEngine(idx) {
     if(s.data&&s.data[0]?.rowData) xd.set(s.properties.title, s.data[0].rowData);
   });
   orcState.engine.xSheetData = xd;
+  orcState.engine.virtualAdds = new Map();
   orcState.engine.load(rd);
   orcLoadSavedChanges();
+  orcLoadVirtualRows();
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
-   PERSISTENCE — changes + reports em localStorage
+   PERSISTENCE — changes + reports + virtual rows em localStorage
 ══════════════════════════════════════════════════════════════════════════ */
 function orcSaveChanges() {
   try { localStorage.setItem(ORC_CHANGES_STORE, JSON.stringify(orcState.changes)); } catch(e) {}
@@ -3530,6 +3561,92 @@ function orcLoadSavedChanges() {
     orcUpdateBadge();
     orcStatus(`${saved.length} alteração(ões) restaurada(s) automaticamente.`);
   } catch(e) { orcState.changes = []; }
+}
+
+/* ── Virtual rows persistence ─────────────────────────────────────────── */
+function orcSaveVirtualRows() {
+  try { localStorage.setItem(ORC_VIRTUAL_ROWS_STORE, JSON.stringify(orcState.virtualRows)); } catch(e) {}
+}
+
+function orcLoadVirtualRows() {
+  try {
+    const raw = localStorage.getItem(ORC_VIRTUAL_ROWS_STORE);
+    if(!raw) return;
+    const saved = JSON.parse(raw);
+    if(!Array.isArray(saved)||saved.length===0) return;
+    orcState.virtualRows = saved;
+    orcComputeVirtualAdds();
+    orcApplyVirtualAdds();
+  } catch(e) { orcState.virtualRows = []; }
+}
+
+/* ── Virtual adds: rebuild engine.virtualAdds from orcState.virtualRows ── */
+function orcComputeVirtualAdds() {
+  const eng = orcState.engine;
+  if(!eng) return;
+  eng.virtualAdds = new Map();
+  for(const vr of orcState.virtualRows) {
+    for(const [colIdxStr, val] of Object.entries(vr.colValues||{})) {
+      const colIdx = parseInt(colIdxStr);
+      const cellId = eng.id(vr.sectionRow, colIdx);
+      eng.virtualAdds.set(cellId, (eng.virtualAdds.get(cellId)||0) + Number(val||0));
+    }
+  }
+}
+
+/* ── Apply virtual adds to engine cells and propagate through dependency tree ── */
+function orcApplyVirtualAdds() {
+  const eng = orcState.engine;
+  if(!eng || !eng.virtualAdds || !eng.virtualAdds.size) return;
+  const allAff = [];
+  const vis    = new Set();
+  for(const [cellId, extra] of eng.virtualAdds) {
+    const c = eng.cells.get(cellId);
+    if(!c) continue;
+    try {
+      let v = c.formula ? eng._evalF(c.formula) : (typeof c.value==='number' ? c.value : 0);
+      v += extra;
+      c.value = v;
+      allAff.push({id:cellId, value:v});
+      vis.add(cellId);
+    } catch(e) {}
+  }
+  for(const {id} of allAff) eng._prop(id, allAff, vis);
+  // Patch DOM values for affected cells
+  orcPatchDomCells(allAff);
+}
+
+/* ── Patch DOM cells without full re-render ─────────────────────────────── */
+function orcPatchDomCells(affectedList) {
+  const sh   = orcState.spreadsheet?.sheets[orcState.activeSheet];
+  const rd   = (sh?.data&&sh.data[0]?.rowData) || [];
+  const eng  = orcState.engine;
+  for(const {id, value} of affectedList) {
+    const tds = document.querySelectorAll(`[data-cell-id="${id}"]`);
+    tds.forEach(td => {
+      const inner = td.querySelector('.orc-cell');
+      if(!inner) return;
+      // Detect format from original cell data
+      const c = eng.cells.get(id);
+      let disp = '';
+      if(typeof value === 'number') {
+        // Try to infer from original formatted value or cell row data
+        const rowIdx = c ? (c.row-1) : -1;
+        const colIdx = c ? c.col : -1;
+        const cd = (rowIdx>=0 && colIdx>=0 && rd[rowIdx]?.values?.[colIdx]) || {};
+        const fmtType = (cd.userEnteredFormat?.numberFormat?.type||'');
+        const origFmt = cd.formattedValue||'';
+        if(fmtType==='PERCENT') disp=(value*100).toFixed(1)+'%';
+        else if(fmtType==='CURRENCY'||origFmt.includes('R$')||origFmt.includes('R $')) disp=orcBRL(value);
+        else disp=orcNum(value);
+      } else {
+        disp = String(value??'');
+      }
+      inner.textContent = disp;
+      // Mark as affected
+      td.classList.add('orc-cell-virt-aff');
+    });
+  }
 }
 
 function orcSaveReport(md) {
@@ -3628,8 +3745,76 @@ function orcRender(idx) {
     head.appendChild(hdrTr);
   }
 
+  // ── Collect column labels from header row (for add-row form) ──────────
+  const colLabels = [];
+  if(hdrRowIdx>=0 && rd[hdrRowIdx]) {
+    const hcells = rd[hdrRowIdx].values||[];
+    for(let c=0;c<maxCols;c++) colLabels.push(hcells[c]?.formattedValue||eng._col(c));
+  } else {
+    for(let c=0;c<maxCols;c++) colLabels.push(eng._col(c));
+  }
+
+  // ── Helper: append virtual rows + add-row-form row for a group ────────
+  const appendGroupExtras = (groupId, sectionRow) => {
+    if(!groupId) return;
+    const isOpen = orcState.expandedGroups.has(groupId);
+    const vrs = orcState.virtualRows.filter(vr=>vr.groupId===groupId);
+    for(const vr of vrs) {
+      const vtr = document.createElement('tr');
+      vtr.className='orc-row-virtual';
+      vtr.dataset.group=groupId;
+      vtr.dataset.vrId=vr.id;
+      if(!isOpen) vtr.style.display='none';
+      // Row num
+      const numTd=document.createElement('td');
+      numTd.className='orc-row-num';
+      numTd.innerHTML='<span style="font-size:.55rem;opacity:.5">+</span>';
+      vtr.appendChild(numTd);
+      for(let c=0;c<maxCols;c++){
+        const td=document.createElement('td');
+        td.style.position='relative';
+        if(c===0){
+          td.classList.add('orc-col-label');
+          const inner=document.createElement('div');
+          inner.className='orc-cell orc-vr-label';
+          inner.textContent=vr.label||'Nova linha';
+          inner.title=vr.label||'';
+          // Inline edit label on dblclick
+          inner.ondblclick=(e)=>{e.stopPropagation();orcEditVirtualRowLabel(inner,vr.id);};
+          td.appendChild(inner);
+          const delBtn=document.createElement('button');
+          delBtn.className='orc-vr-del';
+          delBtn.title='Remover linha virtual';
+          delBtn.textContent='✕';
+          delBtn.onclick=(e)=>{e.stopPropagation();orcDeleteVirtualRow(vr.id,idx);};
+          td.appendChild(delBtn);
+        } else {
+          const val=vr.colValues?.[c];
+          const inner=document.createElement('div');
+          inner.className='orc-cell right';
+          inner.textContent=val!=null&&val!==''?orcBRL(Number(val)):'';
+          td.appendChild(inner);
+        }
+        vtr.appendChild(td);
+      }
+      body.appendChild(vtr);
+    }
+    // Add-row form row (hidden by default)
+    const formTr=document.createElement('tr');
+    formTr.className='orc-add-row-tr';
+    formTr.id='add-row-form-'+groupId;
+    formTr.dataset.group=groupId;
+    formTr.style.display='none';
+    // We'll build the form cells lazily when shown
+    formTr.dataset.sectionRow=sectionRow;
+    formTr.dataset.maxCols=maxCols;
+    formTr.dataset.sheetIdx=idx;
+    body.appendChild(formTr);
+  };
+
   // ── TBODY: linhas de dados agrupadas por seção ──────────────────────
-  let currentGroupId = null;
+  let currentGroupId   = null;
+  let currentSectionRow= -1;
   rd.forEach((row, r) => {
     if(r===hdrRowIdx) return;
 
@@ -3638,8 +3823,12 @@ function orcRender(idx) {
     const tr    = document.createElement('tr');
 
     if(rt === 'orc-row-section') {
+      // Before starting new section: append virtual rows for previous group
+      appendGroupExtras(currentGroupId, currentSectionRow);
+
       // ── Linha de seção = cabeçalho de grupo colapsável ────────────
-      currentGroupId = `grp-${idx}-${r}`;
+      currentGroupId    = `grp-${idx}-${r}`;
+      currentSectionRow = r+1;   // 1-indexed engine row
       tr.className = 'orc-row-section';
       tr.dataset.groupId = currentGroupId;
       tr.onclick = (e) => { e.stopPropagation(); orcToggleGroup(tr.dataset.groupId, tr); };
@@ -3661,6 +3850,14 @@ function orcRender(idx) {
           chev.textContent=orcState.expandedGroups.has(currentGroupId)?'▼':'▶';
           inner.appendChild(chev);
           inner.appendChild(document.createTextNode('\u00a0'+display));
+          // "+" add-row button
+          const addBtn=document.createElement('button');
+          addBtn.className='orc-btn-add-row';
+          addBtn.title='Adicionar linha neste grupo';
+          addBtn.textContent='+ linha';
+          const _gid=currentGroupId, _sr=currentSectionRow, _mc=maxCols, _sidx=idx;
+          addBtn.onclick=(e)=>{e.stopPropagation();orcShowAddRowForm(_gid,_sr,_mc,_sidx,colLabels);};
+          inner.appendChild(addBtn);
         } else {
           inner.textContent=display;
         }
@@ -3711,6 +3908,9 @@ function orcRender(idx) {
     body.appendChild(tr);
   });
 
+  // Append extras for the last group
+  appendGroupExtras(currentGroupId, currentSectionRow);
+
   document.getElementById('orc-scroll').style.display = 'block';
   document.getElementById('orc-loading').style.display = 'none';
   document.getElementById('orc-error').style.display = 'none';
@@ -3725,8 +3925,136 @@ function orcToggleGroup(groupId, sectionTr) {
   const chev = document.getElementById('chev-'+groupId);
   if(chev) chev.textContent = orcState.expandedGroups.has(groupId)?'▼':'▶';
   document.querySelectorAll(`[data-group="${groupId}"]`).forEach(tr=>{
-    tr.style.display = orcState.expandedGroups.has(groupId) ? '' : 'none';
+    // Don't show the add-row form just by toggling — only show if explicitly opened
+    if(tr.id && tr.id.startsWith('add-row-form-')) {
+      if(!orcState.expandedGroups.has(groupId)) tr.style.display='none';
+    } else {
+      tr.style.display = orcState.expandedGroups.has(groupId) ? '' : 'none';
+    }
   });
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   VIRTUAL ROWS — add / delete / manage
+══════════════════════════════════════════════════════════════════════════ */
+
+function orcShowAddRowForm(groupId, sectionRow, maxCols, sheetIdx, colLabels) {
+  // Expand the group first if needed
+  if(!orcState.expandedGroups.has(groupId)) orcToggleGroup(groupId);
+
+  const formTr = document.getElementById('add-row-form-'+groupId);
+  if(!formTr) return;
+  if(formTr.style.display!=='none') { formTr.style.display='none'; return; } // toggle
+
+  formTr.innerHTML=''; // rebuild
+
+  // Row num cell
+  const numTd=document.createElement('td');
+  numTd.className='orc-row-num';
+  numTd.innerHTML='<span style="font-size:.7rem;color:var(--accent);font-weight:700">+</span>';
+  formTr.appendChild(numTd);
+
+  // Label input (col 0)
+  const labelTd=document.createElement('td');
+  labelTd.classList.add('orc-col-label');
+  const labelInp=document.createElement('input');
+  labelInp.type='text'; labelInp.placeholder='Descrição da linha…';
+  labelInp.id='vr-inp-label-'+groupId;
+  labelTd.appendChild(labelInp);
+  formTr.appendChild(labelTd);
+
+  // Value inputs for each numeric column
+  const inps=[];
+  for(let c=1;c<maxCols;c++){
+    const td=document.createElement('td');
+    const inp=document.createElement('input');
+    inp.type='number'; inp.step='any'; inp.placeholder='0';
+    inp.id=`vr-inp-col-${groupId}-${c}`;
+    inp.title=colLabels[c]||'';
+    inps.push({c, inp});
+    td.appendChild(inp);
+    formTr.appendChild(td);
+  }
+
+  // Last cell: action buttons
+  const actTd=document.createElement('td');
+  actTd.style.minWidth='120px';
+  const actDiv=document.createElement('div');
+  actDiv.className='orc-add-actions';
+  const confirmBtn=document.createElement('button');
+  confirmBtn.className='orc-btn-confirm-add'; confirmBtn.textContent='Adicionar';
+  confirmBtn.onclick=()=>orcConfirmAddVirtualRow(groupId,sectionRow,sheetIdx,maxCols,inps);
+  const cancelBtn=document.createElement('button');
+  cancelBtn.className='orc-btn-cancel-add'; cancelBtn.textContent='Cancelar';
+  cancelBtn.onclick=()=>{formTr.style.display='none';};
+  actDiv.appendChild(confirmBtn); actDiv.appendChild(cancelBtn);
+  actTd.appendChild(actDiv);
+  formTr.appendChild(actTd);
+
+  formTr.style.display='';
+  setTimeout(()=>labelInp.focus(), 50);
+}
+
+function orcConfirmAddVirtualRow(groupId, sectionRow, sheetIdx, maxCols, inps) {
+  const labelInp=document.getElementById('vr-inp-label-'+groupId);
+  const label=(labelInp?.value||'').trim()||'Nova linha';
+  const colValues={};
+  for(const {c, inp} of inps) {
+    const v=parseFloat(inp.value);
+    if(!isNaN(v) && v!==0) colValues[c]=v;
+  }
+  if(Object.keys(colValues).length===0) {
+    orcStatus('Informe ao menos um valor numérico para adicionar a linha.'); return;
+  }
+  const vr={ id: Date.now()+Math.random(), groupId, sectionRow, label, colValues };
+  orcState.virtualRows.push(vr);
+  orcSaveVirtualRows();
+  orcComputeVirtualAdds();
+  orcApplyVirtualAdds();
+  orcRender(sheetIdx);
+  // Re-expand the group and re-open check
+  if(orcState.expandedGroups.has(groupId)) {
+    document.querySelectorAll(`[data-group="${groupId}"]`).forEach(tr=>{
+      if(!(tr.id && tr.id.startsWith('add-row-form-'))) tr.style.display='';
+    });
+  }
+  orcStatus(`Linha "${label}" adicionada ao grupo.`);
+}
+
+function orcDeleteVirtualRow(vrId, sheetIdx) {
+  const vr=orcState.virtualRows.find(v=>v.id===vrId);
+  if(!vr) return;
+  if(!confirm(`Remover a linha virtual "${vr.label}"?`)) return;
+  orcState.virtualRows=orcState.virtualRows.filter(v=>v.id!==vrId);
+  orcSaveVirtualRows();
+  orcComputeVirtualAdds();
+  // Full re-evaluate engine (restore formulas then reapply changes + virtual adds)
+  const eng=orcState.engine;
+  if(eng){ for(const[,c]of eng.cells) c.value=c.original; }
+  for(const ch of orcState.changes) try{ eng.set(ch.cellId,ch.newVal); }catch(e){}
+  orcApplyVirtualAdds();
+  orcRender(sheetIdx);
+  orcStatus(`Linha "${vr.label}" removida.`);
+}
+
+function orcEditVirtualRowLabel(innerEl, vrId) {
+  const vr=orcState.virtualRows.find(v=>v.id===vrId);
+  if(!vr) return;
+  const inp=document.createElement('input');
+  inp.type='text'; inp.value=vr.label||'';
+  inp.style='font-size:.67rem;font-style:italic;width:100%;border:none;outline:1.5px solid var(--accent);background:var(--surface);padding:1px 4px;';
+  innerEl.replaceWith(inp);
+  inp.focus(); inp.select();
+  const commit=()=>{
+    const lbl=inp.value.trim()||'Nova linha';
+    vr.label=lbl; orcSaveVirtualRows();
+    const newEl=document.createElement('div');
+    newEl.className='orc-cell orc-vr-label'; newEl.textContent=lbl; newEl.title=lbl;
+    newEl.ondblclick=(e)=>{e.stopPropagation();orcEditVirtualRowLabel(newEl,vrId);};
+    inp.replaceWith(newEl);
+  };
+  inp.onblur=commit;
+  inp.onkeydown=(e)=>{if(e.key==='Enter')commit();if(e.key==='Escape'){inp.value=vr.label||'';commit();}};
 }
 
 function orcDetectHeaderRow(rd) {
@@ -4039,9 +4367,18 @@ function orcInitiateBulkZero() {
 }
 
 function orcResetAll() {
-  if(!confirm('Reverter todas as alterações ao orçamento original?')) return;
-  if(orcState.engine) for(const[,c]of orcState.engine.cells) c.value=c.original;
-  orcState.changes=[]; orcSaveChanges(); orcUpdateBadge(); orcRender(orcState.activeSheet); orcStatus('Alterações revertidas.');
+  const hasVirtual = orcState.virtualRows.length>0;
+  const msg = hasVirtual
+    ? 'Reverter todas as alterações e remover as linhas virtuais adicionadas?'
+    : 'Reverter todas as alterações ao orçamento original?';
+  if(!confirm(msg)) return;
+  if(orcState.engine){
+    for(const[,c]of orcState.engine.cells) c.value=c.original;
+    orcState.engine.virtualAdds=new Map();
+  }
+  orcState.changes=[]; orcState.virtualRows=[];
+  orcSaveChanges(); orcSaveVirtualRows();
+  orcUpdateBadge(); orcRender(orcState.activeSheet); orcStatus('Alterações revertidas.');
 }
 
 function orcUpdateBadge() {
