@@ -1,0 +1,1885 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>POUP — Relatório Executivo · Reestruturação 16 Semanas</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blue:       #5270ff;
+      --blue-light: #9caef7;
+      --blue-dark:  #1F3C88;
+      --green:      #c0fd72;
+      --teal:       #38bdf8;
+      --purple:     #a78bfa;
+      --orange:     #FF6B35;
+      --white:      #FFFFFF;
+      --black:      #000000;
+      --gray-100:   #F4F6FF;
+      --gray-200:   #E8ECFF;
+      --gray-400:   #9ca3c0;
+      --gray-600:   #4a5080;
+      --text:       #111827;
+      --radius:     12px;
+      --radius-lg:  20px;
+      --radius-xl:  28px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: var(--white);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    /* ─── COVER ──────────────────────────────────────────── */
+    .cover {
+      min-height: 100vh;
+      background: var(--blue);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 80px 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .cover::before {
+      content: '';
+      position: absolute;
+      width: 700px; height: 700px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.04);
+      top: -200px; right: -200px;
+    }
+    .cover::after {
+      content: '';
+      position: absolute;
+      width: 500px; height: 500px;
+      border-radius: 50%;
+      background: rgba(192,253,114,0.06);
+      bottom: -150px; left: -100px;
+    }
+    .cover-logo {
+      font-size: clamp(32px, 5vw, 52px);
+      font-weight: 300; color: var(--white);
+      letter-spacing: -1px; margin-bottom: 56px;
+      position: relative; z-index: 1;
+    }
+    .cover-logo span { font-weight: 800; color: var(--green); }
+    .cover-eyebrow {
+      font-size: 11px; font-weight: 600;
+      letter-spacing: 4px; text-transform: uppercase;
+      color: var(--green); margin-bottom: 20px;
+      position: relative; z-index: 1;
+    }
+    .cover-title {
+      font-size: clamp(36px, 6vw, 68px);
+      font-weight: 800; color: var(--white);
+      line-height: 1.1; letter-spacing: -2px;
+      margin-bottom: 20px;
+      position: relative; z-index: 1;
+    }
+    .cover-title .highlight { color: var(--green); }
+    .cover-subtitle {
+      font-size: 15px; font-weight: 400;
+      color: rgba(255,255,255,0.65);
+      margin-bottom: 56px;
+      position: relative; z-index: 1;
+    }
+    .cover-pills {
+      display: flex; gap: 12px; flex-wrap: wrap;
+      justify-content: center;
+      position: relative; z-index: 1;
+    }
+    .pill {
+      font-size: 12px; font-weight: 600;
+      letter-spacing: 0.5px;
+      padding: 8px 20px; border-radius: 40px;
+      background: rgba(255,255,255,0.1);
+      color: var(--white);
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    .pill.accent { background: var(--green); color: var(--black); border-color: var(--green); }
+    .cover-scroll-hint {
+      position: absolute; bottom: 36px;
+      left: 50%; transform: translateX(-50%);
+      z-index: 1;
+      display: flex; flex-direction: column;
+      align-items: center; gap: 6px;
+      animation: pulse-down 2s ease-in-out infinite;
+    }
+    .cover-scroll-hint span {
+      font-size: 10px; font-weight: 500;
+      letter-spacing: 3px; text-transform: uppercase;
+      color: rgba(255,255,255,0.4);
+    }
+    .scroll-arrow {
+      width: 20px; height: 20px;
+      border-right: 2px solid rgba(255,255,255,0.35);
+      border-bottom: 2px solid rgba(255,255,255,0.35);
+      transform: rotate(45deg);
+    }
+    @keyframes pulse-down {
+      0%,100% { transform: translateX(-50%) translateY(0); opacity:.6; }
+      50%      { transform: translateX(-50%) translateY(6px); opacity:1; }
+    }
+
+    /* ─── LAYOUT ──────────────────────────────────────────── */
+    .main { max-width: 1140px; margin: 0 auto; padding: 80px 40px; }
+    .section-eyebrow {
+      font-size: 11px; font-weight: 700;
+      letter-spacing: 3px; text-transform: uppercase;
+      color: var(--blue); margin-bottom: 10px;
+    }
+    .section-title {
+      font-size: clamp(26px, 3.5vw, 40px);
+      font-weight: 800; color: var(--black);
+      letter-spacing: -1px; margin-bottom: 8px; line-height: 1.15;
+    }
+    .section-title .hl { color: var(--blue); }
+    .section-subtitle {
+      font-size: clamp(18px, 2.5vw, 24px);
+      font-weight: 700; color: var(--text);
+      letter-spacing: -0.5px; margin-bottom: 8px; margin-top: 40px;
+    }
+    .section-rule {
+      width: 36px; height: 4px;
+      background: var(--green);
+      border-radius: 2px; margin-bottom: 32px;
+    }
+    .section-intro {
+      font-size: 15px; font-weight: 400;
+      color: var(--gray-600); max-width: 720px;
+      margin-bottom: 48px; line-height: 1.8;
+    }
+
+    /* ─── INTRO BLOCK ──────────────────────────────────────── */
+    .intro-block {
+      background: var(--blue);
+      border-radius: var(--radius-xl);
+      padding: 52px 56px;
+      margin-bottom: 80px;
+      position: relative; overflow: hidden;
+    }
+    .intro-block::after {
+      content: '';
+      position: absolute;
+      width: 300px; height: 300px; border-radius: 50%;
+      background: rgba(192,253,114,0.08);
+      bottom: -100px; right: -80px;
+      pointer-events: none;
+    }
+    .intro-block p {
+      font-size: 15px; font-weight: 400;
+      color: rgba(255,255,255,0.8);
+      line-height: 1.85;
+      position: relative; z-index: 1;
+    }
+    .intro-block p + p { margin-top: 14px; }
+    .intro-block strong { font-weight: 700; color: var(--white); }
+    .intro-block em { font-style: normal; color: var(--green); font-weight: 600; }
+
+    /* ─── STATS ───────────────────────────────────────────── */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 16px; margin-bottom: 80px;
+    }
+    @media (max-width: 760px) { .stats-row { grid-template-columns: 1fr 1fr; } }
+    .stat-card {
+      background: var(--gray-100);
+      border-radius: var(--radius-lg);
+      padding: 28px 20px;
+      text-align: center; position: relative; overflow: hidden;
+      border: 1.5px solid var(--gray-200);
+    }
+    .stat-card::before {
+      content: '';
+      position: absolute; bottom: 0; left: 0;
+      width: 100%; height: 3px;
+      background: linear-gradient(90deg, var(--blue), var(--green));
+    }
+    .stat-num {
+      font-size: 40px; font-weight: 800;
+      color: var(--blue); letter-spacing: -2px;
+      line-height: 1; margin-bottom: 8px;
+    }
+    .stat-label {
+      font-size: 10px; font-weight: 600;
+      letter-spacing: 1px; text-transform: uppercase;
+      color: var(--gray-400);
+    }
+
+    /* ─── GANTT ───────────────────────────────────────────── */
+    .gantt-wrapper {
+      background: var(--white);
+      border: 1.5px solid var(--gray-200);
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      margin-bottom: 80px;
+      box-shadow: 0 4px 32px rgba(82,112,255,0.08);
+    }
+
+    /* 10 columns: task | owner | biweek1..biweek8 */
+    .gantt-phase-row {
+      display: grid;
+      grid-template-columns: 210px 110px repeat(8, 1fr);
+      background: var(--blue-dark);
+    }
+    .gph {
+      padding: 9px 8px;
+      font-size: 9px; font-weight: 700;
+      letter-spacing: 1.2px; text-transform: uppercase;
+      color: rgba(255,255,255,0.5);
+      border-right: 1px solid rgba(255,255,255,0.07);
+      text-align: center;
+    }
+    .gph:last-child { border-right: none; }
+    .gph.ph0 { background: rgba(82,112,255,0.25); color: rgba(255,255,255,0.8); }
+    .gph.ph1 { background: rgba(82,112,255,0.40); color: rgba(255,255,255,0.9); }
+    .gph.ph2 { background: rgba(56,189,248,0.30); color: #7dd3fc; }
+    .gph.ph3 { background: rgba(96,165,250,0.25); color: #93c5fd; }
+    .gph.ph4 { background: rgba(134,239,172,0.22); color: #86efac; }
+    .gph.ph5 { background: rgba(192,253,114,0.25); color: #a3e635; }
+    .gph.ph6 { background: rgba(192,253,114,0.38); color: #c0fd72; }
+
+    .gantt-header-row {
+      display: grid;
+      grid-template-columns: 210px 110px repeat(8, 1fr);
+      background: var(--blue);
+    }
+    .gantt-hcell {
+      padding: 13px 8px;
+      font-size: 9px; font-weight: 700;
+      letter-spacing: 1.2px; text-transform: uppercase;
+      color: rgba(255,255,255,0.65);
+      text-align: center;
+      border-right: 1px solid rgba(255,255,255,0.1);
+    }
+    .gantt-hcell:first-child { text-align: left; padding-left: 18px; color: var(--white); }
+    .gantt-hcell.wk3,.gantt-hcell.wk4 { color: #7dd3fc; }
+    .gantt-hcell.wk5 { color: #93c5fd; }
+    .gantt-hcell.wk6 { color: #86efac; }
+    .gantt-hcell.wk7 { color: #a3e635; }
+    .gantt-hcell.wk8 { color: var(--green); }
+    .gantt-hcell:last-child { border-right: none; }
+
+    .gantt-group {
+      display: grid;
+      grid-template-columns: 210px 110px repeat(8, 1fr);
+      background: #1a2e6e;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+    .gantt-group-label {
+      grid-column: 1 / 3;
+      padding: 11px 18px;
+      font-size: 11px; font-weight: 700;
+      color: rgba(255,255,255,0.92);
+      letter-spacing: 0.3px;
+    }
+    .gantt-group-cell { border-left: 1px solid rgba(255,255,255,0.05); }
+
+    .gantt-row {
+      display: grid;
+      grid-template-columns: 210px 110px repeat(8, 1fr);
+      border-bottom: 1px solid var(--gray-200);
+      transition: background 0.15s;
+    }
+    .gantt-row:last-child { border-bottom: none; }
+    .gantt-row:hover { background: var(--gray-100); }
+
+    .gantt-label {
+      padding: 14px 18px;
+      border-right: 1.5px solid var(--gray-200);
+      display: flex; align-items: center; gap: 9px;
+    }
+    .gantt-num {
+      min-width: 28px; height: 22px;
+      border-radius: 6px;
+      background: var(--blue);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 9px; font-weight: 800;
+      color: var(--white); flex-shrink: 0; padding: 0 5px;
+    }
+    .gantt-label-text {
+      font-size: 11px; font-weight: 500;
+      color: var(--text); line-height: 1.3;
+    }
+    .gantt-owner {
+      padding: 14px 8px;
+      border-right: 1px solid var(--gray-200);
+      font-size: 9px; font-weight: 600;
+      color: var(--gray-400);
+      display: flex; align-items: center;
+      letter-spacing: 0.1px; line-height: 1.3;
+    }
+    .gantt-cell {
+      padding: 14px 6px;
+      border-right: 1px solid var(--gray-200);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .gantt-cell:last-child { border-right: none; }
+
+    .bar {
+      width: 100%; height: 9px;
+      border-radius: 5px; position: relative;
+    }
+    .bar-ph0 { background: linear-gradient(90deg,#3a56e8,#5270ff); box-shadow:0 2px 10px rgba(82,112,255,.3); }
+    .bar-ph1 { background: linear-gradient(90deg,#5270ff,#9caef7); box-shadow:0 2px 10px rgba(82,112,255,.35); }
+    .bar-ph2 { background: linear-gradient(90deg,#38bdf8,#7dd3fc); box-shadow:0 2px 10px rgba(56,189,248,.35); }
+    .bar-ph3 { background: linear-gradient(90deg,#60a5fa,#93c5fd); box-shadow:0 2px 8px rgba(96,165,250,.35); }
+    .bar-ph4 { background: linear-gradient(90deg,#86efac,#4ade80); box-shadow:0 2px 10px rgba(134,239,172,.4); }
+    .bar-ph5 { background: linear-gradient(90deg,#a3e635,#c0fd72); box-shadow:0 2px 10px rgba(163,230,53,.4); }
+    .bar-ph6 { background: linear-gradient(90deg,#c0fd72,#86efac); box-shadow:0 2px 10px rgba(192,253,114,.5); }
+
+    .dot { width: 13px; height: 13px; border-radius: 50%; }
+    .dot-ph0 { background:#3a56e8; box-shadow:0 2px 10px rgba(58,86,232,.5); }
+    .dot-ph1 { background:#5270ff; box-shadow:0 2px 10px rgba(82,112,255,.5); }
+    .dot-ph2 { background:#38bdf8; box-shadow:0 2px 10px rgba(56,189,248,.5); }
+    .dot-ph3 { background:#60a5fa; box-shadow:0 2px 8px rgba(96,165,250,.5); }
+    .dot-ph4 { background:#4ade80; box-shadow:0 2px 10px rgba(74,222,128,.5); }
+    .dot-ph5 { background:#a3e635; box-shadow:0 2px 10px rgba(163,230,53,.5); }
+    .dot-ph6 { background:#c0fd72; box-shadow:0 2px 10px rgba(192,253,114,.6); }
+
+    /* ─── GANTT LEGEND ──────────────────────────────────────── */
+    .gantt-legend {
+      display: flex; gap: 18px; flex-wrap: wrap;
+      padding: 16px 22px;
+      background: var(--gray-100);
+      border-top: 1.5px solid var(--gray-200);
+    }
+    .legend-item {
+      display: flex; align-items: center; gap: 7px;
+      font-size: 10px; font-weight: 600;
+      color: var(--gray-600); letter-spacing: 0.4px;
+    }
+    .legend-swatch { width: 22px; height: 7px; border-radius: 4px; }
+
+    /* ─── TIMELINE ──────────────────────────────────────────── */
+    .timeline { position: relative; padding-left: 40px; }
+    .timeline::before {
+      content: '';
+      position: absolute; left: 13px; top: 0; bottom: 0;
+      width: 2px;
+      background: linear-gradient(180deg, var(--blue) 0%, var(--green) 100%);
+      border-radius: 2px;
+    }
+    .tl-item { position: relative; margin-bottom: 44px; }
+    .tl-item:last-child { margin-bottom: 0; }
+    .tl-dot {
+      position: absolute; left: -34px; top: 4px;
+      width: 16px; height: 16px; border-radius: 50%;
+      background: var(--blue);
+      border: 3px solid var(--white);
+      box-shadow: 0 0 0 2px var(--blue);
+    }
+    .tl-dot.ph2 { background: #38bdf8; box-shadow: 0 0 0 2px #38bdf8; }
+    .tl-dot.ph3 { background: #60a5fa; box-shadow: 0 0 0 2px #60a5fa; }
+    .tl-dot.ph4 { background: #4ade80; box-shadow: 0 0 0 2px #4ade80; }
+    .tl-dot.ph5 { background: #a3e635; box-shadow: 0 0 0 2px #a3e635; }
+    .tl-dot.final { background: var(--green); box-shadow: 0 0 0 2px var(--green); }
+    .tl-week-label {
+      font-size: 11px; font-weight: 700;
+      letter-spacing: 3px; text-transform: uppercase;
+      color: var(--blue); margin-bottom: 14px;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .tl-week-label.ph2 { color: #0ea5e9; }
+    .tl-week-label.ph3 { color: #3b82f6; }
+    .tl-week-label.ph4 { color: #16a34a; }
+    .tl-week-label.ph5 { color: #65a30d; }
+    .tl-week-label.final { color: #22a822; }
+    .tl-week-label::after {
+      content: ''; flex: 1; height: 1px; background: var(--gray-200);
+    }
+    .tl-entries { display: flex; flex-direction: column; gap: 10px; }
+    .tl-entry {
+      background: var(--white);
+      border: 1.5px solid var(--gray-200);
+      border-radius: var(--radius);
+      padding: 14px 18px;
+      display: flex; align-items: center; gap: 12px;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .tl-entry:hover { border-color: var(--blue-light); box-shadow: 0 2px 16px rgba(82,112,255,.08); }
+    .tl-entry.final { border-color: rgba(192,253,114,.6); background: rgba(192,253,114,.05); }
+    .tl-entry-num {
+      font-size: 10px; font-weight: 800; color: var(--blue);
+      background: var(--gray-100); border: 1.5px solid var(--gray-200);
+      border-radius: 6px; padding: 3px 8px; flex-shrink: 0;
+    }
+    .tl-entry.final .tl-entry-num {
+      background: rgba(192,253,114,.2); border-color: rgba(192,253,114,.5); color: #22a822;
+    }
+    .tl-entry-name { font-size: 13px; font-weight: 500; color: var(--text); flex: 1; }
+    .tl-entry.final .tl-entry-name { font-weight: 700; color: #22a822; }
+    .tl-gate {
+      font-size: 9px; font-weight: 700;
+      letter-spacing: 0.8px; text-transform: uppercase;
+      padding: 3px 8px; border-radius: 12px;
+      background: rgba(192,253,114,0.15);
+      color: #65a30d;
+      border: 1px solid rgba(192,253,114,0.4);
+      flex-shrink: 0;
+    }
+
+    /* ─── DELIVERABLE CARDS ─────────────────────────────────── */
+    .cards-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 20px; margin-bottom: 80px;
+    }
+    @media (max-width: 720px) { .cards-grid { grid-template-columns: 1fr; } }
+    .dcard {
+      background: var(--white);
+      border: 1.5px solid var(--gray-200);
+      border-radius: var(--radius-xl);
+      padding: 30px; position: relative; overflow: hidden;
+      transition: border-color .2s, box-shadow .2s, transform .2s;
+    }
+    .dcard:hover { border-color: var(--blue-light); box-shadow: 0 8px 40px rgba(82,112,255,.1); transform: translateY(-2px); }
+    .dcard::before {
+      content: ''; position: absolute; top: 0; left: 0;
+      width: 100%; height: 4px; background: var(--blue);
+    }
+    .dcard.ph2::before { background: #38bdf8; }
+    .dcard.ph3::before { background: #60a5fa; }
+    .dcard.ph4::before { background: #4ade80; }
+    .dcard.ph5::before { background: #a3e635; }
+    .dcard.ph6 { grid-column: 1 / -1; background: var(--blue); }
+    .dcard.ph6::before { background: var(--green); }
+    .dcard-header { display: flex; align-items: flex-start; gap: 16px; margin-bottom: 18px; }
+    .dcard-num {
+      width: 44px; height: 44px; border-radius: 11px;
+      background: var(--blue);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 800; color: var(--white); flex-shrink: 0;
+    }
+    .dcard.ph2 .dcard-num { background: #0ea5e9; }
+    .dcard.ph3 .dcard-num { background: #3b82f6; }
+    .dcard.ph4 .dcard-num { background: #16a34a; }
+    .dcard.ph5 .dcard-num { background: #65a30d; }
+    .dcard.ph6 .dcard-num { background: var(--green); color: var(--black); }
+    .dcard-meta { flex: 1; }
+    .dcard-title {
+      font-size: 14.5px; font-weight: 700; color: var(--text);
+      margin-bottom: 6px; line-height: 1.3;
+    }
+    .dcard.ph6 .dcard-title { font-size: 17px; color: var(--white); }
+    .week-tag {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+      padding: 4px 10px; border-radius: 20px;
+      background: var(--gray-100); color: var(--blue);
+      border: 1px solid var(--gray-200);
+    }
+    .week-tag::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--blue); }
+    .dcard.ph2 .week-tag { color: #0ea5e9; border-color: #bae6fd; background: #f0f9ff; }
+    .dcard.ph2 .week-tag::before { background: #0ea5e9; }
+    .dcard.ph3 .week-tag { color: #3b82f6; border-color: #bfdbfe; background: #eff6ff; }
+    .dcard.ph3 .week-tag::before { background: #3b82f6; }
+    .dcard.ph4 .week-tag { color: #16a34a; border-color: #bbf7d0; background: #f0fdf4; }
+    .dcard.ph4 .week-tag::before { background: #16a34a; }
+    .dcard.ph5 .week-tag { color: #65a30d; border-color: #d9f99d; background: #f7fee7; }
+    .dcard.ph5 .week-tag::before { background: #65a30d; }
+    .dcard.ph6 .week-tag { background: rgba(255,255,255,.12); color: var(--green); border-color: rgba(192,253,114,.4); }
+    .dcard.ph6 .week-tag::before { background: var(--green); }
+    .dcard-body {
+      font-size: 13px; font-weight: 400; color: var(--gray-600); line-height: 1.75;
+    }
+    .dcard.ph6 .dcard-body { color: rgba(255,255,255,.75); font-size: 13.5px; }
+    .dcard-body strong { font-weight: 700; color: var(--text); }
+    .dcard.ph6 .dcard-body strong { color: var(--white); }
+    .dcard-body em { font-style: normal; color: var(--blue); font-weight: 600; }
+    .dcard.ph6 .dcard-body em { color: var(--green); }
+    .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 18px; }
+    .tag {
+      font-size: 9.5px; font-weight: 600; letter-spacing: .5px;
+      padding: 3px 9px; border-radius: 6px;
+      background: var(--gray-100); color: var(--gray-600); border: 1px solid var(--gray-200);
+    }
+    .dcard.ph6 .tag { background: rgba(255,255,255,.1); color: rgba(255,255,255,.7); border-color: rgba(255,255,255,.15); }
+
+    /* ─── DIAGNOSIS SECTION ──────────────────────────────────── */
+    .diag-intro-block {
+      background: #fff8f5;
+      border: 1.5px solid #fde8d8;
+      border-radius: var(--radius-xl);
+      padding: 40px 48px;
+      margin-bottom: 48px;
+      position: relative; overflow: hidden;
+    }
+    .diag-intro-block::before {
+      content: '';
+      position: absolute; top: 0; left: 0;
+      width: 100%; height: 4px;
+      background: linear-gradient(90deg, var(--orange), #ff9a6c);
+    }
+    .diag-intro-block p {
+      font-size: 14.5px; font-weight: 400;
+      color: #7a4030; line-height: 1.8;
+    }
+    .diag-intro-block p + p { margin-top: 12px; }
+    .diag-intro-block strong { font-weight: 700; color: #5a2010; }
+
+    .diag-subsection { margin-bottom: 48px; }
+    .diag-subsection-title {
+      font-size: 13px; font-weight: 700;
+      letter-spacing: 2px; text-transform: uppercase;
+      color: var(--gray-600); margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid var(--gray-200);
+      display: flex; align-items: center; gap: 10px;
+    }
+    .diag-subsection-title::before {
+      content: '';
+      width: 10px; height: 10px; border-radius: 50%;
+      background: var(--blue); flex-shrink: 0;
+    }
+    .diag-subsection-title.missing::before { background: #dc2626; }
+
+    .diag-grid {
+      display: flex; flex-direction: column; gap: 12px;
+      margin-bottom: 0;
+    }
+    .diag-card {
+      background: var(--white);
+      border: 1.5px solid var(--gray-200);
+      border-radius: var(--radius);
+      padding: 18px 22px;
+      display: flex; align-items: flex-start; gap: 16px;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .diag-card:hover { border-color: var(--blue-light); box-shadow: 0 2px 16px rgba(82,112,255,.07); }
+    .diag-card.missing { border-color: rgba(220,38,38,0.2); background: rgba(220,38,38,0.02); }
+    .diag-badge {
+      font-size: 9.5px; font-weight: 700;
+      letter-spacing: 0.8px; text-transform: uppercase;
+      padding: 5px 11px; border-radius: 20px;
+      white-space: nowrap; flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .badge-incorporated { background: rgba(82,112,255,0.1); color: var(--blue); border: 1px solid rgba(82,112,255,0.2); }
+    .badge-reformed     { background: rgba(56,189,248,0.1); color: #0ea5e9; border: 1px solid rgba(56,189,248,0.25); }
+    .badge-cut          { background: rgba(255,107,53,0.1); color: #e04e1c; border: 1px solid rgba(255,107,53,0.25); }
+    .badge-expanded     { background: rgba(22,163,74,0.1);  color: #16a34a; border: 1px solid rgba(22,163,74,0.2); }
+    .badge-displaced    { background: rgba(167,139,250,0.1); color: #7c3aed; border: 1px solid rgba(167,139,250,0.25); }
+    .badge-kept         { background: rgba(192,253,114,0.2); color: #65a30d; border: 1px solid rgba(192,253,114,0.4); }
+    .badge-missing      { background: rgba(220,38,38,0.08); color: #dc2626; border: 1px solid rgba(220,38,38,0.2); }
+    .diag-content { flex: 1; }
+    .diag-original {
+      font-size: 12.5px; font-weight: 700; color: var(--text);
+      margin-bottom: 5px; display: flex; align-items: center; gap: 8px;
+    }
+    .diag-phase-tag {
+      font-size: 9px; font-weight: 600; letter-spacing: 0.5px;
+      color: var(--gray-400); font-weight: 500;
+      background: var(--gray-100); padding: 2px 7px; border-radius: 6px;
+    }
+    .diag-reason {
+      font-size: 12.5px; font-weight: 400; color: var(--gray-600); line-height: 1.7;
+    }
+    .diag-reason strong { font-weight: 700; color: var(--text); }
+
+    /* ─── RISK TABLE ─────────────────────────────────────────── */
+    .risk-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 16px; margin-bottom: 80px;
+    }
+    @media (max-width: 720px) { .risk-grid { grid-template-columns: 1fr; } }
+    .risk-card {
+      background: var(--white);
+      border: 1.5px solid var(--gray-200);
+      border-radius: var(--radius-lg);
+      padding: 22px 24px;
+      display: flex; gap: 16px; align-items: flex-start;
+      transition: border-color .2s;
+    }
+    .risk-card:hover { border-color: var(--blue-light); }
+    .risk-icon {
+      width: 40px; height: 40px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; flex-shrink: 0;
+    }
+    .risk-icon.high   { background: rgba(220,38,38,0.1); }
+    .risk-icon.medium { background: rgba(245,158,11,0.1); }
+    .risk-body { flex: 1; }
+    .risk-title { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+    .risk-desc { font-size: 12px; font-weight: 400; color: var(--gray-600); line-height: 1.65; }
+    .risk-badge {
+      font-size: 9px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase;
+      padding: 3px 9px; border-radius: 10px; margin-top: 8px; display: inline-block;
+    }
+    .risk-badge.high   { background: rgba(220,38,38,0.1); color: #dc2626; }
+    .risk-badge.medium { background: rgba(245,158,11,0.1); color: #d97706; }
+
+    /* ─── KPI GRID ───────────────────────────────────────────── */
+    .kpi-columns {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 20px; margin-bottom: 80px;
+    }
+    @media (max-width: 720px) { .kpi-columns { grid-template-columns: 1fr; } }
+    .kpi-block {
+      background: var(--gray-100);
+      border: 1.5px solid var(--gray-200);
+      border-radius: var(--radius-lg);
+      padding: 28px 24px;
+    }
+    .kpi-block-title {
+      font-size: 11px; font-weight: 700;
+      letter-spacing: 2px; text-transform: uppercase;
+      color: var(--blue); margin-bottom: 16px;
+    }
+    .kpi-list { display: flex; flex-direction: column; gap: 10px; }
+    .kpi-item {
+      display: flex; align-items: flex-start; gap: 8px;
+      font-size: 12.5px; font-weight: 400; color: var(--gray-600); line-height: 1.5;
+    }
+    .kpi-item::before {
+      content: ''; width: 6px; height: 6px; border-radius: 50%;
+      background: var(--blue); flex-shrink: 0; margin-top: 6px;
+    }
+
+    /* ─── TEAM BLOCK ─────────────────────────────────────────── */
+    .team-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 16px; margin-bottom: 80px;
+    }
+    @media (max-width: 720px) { .team-grid { grid-template-columns: 1fr 1fr; } }
+    .team-card {
+      background: var(--white);
+      border: 1.5px solid var(--gray-200);
+      border-radius: var(--radius-lg);
+      padding: 22px 20px; text-align: center;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .team-card:hover { border-color: var(--blue-light); box-shadow: 0 4px 20px rgba(82,112,255,.08); }
+    .team-avatar {
+      width: 48px; height: 48px; border-radius: 14px;
+      background: var(--blue);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; font-weight: 800; color: var(--white);
+      margin: 0 auto 12px;
+    }
+    .team-role {
+      font-size: 9.5px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;
+      color: var(--blue); margin-bottom: 6px;
+    }
+    .team-name { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+    .team-desc { font-size: 11px; font-weight: 400; color: var(--gray-400); line-height: 1.5; }
+
+    /* ─── META BLOCK ─────────────────────────────────────────── */
+    .meta-block {
+      background: var(--blue);
+      border-radius: var(--radius-xl);
+      padding: 48px 52px;
+      margin-bottom: 80px;
+      position: relative; overflow: hidden;
+      text-align: center;
+    }
+    .meta-block::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      background: radial-gradient(ellipse at 70% 30%, rgba(192,253,114,0.08) 0%, transparent 70%);
+    }
+    .meta-block blockquote {
+      font-size: clamp(16px, 2.2vw, 22px);
+      font-weight: 600; color: var(--white);
+      line-height: 1.55; letter-spacing: -0.3px;
+      position: relative; z-index: 1;
+      max-width: 780px; margin: 0 auto;
+    }
+    .meta-block blockquote em { font-style: normal; color: var(--green); }
+    .meta-eyebrow {
+      font-size: 10px; font-weight: 700;
+      letter-spacing: 3px; text-transform: uppercase;
+      color: rgba(255,255,255,0.5); margin-bottom: 20px;
+      position: relative; z-index: 1;
+    }
+
+    /* ─── DIVIDER ─────────────────────────────────────────────── */
+    .divider { margin: 72px 0; border: none; border-top: 1.5px solid var(--gray-200); }
+
+    /* ─── FOOTER ──────────────────────────────────────────────── */
+    .footer { background: var(--blue); padding: 48px 40px; text-align: center; }
+    .footer-logo { font-size: 24px; font-weight: 300; color: var(--white); letter-spacing: -.5px; margin-bottom: 12px; }
+    .footer-logo span { font-weight: 800; color: var(--green); }
+    .footer-sub { font-size: 11px; font-weight: 500; letter-spacing: 2px; text-transform: uppercase; color: rgba(255,255,255,.4); }
+
+    /* ─── DOWNLOAD BUTTON ────────────────────────────────────── */
+    .btn-download {
+      position: fixed; bottom: 32px; right: 32px; z-index: 9999;
+      display: flex; align-items: center; gap: 10px;
+      background: var(--blue); color: var(--green);
+      border: 2px solid var(--green); border-radius: 50px;
+      padding: 14px 26px;
+      font-family: 'Poppins', sans-serif; font-size: 13px;
+      font-weight: 700; letter-spacing: .5px;
+      cursor: pointer;
+      box-shadow: 0 8px 32px rgba(82,112,255,.4);
+      transition: transform .2s, box-shadow .2s, background .2s;
+      outline: none;
+    }
+    .btn-download:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(82,112,255,.5); background: #3d58f0; }
+    .btn-download:active { transform: translateY(0); }
+    .btn-download.loading { opacity: .75; pointer-events: none; }
+    .btn-download svg { flex-shrink: 0; }
+    .btn-download .spinner {
+      width: 18px; height: 18px;
+      border: 2px solid rgba(192,253,114,.3);
+      border-top-color: var(--green);
+      border-radius: 50%;
+      animation: spin .7s linear infinite; display: none;
+    }
+    .btn-download.loading .btn-icon { display: none; }
+    .btn-download.loading .spinner  { display: block; }
+    .btn-download.loading .btn-label::after { content: '...'; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ─── PAGE BREAK ─────────────────────────────────────────── */
+    .page-break { page-break-before: always; break-before: page; height: 0; }
+    .no-break   { page-break-inside: avoid; break-inside: avoid; }
+
+    /* ─── PDF MODE ───────────────────────────────────────────── */
+    body.pdf-generating #pdf-root { width:794px!important; max-width:794px!important; overflow:hidden!important; margin:0!important; }
+    body.pdf-generating .cover { width:794px!important; min-height:1080px!important; height:1080px!important; padding:100px 56px 80px!important; border-radius:0!important; }
+    body.pdf-generating .cover::before,
+    body.pdf-generating .cover::after { display:none!important; }
+    body.pdf-generating .cover-scroll-hint { display:none!important; }
+    body.pdf-generating .cover-title  { font-size:50px!important; letter-spacing:-2px!important; }
+    body.pdf-generating .cover-logo   { font-size:38px!important; margin-bottom:48px!important; }
+    body.pdf-generating .main { max-width:794px!important; padding:48px 40px!important; }
+    body.pdf-generating .intro-block { padding:32px 36px!important; margin-bottom:40px!important; border-radius:16px!important; }
+    body.pdf-generating .intro-block::after { display:none!important; }
+    body.pdf-generating .intro-block p { font-size:12.5px!important; }
+    body.pdf-generating .stats-row { grid-template-columns:repeat(5,1fr)!important; gap:10px!important; margin-bottom:40px!important; }
+    body.pdf-generating .stat-card  { padding:18px 12px!important; }
+    body.pdf-generating .stat-num   { font-size:30px!important; }
+    body.pdf-generating .stat-label { font-size:8.5px!important; }
+    body.pdf-generating .gantt-wrapper  { box-shadow:none!important; border-radius:12px!important; }
+    body.pdf-generating .gantt-phase-row,
+    body.pdf-generating .gantt-header-row,
+    body.pdf-generating .gantt-group,
+    body.pdf-generating .gantt-row { grid-template-columns:150px 85px repeat(8,1fr)!important; }
+    body.pdf-generating .gantt-label    { padding:11px 10px!important; }
+    body.pdf-generating .gantt-label-text { font-size:9px!important; }
+    body.pdf-generating .gantt-num      { min-width:22px!important; height:20px!important; font-size:8px!important; }
+    body.pdf-generating .gantt-cell     { padding:11px 4px!important; }
+    body.pdf-generating .gantt-hcell    { padding:10px 4px!important; font-size:7.5px!important; }
+    body.pdf-generating .gantt-owner    { font-size:7.5px!important; padding:11px 5px!important; }
+    body.pdf-generating .gph            { padding:7px 4px!important; font-size:7.5px!important; }
+    body.pdf-generating .dot            { width:11px!important; height:11px!important; }
+    body.pdf-generating .bar            { height:8px!important; }
+    body.pdf-generating .section-intro  { max-width:100%!important; margin-bottom:24px!important; font-size:13px!important; }
+    body.pdf-generating .section-title  { font-size:26px!important; }
+    body.pdf-generating .timeline       { padding-left:34px!important; }
+    body.pdf-generating .tl-entry-name  { font-size:12px!important; }
+    body.pdf-generating .tl-entry       { padding:11px 15px!important; }
+    body.pdf-generating .tl-item        { margin-bottom:36px!important; }
+    body.pdf-generating .cards-grid     { grid-template-columns:1fr 1fr!important; gap:12px!important; }
+    body.pdf-generating .dcard          { padding:20px!important; border-radius:14px!important; }
+    body.pdf-generating .dcard-body     { font-size:12px!important; }
+    body.pdf-generating .dcard-title    { font-size:13px!important; }
+    body.pdf-generating .dcard-num      { width:36px!important; height:36px!important; font-size:13px!important; border-radius:9px!important; }
+    body.pdf-generating .diag-card      { padding:14px 18px!important; }
+    body.pdf-generating .diag-reason    { font-size:11.5px!important; }
+    body.pdf-generating .risk-grid      { grid-template-columns:1fr 1fr!important; gap:12px!important; }
+    body.pdf-generating .kpi-columns    { grid-template-columns:repeat(3,1fr)!important; gap:12px!important; }
+    body.pdf-generating .team-grid      { grid-template-columns:repeat(4,1fr)!important; gap:12px!important; }
+    body.pdf-generating .footer         { padding:32px 40px!important; }
+    body.pdf-generating .footer-logo    { font-size:20px!important; }
+    body.pdf-generating .divider        { margin:40px 0!important; }
+
+    @media print {
+      * { -webkit-print-color-adjust:exact!important; print-color-adjust:exact!important; }
+      .btn-download { display:none!important; }
+    }
+  </style>
+</head>
+<body>
+<div id="pdf-root">
+
+<!-- ══ COVER ════════════════════════════════════════════════ -->
+<section class="cover">
+  <div class="cover-logo">vendo<span>.vc</span> × <span>POUP</span></div>
+  <div class="cover-eyebrow">Relatório Executivo de Reestruturação</div>
+  <h1 class="cover-title">Projeto POUP<br><span class="highlight">16 Semanas para o MVP</span></h1>
+  <p class="cover-subtitle">Análise Estratégica · Diagnóstico + Plano de Execução · Abril 2026</p>
+  <div class="cover-pills">
+    <span class="pill accent">16 Semanas</span>
+    <span class="pill">8 Trilhas</span>
+    <span class="pill">7 Fases</span>
+    <span class="pill">6 Checkpoints de Aprovação</span>
+    <span class="pill">1 MVP Publicável</span>
+  </div>
+  <div class="cover-scroll-hint">
+    <span>Scroll</span>
+    <div class="scroll-arrow"></div>
+  </div>
+</section>
+
+<!-- ══ MAIN ══════════════════════════════════════════════════ -->
+<main class="main">
+
+  <!-- META DO PRODUTO -->
+  <div class="meta-block">
+    <div class="meta-eyebrow">Meta do Produto · 16 Semanas</div>
+    <blockquote>
+      "Entregar um aplicativo mobile <em>funcional, seguro e publicável</em>, capaz de receber dados financeiros do usuário, organizar receitas e despesas, classificar movimentações, gerar alertas úteis e conduzir o usuário por <em>jornadas financeiras educativas iniciais</em>."
+    </blockquote>
+  </div>
+
+  <!-- INTRO -->
+  <div class="intro-block">
+    <p>
+      A POUP nasce com uma proposta forte: <strong>ensinar finanças enquanto melhora a prática financeira real do usuário</strong>. Na prática, isso transforma o app em um produto com três camadas simultâneas — operacional (captar e organizar dados), inteligência (classificar e alertar) e educacional (destravar jornadas de evolução financeira).
+    </p>
+    <p>
+      <strong>A POUP pode ficar de pé em 4 meses</strong>, mas não como plataforma completa. Este relatório reorganiza o projeto para um <strong>MVP (versão mínima funcional e publicável) de produto financeiro-educacional mobile</strong>, com escopo realista, 8 frentes de trabalho paralelas e 6 checkpoints formais de aprovação — um ao fim de cada fase. <em>A meta não é lançar rápido — é lançar certo.</em>
+    </p>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-num">16</div>
+      <div class="stat-label">Semanas de Projeto</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">8</div>
+      <div class="stat-label">Trilhas Paralelas</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">7</div>
+      <div class="stat-label">Fases (F0→F6)</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">6</div>
+      <div class="stat-label">Checkpoints de Aprovação</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">MVP</div>
+      <div class="stat-label">Entrega Final Publicável</div>
+    </div>
+  </div>
+
+  <!-- ─── GANTT ─────────────────────────────────────────── -->
+  <div class="page-break"></div>
+  <div class="section-eyebrow">Cronograma Visual</div>
+  <h2 class="section-title">Diagrama de <span class="hl">Gantt · 8 Trilhas × 16 Semanas</span></h2>
+  <div class="section-rule"></div>
+  <p class="section-intro">
+    Cada coluna representa um bloco de 2 semanas. As barras indicam o período de execução de cada trilha; os marcadores indicam marcos de conclusão de fase. As trilhas operam em paralelo — nenhuma frente espera a outra terminar.
+  </p>
+
+  <div class="gantt-wrapper">
+    <!-- Phase super-header -->
+    <div class="gantt-phase-row">
+      <div class="gph" style="grid-column:1/3; text-align:left; padding-left:18px;">Trilha · Projeto POUP</div>
+      <div class="gph ph0" style="grid-column:3/4;">F0 · Setup<br><span style="font-weight:400;opacity:.7">S1</span></div>
+      <div class="gph ph1" style="grid-column:4/5;">F1 · Fundação<br><span style="font-weight:400;opacity:.7">S2–S4</span></div>
+      <div class="gph ph2" style="grid-column:5/6;">F2 · Núcleo Fin.<br><span style="font-weight:400;opacity:.7">S5–S6</span></div>
+      <div class="gph ph2" style="grid-column:6/7;">F2 cont.<br><span style="font-weight:400;opacity:.7">S7–S8</span></div>
+      <div class="gph ph3" style="grid-column:7/8;">F3 · Jornadas<br><span style="font-weight:400;opacity:.7">S9–S10</span></div>
+      <div class="gph ph4" style="grid-column:8/9;">F4 · QA & Prep<br><span style="font-weight:400;opacity:.7">S11–S12</span></div>
+      <div class="gph ph5" style="grid-column:9/10;">F5 · Beta<br><span style="font-weight:400;opacity:.7">S13–S14</span></div>
+      <div class="gph ph6" style="grid-column:10/11;">F6 · Lançamento<br><span style="font-weight:400;opacity:.7">S15–S16</span></div>
+    </div>
+
+    <!-- Week sub-header -->
+    <div class="gantt-header-row">
+      <div class="gantt-hcell">Trilha</div>
+      <div class="gantt-hcell">Responsável</div>
+      <div class="gantt-hcell">S1–S2</div>
+      <div class="gantt-hcell">S3–S4</div>
+      <div class="gantt-hcell">S5–S6</div>
+      <div class="gantt-hcell wk3">S7–S8</div>
+      <div class="gantt-hcell wk4">S9–S10</div>
+      <div class="gantt-hcell wk5">S11–S12</div>
+      <div class="gantt-hcell wk6">S13–S14</div>
+      <div class="gantt-hcell wk7">S15–S16</div>
+    </div>
+
+    <!-- T1 Governança -->
+    <div class="gantt-group">
+      <div class="gantt-group-label">T1 · Governança e gestão do projeto</div>
+      <div class="gantt-group-cell"></div><div class="gantt-group-cell"></div>
+      <div class="gantt-group-cell"></div><div class="gantt-group-cell"></div>
+      <div class="gantt-group-cell"></div><div class="gantt-group-cell"></div>
+      <div class="gantt-group-cell"></div><div class="gantt-group-cell"></div>
+    </div>
+    <div class="gantt-row">
+      <div class="gantt-label"><div class="gantt-num">T1</div><div class="gantt-label-text">Meta do produto, lista de prioridades, mapa de riscos, reuniões semanais, checkpoints de aprovação</div></div>
+      <div class="gantt-owner">Ignácio · Rafael</div>
+      <div class="gantt-cell"><div class="bar bar-ph0"></div></div>
+      <div class="gantt-cell"><div class="bar bar-ph1"></div></div>
+      <div class="gantt-cell"><div class="bar bar-ph2"></div></div>
+      <div class="gantt-cell"><div class="bar bar-ph2"></div></div>
+      <div class="gantt-cell"><div class="bar bar-ph3"></div></div>
+      <div class="gantt-cell"><div class="bar bar-ph4"></div></div>
+      <div class="gantt-cell"><div class="bar bar-ph5"></div></div>
+      <div class="gantt-cell"><div class="bar bar-ph6"></div></div>
+    </div>
+
+    <!-- T2 Produto e UX -->
+    <div class="gantt-group">
+      <div class="gantt-group-label">T2 · Produto e UX</div>
+      <div class="gantt-group-cell"></div><div class="gantt-group-cell"></div>
+      <div class="gantt-group-cell"></div><div class="gantt-group-cell"></div>
+      <div class="gantt-group-cell"></div><div class="gantt-group-cell"></div>
+      <div class="gantt-group-cell"></div><div class="gantt-group-cell"></div>
+    </div>
+    <div class="gantt-row">
+      <div class="gantt-label"><div class="gantt-num">T2</div><div class="gantt-label-text">Proposta de valor, fluxos de telas, biblioteca visual do app, protótipo navegável, textos da interface</div></div>
+      <div class="gantt-owner">Product Designer</div>
+      <div class="gantt-cell"><div class="bar bar-ph0"></div></div>
+      <div class="gantt-cell"><div class="bar bar-ph1"></div></div>
+      <div class="gantt-cell"><div class="bar bar-ph2"></div></div>
+      <div class="gantt-cell"><div class="bar bar-ph2"></div></div>
+      <div class="gantt-cell"><div class="dot dot-ph3"></div></div>
+      <div class="gantt-cell"></div>
+      <div class="gantt-cell"></div>
+      <div class="gantt-cell"></div>
+    </div>
+
+    <!-- T3 App Mobile -->
+    <div class="gantt-group">
+      <div class="gantt-group-label">T3 · Aplicativo mobile</div>
+      <div class="gantt-group-cell"></div><div class="gantt-group-cell"></div>
+      <div class="gantt-group-cell"></div><div class="gantt-group-cell"></div>
+      <div class="gantt-group-cell"></div><div class="gantt-group-cell"></div>
+      <div class="gantt-group-cell"></div><div class="gantt-group-cell"></div>
+    </div>
+    <div class="gantt-row">
+      <div class="gantt-label"><div class="gantt-num">T3</div><div class="gantt-label-text">Estrutura do app, login, tela inicial, extrato de movimentações, notificações, publicação nas lojas</div></div>
+      <div class="gantt-owner">Dev Mobile</div>
+      <div class="gantt-cell"><div class="dot dot-ph1"></div></div>
+      <div class="gantt-cell"><div class="bar bar-ph1"></div></div>
+      <div class="gantt-cell"><div class="bar bar-ph2"></div></div>
+      <div class="gantt-cell"><div class="bar bar-ph2"></div></div>
+      <div class="gantt-cell"><div class="bar bar-ph3"></div></div>
+      <div class="gantt-cell"><div class="bar bar-ph4"></div></div>
+      <div class="gantt-cell"><div class="bar bar-ph5"></div></div>
+      <div class="gantt-cell"><div class="dot dot-ph6"></div></div>
+    </div>
+
+    <!-- T4 Backend -->
+    <div class="gantt-group">
+      <div class="gantt-group-label">T4 · Backend e dados</div>
+      <div class="gantt-group-cell"></div><div class="gantt-group-cell"></div>
+      <div class="gantt-group-cell"></div><div class="gantt-group-cell"></div>
+      <div class="gantt-group-cell"></div><div class="gantt-group-cell"></div>
+      <div class="gantt-group-cell"></div><div class="gantt-group-cell"></div>
+    </div>
+    <div class="gantt-row">
+      <div class="gantt-label"><div class="gantt-num">T4</div><div class="gantt-label-text">Banco de dados, servidor, integrações, registro de uso dos usuários, monitoramento de erros</div></div>
+      <div class="gantt-owner">Dev Backend</div>
+      <div class="gantt-cell"><div class="dot dot-ph1"></div></div>
+      <div class="gantt-cell"><div class="bar bar-ph1"></div></div>
+      <div class="gantt-cell"><div class="bar bar-ph2"></div></div>
+      <div class="gantt-cell"><div class="bar bar-ph2"></div></div>
+      <div class="gantt-cell"><div class="bar bar-ph3"></div></div>
+      <div class="gantt-cell"><div class="bar bar-ph4"></div></div>
+      <div class="gantt-cell"><div class="bar bar-ph5"></div></div>
+      <div class="gantt-cell"><div class="dot dot-ph6"></div></div>
+    </div>
+
+    <!-- T5 Open Finance -->
+    <div class="gantt-group">
+      <div class="gantt-group-label">T5 · Open Finance e conexão com dados bancários</div>
+      <div class="gantt-group-cell"></div><div class="gantt-group-cell"></div>
+      <div class="gantt-group-cell"></div><div class="gantt-group-cell"></div>
+      <div class="gantt-group-cell"></div><div class="gantt-group-cell"></div>
+      <div class="gantt-group-cell"></div><div class="gantt-group-cell"></div>
+    </div>
+    <div class="gantt-row">
+      <div class="gantt-label"><div class="gantt-num">T5</div><div class="gantt-label-text">Open Finance (acesso aos dados bancários com autorização do usuário), parceiro, plano B por importação manual</div></div>
+      <div class="gantt-owner">Dev Backend · Parceiro</div>
+      <div class="gantt-cell"><div class="dot dot-ph0"></div></div>
+      <div class="gantt-cell"><div class="bar bar-ph1"></div></div>
+      <div class="gantt-cell"><div class="bar bar-ph2"></div></div>
+      <div class="gantt-cell"><div class="bar bar-ph2"></div></div>
+      <div class="gantt-cell"><div class="bar bar-ph3"></div></div>
+      <div class="gantt-cell"><div class="dot dot-ph4"></div></div>
+      <div class="gantt-cell"></div>
+      <div class="gantt-cell"></div>
+    </div>
+
+    <!-- T6 Motor Financeiro -->
+    <div class="gantt-group">
+      <div class="gantt-group-label">T6 · Motor financeiro e alertas</div>
+      <div class="gantt-group-cell"></div><div class="gantt-group-cell"></div>
+      <div class="gantt-group-cell"></div><div class="gantt-group-cell"></div>
+      <div class="gantt-group-cell"></div><div class="gantt-group-cell"></div>
+      <div class="gantt-group-cell"></div><div class="gantt-group-cell"></div>
+    </div>
+    <div class="gantt-row">
+      <div class="gantt-label"><div class="gantt-num">T6</div><div class="gantt-label-text">Categorização automática, regras de alerta, metas, reserva de emergência</div></div>
+      <div class="gantt-owner">Dev Backend</div>
+      <div class="gantt-cell"></div>
+      <div class="gantt-cell"></div>
+      <div class="gantt-cell"><div class="bar bar-ph2"></div></div>
+      <div class="gantt-cell"><div class="bar bar-ph2"></div></div>
+      <div class="gantt-cell"><div class="bar bar-ph3"></div></div>
+      <div class="gantt-cell"><div class="dot dot-ph4"></div></div>
+      <div class="gantt-cell"></div>
+      <div class="gantt-cell"></div>
+    </div>
+
+    <!-- T7 Jornadas Educativas -->
+    <div class="gantt-group">
+      <div class="gantt-group-label">T7 · Jornadas educativas</div>
+      <div class="gantt-group-cell"></div><div class="gantt-group-cell"></div>
+      <div class="gantt-group-cell"></div><div class="gantt-group-cell"></div>
+      <div class="gantt-group-cell"></div><div class="gantt-group-cell"></div>
+      <div class="gantt-group-cell"></div><div class="gantt-group-cell"></div>
+    </div>
+    <div class="gantt-row">
+      <div class="gantt-label"><div class="gantt-num">T7</div><div class="gantt-label-text">Diagnóstico financeiro, controle de gastos, reserva emergência, progresso</div></div>
+      <div class="gantt-owner">Product + Dev</div>
+      <div class="gantt-cell"></div>
+      <div class="gantt-cell"></div>
+      <div class="gantt-cell"></div>
+      <div class="gantt-cell"><div class="bar bar-ph2"></div></div>
+      <div class="gantt-cell"><div class="dot dot-ph3"></div></div>
+      <div class="gantt-cell"></div>
+      <div class="gantt-cell"></div>
+      <div class="gantt-cell"></div>
+    </div>
+
+    <!-- T8 QA, Beta e Lançamento -->
+    <div class="gantt-group">
+      <div class="gantt-group-label">T8 · QA, beta e lançamento</div>
+      <div class="gantt-group-cell"></div><div class="gantt-group-cell"></div>
+      <div class="gantt-group-cell"></div><div class="gantt-group-cell"></div>
+      <div class="gantt-group-cell"></div><div class="gantt-group-cell"></div>
+      <div class="gantt-group-cell"></div><div class="gantt-group-cell"></div>
+    </div>
+    <div class="gantt-row">
+      <div class="gantt-label"><div class="gantt-num" style="background:var(--green);color:var(--black);">T8</div><div class="gantt-label-text" style="font-weight:700;">Testes de qualidade, beta com usuários reais, publicação nas lojas, monitoramento pós-lançamento</div></div>
+      <div class="gantt-owner">QA Lead · Ignácio · Rafael</div>
+      <div class="gantt-cell"></div>
+      <div class="gantt-cell"></div>
+      <div class="gantt-cell"></div>
+      <div class="gantt-cell"></div>
+      <div class="gantt-cell"></div>
+      <div class="gantt-cell"><div class="bar bar-ph4"></div></div>
+      <div class="gantt-cell"><div class="bar bar-ph5"></div></div>
+      <div class="gantt-cell"><div class="dot dot-ph6" style="width:16px;height:16px;box-shadow:0 0 0 3px rgba(192,253,114,.4),0 2px 12px rgba(192,253,114,.6);"></div></div>
+    </div>
+
+    <!-- Legend -->
+    <div class="gantt-legend">
+      <div class="legend-item"><div class="legend-swatch" style="background:#3a56e8;"></div>F0 · Setup (S1)</div>
+      <div class="legend-item"><div class="legend-swatch" style="background:#5270ff;"></div>F1 · Fundação (S2–S4)</div>
+      <div class="legend-item"><div class="legend-swatch" style="background:#38bdf8;"></div>F2 · Núcleo Financeiro (S5–S8)</div>
+      <div class="legend-item"><div class="legend-swatch" style="background:#60a5fa;"></div>F3 · Jornadas (S9–S10)</div>
+      <div class="legend-item"><div class="legend-swatch" style="background:#4ade80;"></div>F4 · QA & Prep (S11–S12)</div>
+      <div class="legend-item"><div class="legend-swatch" style="background:#a3e635;"></div>F5 · Beta (S13–S14)</div>
+      <div class="legend-item"><div class="legend-swatch" style="background:var(--green);"></div>F6 · Lançamento (S15–S16)</div>
+      <div class="legend-item" style="margin-left:auto;color:var(--gray-400);">── período &nbsp; ● marco</div>
+    </div>
+  </div>
+
+  <!-- ─── TIMELINE ──────────────────────────────────────── -->
+  <div class="page-break"></div>
+  <div class="section-eyebrow">Linha do Tempo</div>
+  <h2 class="section-title">Fluxo de <span class="hl">Entregas por Fase</span></h2>
+  <div class="section-rule"></div>
+  <p class="section-intro">
+    Cada fase tem um objetivo único e entregas verificáveis. O projeto só avança de fase após um checkpoint de aprovação — uma reunião curta onde o time confirma que os critérios mínimos foram atendidos antes de seguir em frente.
+  </p>
+
+  <div class="timeline" style="margin-bottom:80px;">
+
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="tl-week-label">Fase 0 · Semana 1 · Fechar o projeto antes de construir</div>
+      <div class="tl-entries">
+        <div class="tl-entry"><span class="tl-entry-num">F0.1</span><span class="tl-entry-name">Meta do produto definida e validada por todos</span></div>
+        <div class="tl-entry"><span class="tl-entry-num">F0.2</span><span class="tl-entry-name">Lista priorizada de funcionalidades a construir — e o que fica de fora</span></div>
+        <div class="tl-entry"><span class="tl-entry-num">F0.3</span><span class="tl-entry-name">Parceiro de Open Finance definido (sistema que permite ao app acessar dados bancários com autorização do usuário)</span></div>
+        <div class="tl-entry"><span class="tl-entry-num">F0.4</span><span class="tl-entry-name">Estrutura técnica inicial do produto aprovada pelo time</span></div>
+        <div class="tl-entry"><span class="tl-entry-num">F0.5</span><span class="tl-entry-name">Mapa dos principais riscos do projeto documentado</span></div>
+        <div class="tl-entry"><span class="tl-entry-num">F0.6</span><span class="tl-entry-name">Levantamento dos dados pessoais que o app vai coletar e como o usuário autoriza cada um</span></div>
+        <div class="tl-entry"><span class="tl-entry-num">APROVAÇÃO</span><span class="tl-entry-name">Só avança se: funcionalidades do MVP definidas + parceiro de dados bancários decidido + estrutura técnica aprovada</span><span class="tl-gate">Checkpoint 0</span></div>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="tl-week-label">Fase 1 · Semanas 2–4 · Montar a fundação do produto</div>
+      <div class="tl-entries">
+        <div class="tl-entry"><span class="tl-entry-num">F1.1</span><span class="tl-entry-name">Fluxo de navegação do app aprovado e esboço visual das telas principais entregue</span></div>
+        <div class="tl-entry"><span class="tl-entry-num">F1.2</span><span class="tl-entry-name">Biblioteca visual do app criada — cores, fontes, botões e componentes padronizados</span></div>
+        <div class="tl-entry"><span class="tl-entry-num">F1.3</span><span class="tl-entry-name">Estrutura base do app mobile funcionando (navegação entre telas, versão de desenvolvimento)</span></div>
+        <div class="tl-entry"><span class="tl-entry-num">F1.4</span><span class="tl-entry-name">Servidor, login e banco de dados estruturados</span></div>
+        <div class="tl-entry"><span class="tl-entry-num">F1.5</span><span class="tl-entry-name">Registro automático de como os usuários navegam pelo app (para análise futura)</span></div>
+        <div class="tl-entry"><span class="tl-entry-num">F1.6</span><span class="tl-entry-name">Política de privacidade e termos de uso redigidos em versão inicial</span></div>
+        <div class="tl-entry"><span class="tl-entry-num">APROVAÇÃO</span><span class="tl-entry-name">Só avança se: protótipo navegável pronto + login funcionando + banco de dados estruturado</span><span class="tl-gate">Checkpoint 1</span></div>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-dot ph2"></div>
+      <div class="tl-week-label ph2">Fase 2 · Semanas 5–8 · Entregar o núcleo financeiro</div>
+      <div class="tl-entries">
+        <div class="tl-entry"><span class="tl-entry-num">F2.1</span><span class="tl-entry-name">Conexão com o banco do usuário via Open Finance — o usuário autoriza o app a ler seus dados bancários</span></div>
+        <div class="tl-entry"><span class="tl-entry-num">F2.2</span><span class="tl-entry-name">App lê contas e movimentações bancárias do usuário em tempo real</span></div>
+        <div class="tl-entry"><span class="tl-entry-num">F2.3</span><span class="tl-entry-name">Importação manual por extrato em PDF ou planilha — opção para quem não conectar o banco</span></div>
+        <div class="tl-entry"><span class="tl-entry-num">F2.4</span><span class="tl-entry-name">App classifica automaticamente cada movimentação (mercado, aluguel, lazer, etc.)</span></div>
+        <div class="tl-entry"><span class="tl-entry-num">F2.5</span><span class="tl-entry-name">Tela inicial com resumo de receitas, despesas e saldo</span></div>
+        <div class="tl-entry"><span class="tl-entry-num">F2.6</span><span class="tl-entry-name">Alertas simples de boas práticas financeiras</span></div>
+        <div class="tl-entry"><span class="tl-entry-num">F2.7</span><span class="tl-entry-name">Tratamento de erros de conexão bancária — o que acontece se a autorização expirar ou falhar</span></div>
+        <div class="tl-entry"><span class="tl-entry-num">APROVAÇÃO</span><span class="tl-entry-name">Só avança se: usuário consegue conectar ou importar dados + ver movimentações + receber alertas</span><span class="tl-gate">Checkpoint 2</span></div>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-dot ph3"></div>
+      <div class="tl-week-label ph3">Fase 3 · Semanas 9–10 · Diferencial educacional da POUP</div>
+      <div class="tl-entries">
+        <div class="tl-entry"><span class="tl-entry-num">F3.1</span><span class="tl-entry-name">Jornada 1 — Diagnóstico financeiro</span></div>
+        <div class="tl-entry"><span class="tl-entry-num">F3.2</span><span class="tl-entry-name">Jornada 2 — Controle de gastos</span></div>
+        <div class="tl-entry"><span class="tl-entry-num">F3.3</span><span class="tl-entry-name">Jornada 3 — Reserva de emergência</span></div>
+        <div class="tl-entry"><span class="tl-entry-num">F3.4</span><span class="tl-entry-name">Barra de progresso dentro de cada jornada — o usuário vê onde está e o que falta</span></div>
+        <div class="tl-entry"><span class="tl-entry-num">F3.5</span><span class="tl-entry-name">Definição de metas financeiras pessoais + notificações para manter o usuário ativo</span></div>
+        <div class="tl-entry"><span class="tl-entry-num">APROVAÇÃO</span><span class="tl-entry-name">Só avança se: app entrega o valor completo mínimo — organização financeira + orientação + educação</span><span class="tl-gate">Checkpoint 3</span></div>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-dot ph4"></div>
+      <div class="tl-week-label ph4">Fase 4 · Semanas 11–12 · Preparar o produto para ambiente real</div>
+      <div class="tl-entries">
+        <div class="tl-entry"><span class="tl-entry-num">F4.1</span><span class="tl-entry-name">Testes de qualidade (QA) — todos os fluxos principais funcionando sem erro grave</span></div>
+        <div class="tl-entry"><span class="tl-entry-num">F4.2</span><span class="tl-entry-name">Testes em celulares reais Android e iOS — não apenas em simulador</span></div>
+        <div class="tl-entry"><span class="tl-entry-num">F4.3</span><span class="tl-entry-name">Revisão de segurança: verificar se os dados do usuário estão protegidos corretamente</span></div>
+        <div class="tl-entry"><span class="tl-entry-num">F4.4</span><span class="tl-entry-name">Revisão de privacidade: confirmar que cada dado coletado tem autorização explícita do usuário</span></div>
+        <div class="tl-entry"><span class="tl-entry-num">F4.5</span><span class="tl-entry-name">Sistema de rastreamento automático de falhas do app ativado (para detectar erros em tempo real)</span></div>
+        <div class="tl-entry"><span class="tl-entry-num">F4.6</span><span class="tl-entry-name">Ícone, capturas de tela e descrição do app preparados para as lojas (App Store e Google Play)</span></div>
+        <div class="tl-entry"><span class="tl-entry-num">APROVAÇÃO</span><span class="tl-entry-name">Só avança se: nenhuma falha crítica em aberto + app estável nos testes em dispositivos reais</span><span class="tl-gate">Checkpoint 4</span></div>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-dot ph5"></div>
+      <div class="tl-week-label ph5">Fase 5 · Semanas 13–14 · Beta real com usuários reais</div>
+      <div class="tl-entries">
+        <div class="tl-entry"><span class="tl-entry-num">F5.1</span><span class="tl-entry-name">Versão de teste interna — time e fundadores usam o app antes de qualquer usuário externo</span></div>
+        <div class="tl-entry"><span class="tl-entry-num">F5.2</span><span class="tl-entry-name">Versão de teste fechada para usuários selecionados — distribuída via TestFlight (Apple) e Google Play Internal (Android), sem publicação pública</span></div>
+        <div class="tl-entry"><span class="tl-entry-num">F5.3</span><span class="tl-entry-name">Coleta de feedback dos testadores + correção dos erros identificados</span></div>
+        <div class="tl-entry"><span class="tl-entry-num">F5.4</span><span class="tl-entry-name">Ajustes na apresentação inicial do app, nos textos e nas jornadas com base no que os testadores relataram</span></div>
+        <div class="tl-entry"><span class="tl-entry-num">APROVAÇÃO</span><span class="tl-entry-name">Só avança se: usuários de teste entenderam o produto + erros graves corrigidos + apresentação inicial clara</span><span class="tl-gate">Checkpoint 5</span></div>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="tl-dot final"></div>
+      <div class="tl-week-label final">Fase 6 · Semanas 15–16 · Lançamento controlado</div>
+      <div class="tl-entries">
+        <div class="tl-entry final"><span class="tl-entry-num">F6.1</span><span class="tl-entry-name">Submissão Android (Google Play)</span></div>
+        <div class="tl-entry final"><span class="tl-entry-num">F6.2</span><span class="tl-entry-name">Submissão iOS (App Store)</span></div>
+        <div class="tl-entry final"><span class="tl-entry-num">F6.3</span><span class="tl-entry-name">Monitoramento do app em produção + canal de suporte ativo desde o primeiro dia</span></div>
+        <div class="tl-entry final"><span class="tl-entry-num">F6.4</span><span class="tl-entry-name">Lista priorizada das próximas melhorias (v1.1) — o ciclo recomeça com dados reais de uso</span></div>
+        <div class="tl-entry final">
+          <span class="tl-entry-num">MVP</span>
+          <span class="tl-entry-name">App publicado ou aprovado · Operação estruturada · POUP no ar</span>
+          <div style="margin-left:auto;width:22px;height:22px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#000" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ─── PHASE CARDS ───────────────────────────────────── -->
+  <div class="page-break"></div>
+  <div class="section-eyebrow">Detalhamento das Fases</div>
+  <h2 class="section-title">O que <span class="hl">Construiremos</span> em Cada Fase</h2>
+  <div class="section-rule"></div>
+  <p class="section-intro">
+    Cada fase tem propósito único e entregáveis verificáveis. Nenhuma fase é "pensar" ou "planejar" — todas terminam com resultado tangível e aprovável.
+  </p>
+
+  <div class="cards-grid">
+
+    <div class="dcard">
+      <div class="dcard-header">
+        <div class="dcard-num">F0</div>
+        <div class="dcard-meta">
+          <div class="dcard-title">Setup — Fechar o Projeto Antes de Construir</div>
+          <span class="week-tag">Semana 1</span>
+        </div>
+      </div>
+      <div class="dcard-body">
+        Antes de escrever uma linha de código, o projeto precisa ter <strong>meta única e clara para todos</strong>, lista de funcionalidades fechada e decisão tomada sobre como o app vai acessar os dados bancários do usuário (Open Finance). Nessa semana também sai o levantamento dos dados pessoais que o app vai coletar — o que é exigido pela LGPD (Lei Geral de Proteção de Dados).
+        <br><br>
+        <em>Projeto que começa sem escopo fechado não lança em 16 semanas.</em>
+      </div>
+      <div class="tags">
+        <span class="tag">Meta do Produto</span><span class="tag">Escopo Fechado</span><span class="tag">Open Finance</span><span class="tag">Riscos</span><span class="tag">LGPD</span>
+      </div>
+    </div>
+
+    <div class="dcard ph2">
+      <div class="dcard-header">
+        <div class="dcard-num">F1</div>
+        <div class="dcard-meta">
+          <div class="dcard-title">Fundação — Produto, UX e Backend Prontos</div>
+          <span class="week-tag">Semanas 2–4</span>
+        </div>
+      </div>
+      <div class="dcard-body">
+        A equipe constrói os alicerces: fluxo de telas aprovado, biblioteca visual padronizada do app, login funcionando e banco de dados estruturado. Também entra o registro automático de uso (para saber como os usuários navegam). Termos e política de privacidade em versão inicial. Sem essa base pronta, nenhuma funcionalidade financeira pode ser construída.
+        <br><br>
+        <em>Fundação errada atrasa o produto inteiro — fundação certa acelera tudo que vem depois.</em>
+      </div>
+      <div class="tags">
+        <span class="tag">Fluxos de Tela</span><span class="tag">Biblioteca Visual</span><span class="tag">Login</span><span class="tag">Banco de Dados</span><span class="tag">Registro de Uso</span>
+      </div>
+    </div>
+
+    <div class="dcard ph3">
+      <div class="dcard-header">
+        <div class="dcard-num">F2</div>
+        <div class="dcard-meta">
+          <div class="dcard-title">Núcleo Financeiro — O Coração da POUP</div>
+          <span class="week-tag">Semanas 5–8</span>
+        </div>
+      </div>
+      <div class="dcard-body">
+        A fase mais crítica: o app se conecta ao banco do usuário via Open Finance — o usuário autoriza o acesso e o app começa a ler receitas e gastos reais. Quem não conectar o banco pode importar o extrato manualmente. O app passa a classificar cada movimentação automaticamente, mostrar o resumo financeiro e enviar alertas práticos.
+        <br><br>
+        <em>Sem dados financeiros reais, a POUP não existe como produto.</em>
+      </div>
+      <div class="tags">
+        <span class="tag">Open Finance</span><span class="tag">Autorização do Usuário</span><span class="tag">Movimentações</span><span class="tag">Resumo Financeiro</span><span class="tag">Alertas</span>
+      </div>
+    </div>
+
+    <div class="dcard ph4">
+      <div class="dcard-header">
+        <div class="dcard-num">F3</div>
+        <div class="dcard-meta">
+          <div class="dcard-title">Jornadas Educativas — O Diferencial da POUP</div>
+          <span class="week-tag">Semanas 9–10</span>
+        </div>
+      </div>
+      <div class="dcard-body">
+        As 3 jornadas iniciais: <strong>diagnóstico financeiro</strong>, <strong>controle de gastos</strong> e <strong>reserva de emergência</strong>. Sistema de progresso que destranca etapas. Metas financeiras básicas. Notificações de engajamento. Microcopys educativos integrados à interface.
+        <br><br>
+        <em>Quando o usuário completa a Fase 3, a POUP já entrega organização + orientação + ação.</em>
+      </div>
+      <div class="tags">
+        <span class="tag">3 Jornadas</span><span class="tag">Diagnóstico</span><span class="tag">Metas</span><span class="tag">Progresso</span><span class="tag">Engajamento</span>
+      </div>
+    </div>
+
+    <div class="dcard ph5">
+      <div class="dcard-header">
+        <div class="dcard-num">F4</div>
+        <div class="dcard-meta">
+          <div class="dcard-title">QA e Hardening — Produto Pronto para o Mundo Real</div>
+          <span class="week-tag">Semanas 11–12</span>
+        </div>
+      </div>
+      <div class="dcard-body">
+        Testes de qualidade completos em celulares reais (Android e iOS). Revisão de segurança do app e verificação se os dados do usuário estão protegidos. Rastreamento automático de falhas ativado — qualquer erro que acontecer com o usuário chega ao time em tempo real. Materiais da loja preparados (ícone, capturas de tela, descrição).
+        <br><br>
+        <em>App financeiro que vai para produção com segurança fraca não é MVP — é um risco.</em>
+      </div>
+      <div class="tags">
+        <span class="tag">Testes de Qualidade</span><span class="tag">Celulares Reais</span><span class="tag">Segurança</span><span class="tag">Privacidade</span><span class="tag">Rastreamento de Falhas</span>
+      </div>
+    </div>
+
+    <div class="dcard">
+      <div class="dcard-header">
+        <div class="dcard-num">F5</div>
+        <div class="dcard-meta">
+          <div class="dcard-title">Beta — Validação com Usuários Reais</div>
+          <span class="week-tag">Semanas 13–14</span>
+        </div>
+      </div>
+      <div class="dcard-body">
+        O time usa o app internamente primeiro. Depois, um grupo de usuários reais selecionados recebe acesso antecipado (sem publicação pública) via TestFlight (Apple) e Google Play Internal (Android). O feedback deles orienta correções e ajustes na apresentação inicial e nas jornadas educativas — antes de qualquer um instalar da loja.
+        <br><br>
+        <em>Beta não é formalidade — é a única chance de corrigir antes que o erro chegue a todos.</em>
+      </div>
+      <div class="tags">
+        <span class="tag">Acesso Antecipado</span><span class="tag">Usuários Reais</span><span class="tag">Feedback</span><span class="tag">Correções</span>
+      </div>
+    </div>
+
+    <div class="dcard ph6">
+      <div class="dcard-header">
+        <div class="dcard-num">MVP</div>
+        <div class="dcard-meta">
+          <div class="dcard-title">Lançamento Controlado — POUP no Ar</div>
+          <span class="week-tag">Semanas 15–16 · Entrega Final</span>
+        </div>
+      </div>
+      <div class="dcard-body">
+        Submissão simultânea para <strong>Android (Google Play)</strong> e <strong>iOS (App Store)</strong>. Monitoramento de produção ativo desde o primeiro usuário. Suporte inicial estruturado com resposta rápida a incidentes. <strong>Backlog priorizado da v1.1</strong> já definido — o ciclo de melhoria começa no dia do lançamento.
+        <br><br>
+        Em 16 semanas, a POUP entrega um <em>MVP mobile financeiro-educacional funcional, seguro e publicável</em> — do alinhamento inicial ao app nas mãos dos usuários. <em>Este é o compromisso.</em>
+      </div>
+      <div class="tags">
+        <span class="tag">Google Play</span><span class="tag">App Store</span><span class="tag">Monitoramento</span><span class="tag">Suporte</span><span class="tag">v1.1 Roadmap</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════
+       DIAGNÓSTICO DO PLANO ORIGINAL
+  ════════════════════════════════════════════════════════════ -->
+  <hr class="divider" />
+  <div class="page-break"></div>
+  <div class="section-eyebrow">Análise Crítica</div>
+  <h2 class="section-title">Diagnóstico do <span class="hl">Plano Original do Rafael</span></h2>
+  <div class="section-rule"></div>
+  <p class="section-intro">
+    O cronograma original mostra boa intenção — e alguns pontos estão na direção certa. Mas como plano de execução de produto financeiro, ele ainda estava frágil. Cada item abaixo recebe um diagnóstico: o que foi preservado, o que foi reformulado, o que foi cortado — e por quê.
+  </p>
+
+  <div class="diag-intro-block">
+    <p><strong>Como ler os diagnósticos:</strong> o corte de escopo não é crítica — é uma decisão de gestão. Um plano que tenta fazer tudo em 16 semanas não lança nada. O critério é simples: <strong>isso bloqueia o primeiro lançamento?</strong> Se não bloqueia, sai do caminho principal e vai para a lista de melhorias pós-lançamento.</p>
+  </div>
+
+  <!-- Sub-seção 1: Fase 1 do plano original -->
+  <div class="diag-subsection">
+    <div class="diag-subsection-title">Fase 1 do plano original — Pré-organização do Projeto</div>
+    <div class="diag-grid">
+
+      <div class="diag-card">
+        <span class="diag-badge badge-incorporated">Incorporado</span>
+        <div class="diag-content">
+          <div class="diag-original">Preenchimento do Canvas (SEBRAE) para Criação de Empresas <span class="diag-phase-tag">Item 1.1</span></div>
+          <div class="diag-reason">O Canvas continua no plano — está na Fase 0 como parte do fechamento da proposta de valor. Mas o escopo da Fase 0 vai além: inclui meta do produto, lista priorizada de funcionalidades, mapa de riscos e decisão sobre acesso aos dados bancários. O canvas é um dos insumos, não a entrega principal.</div>
+        </div>
+      </div>
+
+      <div class="diag-card">
+        <span class="diag-badge badge-reformed">Reformulado</span>
+        <div class="diag-content">
+          <div class="diag-original">Ideias Sobre o Software e a Empresa ao Desenvolvedor <span class="diag-phase-tag">Item 1.1.1</span></div>
+          <div class="diag-reason">"Passar ideias ao desenvolvedor" não é um entregável concreto — o desenvolvedor não sabe por onde começar com uma lista de ideias. Na nova estrutura, essa entrega virou um documento técnico formal com funcionalidades priorizadas e critérios claros do que precisa funcionar.</div>
+        </div>
+      </div>
+
+      <div class="diag-card">
+        <span class="diag-badge badge-cut">Eliminado</span>
+        <div class="diag-content">
+          <div class="diag-original">Desenvolvimento das Ideias sobre o Software e a Empresa <span class="diag-phase-tag">Item 1.2</span></div>
+          <div class="diag-reason">"Desenvolver ideias" não é uma tarefa verificável — quando se considera concluída? Os resultados concretos dessas ideias (esboço das telas, lista de funcionalidades, especificações técnicas) já existem como entregas nas frentes de Produto e Desenvolvimento.</div>
+        </div>
+      </div>
+
+      <div class="diag-card">
+        <span class="diag-badge badge-expanded">Expandido</span>
+        <div class="diag-content">
+          <div class="diag-original">Cronograma de Etapas (e responsáveis) do Projeto <span class="diag-phase-tag">Item 1.3</span></div>
+          <div class="diag-reason">Estava no caminho certo. Foi expandido para incluir meta do produto, 8 frentes de trabalho, critérios claros de aprovação por fase, mapa de riscos e responsáveis definidos. Cronograma sem critério de quando uma etapa está realmente concluída não funciona como ferramenta de controle.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Sub-seção 2: Fase 2 do plano original -->
+  <div class="diag-subsection">
+    <div class="diag-subsection-title">Fase 2 do plano original — Até o MVP</div>
+    <div class="diag-grid">
+
+      <div class="diag-card">
+        <span class="diag-badge badge-reformed">Reformulado</span>
+        <div class="diag-content">
+          <div class="diag-original">Formato Visual em PWA (App) do Software <span class="diag-phase-tag">Item 2.1</span></div>
+          <div class="diag-reason">A escolha do formato técnico (app nativo, PWA ou híbrido) deve vir depois que os fluxos e a experiência do usuário estiverem definidos — não antes. A frente de design e experiência do usuário começa na Fase 0 e a decisão técnica de formato entra como parte da estrutura técnica aprovada nessa mesma semana.</div>
+        </div>
+      </div>
+
+      <div class="diag-card">
+        <span class="diag-badge badge-cut">Eliminado do MVP</span>
+        <div class="diag-content">
+          <div class="diag-original">Ideias de Atualizações do Software <span class="diag-phase-tag">Itens 2.2 · 3.6</span></div>
+          <div class="diag-reason">Pensar em atualizações antes do lançamento é gastar energia no que ainda não existe. Esses itens vão para a lista de melhorias pós-lançamento (v1.1). O foco das 16 semanas é lançar o que foi definido — não ampliar enquanto constrói.</div>
+        </div>
+      </div>
+
+      <div class="diag-card">
+        <span class="diag-badge badge-cut">Eliminado do MVP</span>
+        <div class="diag-content">
+          <div class="diag-original">Desenvolvimento das Ideias de Atualizações no Software <span class="diag-phase-tag">Itens 2.3 · 3.7</span></div>
+          <div class="diag-reason">Mesmo raciocínio do item anterior. Desenvolver atualizações antes de lançar o produto base consome o tempo do time técnico no que menos importa agora. O roadmap de versões futuras existe — mas fora das 16 semanas do lançamento.</div>
+        </div>
+      </div>
+
+      <div class="diag-card">
+        <span class="diag-badge badge-reformed">Reformulado</span>
+        <div class="diag-content">
+          <div class="diag-original">Arquitetura Operacional da Companhia e do Software <span class="diag-phase-tag">Item 2.4</span></div>
+          <div class="diag-reason">Estava certo em existir, mas era ampla demais. Foi dividida em duas partes com responsáveis distintos: estrutura técnica do software (frente de Desenvolvimento) e governança operacional da empresa (frente de Gestão). Ambas entram na Fase 0.</div>
+        </div>
+      </div>
+
+      <div class="diag-card">
+        <span class="diag-badge badge-expanded">Expandido</span>
+        <div class="diag-content">
+          <div class="diag-original">Jornada do Cliente e Manipulação de Dados <span class="diag-phase-tag">Item 2.5</span></div>
+          <div class="diag-reason">Era o item mais próximo do correto, mas condensava demais. Na nova estrutura esse tema se divide em 4 frentes separadas: experiência do usuário, conexão com dados bancários (Open Finance), categorização e alertas automáticos, e jornadas educativas. Cada frente tem responsável e entregáveis próprios.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Sub-seção 3: Fase 3 do plano original -->
+  <div class="diag-subsection">
+    <div class="diag-subsection-title">Fase 3 do plano original — Entrega da Versão 1.0</div>
+    <div class="diag-grid">
+
+      <div class="diag-card">
+        <span class="diag-badge badge-cut">Fora do caminho crítico</span>
+        <div class="diag-content">
+          <div class="diag-original">Diretrizes Institucionais da Companhia <span class="diag-phase-tag">Item 3.1</span></div>
+          <div class="diag-reason">Missão, visão e valores da empresa são importantes — mas nenhum usuário pergunta qual é a missão da POUP antes de instalar o app. Essa agenda existe, mas fora do caminho crítico do lançamento, em paralelo.</div>
+        </div>
+      </div>
+
+      <div class="diag-card">
+        <span class="diag-badge badge-cut">Removido do MVP</span>
+        <div class="diag-content">
+          <div class="diag-original">LP's e Site <span class="diag-phase-tag">Item 3.2</span></div>
+          <div class="diag-reason">O app é distribuído pelas lojas (App Store e Google Play) — elas já são o canal de descoberta. Uma landing page não é necessária para o primeiro lançamento e pode ser construída depois, com dados reais de uso para guiar o texto e a comunicação.</div>
+        </div>
+      </div>
+
+      <div class="diag-card">
+        <span class="diag-badge badge-displaced">Deslocado</span>
+        <div class="diag-content">
+          <div class="diag-original">Estratégia de Marketing e Expansão Comercial <span class="diag-phase-tag">Item 3.3</span></div>
+          <div class="diag-reason">Estava no lugar errado — marketing antes de o produto estar testado é planejar para o que ainda pode mudar. A estratégia de comunicação entra nas semanas 13–16, quando o app já passou pelo teste com usuários reais e as jornadas estão validadas.</div>
+        </div>
+      </div>
+
+      <div class="diag-card">
+        <span class="diag-badge badge-expanded">Antecipado e ampliado</span>
+        <div class="diag-content">
+          <div class="diag-original">Compliance do Software (Poup) <span class="diag-phase-tag">Item 3.4</span></div>
+          <div class="diag-reason">Era o único item de proteção de dados no plano — e estava tarde demais (Semana 9 em diante). Para um app que lê dados bancários, a LGPD (Lei Geral de Proteção de Dados) começa na Semana 1. Na nova estrutura, privacidade e segurança formam uma frente inteira com entregáveis desde a Fase 0.</div>
+        </div>
+      </div>
+
+      <div class="diag-card">
+        <span class="diag-badge badge-incorporated">Incorporado</span>
+        <div class="diag-content">
+          <div class="diag-original">Orçamento e Planejamento da Companhia para o Próximo Trimestre <span class="diag-phase-tag">Item 3.5</span></div>
+          <div class="diag-reason">Existe no novo plano, dentro da frente de Governança, na Fase 0. Orçamento e planejamento financeiro da empresa são parte da gestão do projeto — não uma fase de produto com data de início e fim.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Sub-seção 4: Fase 4 do plano original -->
+  <div class="diag-subsection">
+    <div class="diag-subsection-title">Fase 4 do plano original — Lançamento Oficial</div>
+    <div class="diag-grid">
+
+      <div class="diag-card">
+        <span class="diag-badge badge-expanded">Incorporado e expandido</span>
+        <div class="diag-content">
+          <div class="diag-original">Estratégia de Lançamento <span class="diag-phase-tag">Item 4.1</span></div>
+          <div class="diag-reason">Correto. Na nova estrutura virou uma fase dedicada (Fase 6, S15–S16) com entregas específicas: envio para Android e iOS, monitoramento ativo desde o primeiro usuário, suporte estruturado e lista de próximas melhorias já priorizada. A preparação dos materiais das lojas começa antes, na Fase 4.</div>
+        </div>
+      </div>
+
+      <div class="diag-card">
+        <span class="diag-badge badge-cut">Removido do plano de 16 semanas</span>
+        <div class="diag-content">
+          <div class="diag-original">Parceria com o Governo Federal (Jogo de Educação Financeira) <span class="diag-phase-tag">Item 4.2</span></div>
+          <div class="diag-reason">É uma iniciativa estratégica valiosa, mas envolve aprovações externas e prazos fora do controle do time. Se entrar no caminho crítico, pode atrasar o lançamento por um fator que a POUP não controla. Vai para o roadmap após o v1.0.</div>
+        </div>
+      </div>
+
+      <div class="diag-card">
+        <span class="diag-badge badge-kept">Mantido e antecipado</span>
+        <div class="diag-content">
+          <div class="diag-original">Distribuição em Lojas Oficiais (Apple &amp; Google Play) <span class="diag-phase-tag">Item 4.3</span></div>
+          <div class="diag-reason">Correto e essencial. Mantido no plano. A preparação começa antes: ícone, capturas de tela e descrição do app são produzidos na Fase 4 para que o envio não atrase por falta de material. Google Play e App Store têm processo de análise formal — envio incompleto pode rejeitar ou atrasar o app por dias.</div>
+        </div>
+      </div>
+
+      <div class="diag-card">
+        <span class="diag-badge badge-kept">Mantido</span>
+        <div class="diag-content">
+          <div class="diag-original">Evento de Lançamento <span class="diag-phase-tag">Item 4.4</span></div>
+          <div class="diag-reason">Mantido no plano. Posicionado após a publicação nas lojas — quando o produto já está no ar e pode ser demonstrado com dados reais. Evento antes da publicação cria expectativa sem entrega; evento depois amplifica o que já existe. Coordenado pela vendo.vc nas semanas 15–16.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Sub-seção 5: Frentes ausentes -->
+  <div class="diag-subsection">
+    <div class="diag-subsection-title missing">Frentes críticas ausentes no plano original</div>
+    <p style="font-size:13.5px;color:var(--gray-600);line-height:1.75;margin-bottom:24px;">
+      Estes itens não estavam no plano original — e são os que mais podem comprometer o lançamento se não forem abertos agora. Cada um tem impacto direto no prazo, na qualidade ou na legalidade do app.
+    </p>
+    <div class="diag-grid">
+
+      <div class="diag-card missing">
+        <span class="diag-badge badge-missing">Ausente · Crítico</span>
+        <div class="diag-content">
+          <div class="diag-original">Open Finance — integração bancária e consentimento</div>
+          <div class="diag-reason">Tudo que torna a POUP funcional depende de Open Finance — o sistema oficial do Banco Central que permite ao app acessar dados bancários com autorização do usuário. O processo exige parceiro habilitado, fluxo de consentimento formal e tratamento de reconexão quando a autorização expira. A escolha do parceiro precisa acontecer na Semana 1 — não dá para improvisar isso no meio do projeto.</div>
+        </div>
+      </div>
+
+      <div class="diag-card missing">
+        <span class="diag-badge badge-missing">Ausente · Crítico</span>
+        <div class="diag-content">
+          <div class="diag-original">LGPD e privacidade desde a concepção</div>
+          <div class="diag-reason">Para um app que acessa dados bancários, a LGPD (Lei Geral de Proteção de Dados) não é item de checklist do final — é parte da estrutura do produto desde o dia 1. No plano original havia um único item de "compliance" posicionado tarde. Na nova estrutura, proteção de dados é uma frente completa com entregáveis desde a Fase 0.</div>
+        </div>
+      </div>
+
+      <div class="diag-card missing">
+        <span class="diag-badge badge-missing">Ausente · Crítico</span>
+        <div class="diag-content">
+          <div class="diag-original">QA formal com critérios de aceite verificáveis</div>
+          <div class="diag-reason">O plano tinha "fase de testes" sem critérios claros — sem definir o que precisa funcionar para aprovar, tudo passa. Testes de qualidade (QA) formais incluem roteiro de casos de teste, testes em celulares físicos e uma condição explícita: zero erros graves em aberto para avançar ao lançamento.</div>
+        </div>
+      </div>
+
+      <div class="diag-card missing">
+        <span class="diag-badge badge-missing">Ausente · Crítico</span>
+        <div class="diag-content">
+          <div class="diag-original">Segurança da API e do app</div>
+          <div class="diag-reason">App financeiro que transmite dados bancários tem requisito mínimo de segurança que não é opcional — nem pode ser deixado para o final. A revisão de segurança precisa ser uma entrega verificável com responsável e data, não uma "preocupação geral". Estava completamente ausente no plano original.</div>
+        </div>
+      </div>
+
+      <div class="diag-card missing">
+        <span class="diag-badge badge-missing">Ausente · Relevante</span>
+        <div class="diag-content">
+          <div class="diag-original">Analytics, logs e observabilidade</div>
+          <div class="diag-reason">Sem registro de uso desde o início, o time lança o app e não sabe onde os usuários travam, saem ou têm dificuldade. Isso inviabiliza melhorias com base em dados reais. Monitoramento ativo também é o que faz um erro de produção ser identificado em horas, não dias.</div>
+        </div>
+      </div>
+
+      <div class="diag-card missing">
+        <span class="diag-badge badge-missing">Ausente · Relevante</span>
+        <div class="diag-content">
+          <div class="diag-original">Crash reporting e monitoramento de produção</div>
+          <div class="diag-reason">Lançar sem rastreamento automático de falhas é lançar às cegas. A ferramenta precisa estar ativa antes do beta — não instalada no dia do lançamento. Toda falha que ocorre no teste sem ser rastreada é uma oportunidade de correção perdida.</div>
+        </div>
+      </div>
+
+      <div class="diag-card missing">
+        <span class="diag-badge badge-missing">Ausente · Relevante</span>
+        <div class="diag-content">
+          <div class="diag-original">Design system formal e protótipo navegável como artefato</div>
+          <div class="diag-reason">O plano original tinha "formato visual do app" — muito diferente de uma biblioteca visual com componentes padronizados e um protótipo navegável aprovado antes do desenvolvimento começar. Sem isso, cada tela é construída de forma diferente, o resultado final é inconsistente e o retrabalho é alto.</div>
+        </div>
+      </div>
+
+      <div class="diag-card missing">
+        <span class="diag-badge badge-missing">Ausente · Relevante</span>
+        <div class="diag-content">
+          <div class="diag-original">Gates de decisão GO/NÃO GO por fase</div>
+          <div class="diag-reason">Sem critérios claros para passar de uma fase para outra, o projeto avança por calendário — não por resultado. O time chega ao lançamento com problemas acumulados que "ficaram para depois". Os 6 checkpoints do novo plano garantem que cada fase só avança quando o mínimo necessário foi entregue e aprovado.</div>
+        </div>
+      </div>
+
+      <div class="diag-card missing">
+        <span class="diag-badge badge-missing">Ausente · Relevante</span>
+        <div class="diag-content">
+          <div class="diag-original">Importação manual como fallback de Open Finance</div>
+          <div class="diag-reason">Se a conexão bancária falhar ou o usuário não quiser autorizá-la, o app não pode simplesmente parar de funcionar. A importação manual por extrato em PDF ou planilha garante que qualquer pessoa consegue usar a POUP desde o primeiro dia — independente do banco ou do status da autorização.</div>
+        </div>
+      </div>
+
+      <div class="diag-card missing">
+        <span class="diag-badge badge-missing">Ausente · Relevante</span>
+        <div class="diag-content">
+          <div class="diag-original">Preparação formal das lojas (materiais, assets, processo de review)</div>
+          <div class="diag-reason">Publicar nas lojas não é apenas fazer o upload do app. Envolve capturas de tela em resoluções específicas, ícone formatado, descrição em português, política de privacidade com URL pública e classificação etária. O processo de análise das lojas pode levar dias e rejeitar o app por inconsistências — a preparação começa na Fase 4, não na semana do lançamento.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ─── RISCOS ──────────────────────────────────────────── -->
+  <hr class="divider" />
+  <div class="page-break"></div>
+  <div class="section-eyebrow">Gestão de Riscos</div>
+  <h2 class="section-title">Riscos <span class="hl">Críticos do Projeto</span></h2>
+  <div class="section-rule"></div>
+  <p class="section-intro">
+    Os riscos abaixo têm mitigação ativa no plano — não são problemas a resolver depois, são ameaças gerenciadas desde a Fase 0.
+  </p>
+
+  <div class="risk-grid">
+
+    <div class="risk-card">
+      <div class="risk-icon high">⚡</div>
+      <div class="risk-body">
+        <div class="risk-title">Atraso na integração financeira (Open Finance)</div>
+        <div class="risk-desc">Parceiro escolhido fora do prazo ou integração mais complexa que o esperado trava toda a Fase 2.</div>
+        <span class="risk-badge high">Impacto Alto</span>
+        <div class="risk-desc" style="margin-top:8px;"><strong>Mitigação:</strong> parceiro habilitador definido na Semana 1 + fallback manual por PDF/CSV como plano B obrigatório.</div>
+      </div>
+    </div>
+
+    <div class="risk-card">
+      <div class="risk-icon high">📦</div>
+      <div class="risk-body">
+        <div class="risk-title">Escopo crescer demais (scope creep)</div>
+        <div class="risk-desc">Features não previstas entram no MVP e consomem capacidade do time no caminho crítico.</div>
+        <span class="risk-badge high">Impacto Alto</span>
+        <div class="risk-desc" style="margin-top:8px;"><strong>Mitigação:</strong> escopo congelado na Fase 0 + qualquer novo item vai para o backlog v1.1, não para o MVP.</div>
+      </div>
+    </div>
+
+    <div class="risk-card">
+      <div class="risk-icon high">🔒</div>
+      <div class="risk-body">
+        <div class="risk-title">Falta de base legal e consentimento</div>
+        <div class="risk-desc">App financeiro sem tratamento adequado de dados pode ter problemas com ANPD e App Stores.</div>
+        <span class="risk-badge high">Impacto Alto</span>
+        <div class="risk-desc" style="margin-top:8px;"><strong>Mitigação:</strong> Trilha 7 (Compliance) ativa desde a Fase 0 com revisão jurídica antes da submissão.</div>
+      </div>
+    </div>
+
+    <div class="risk-card">
+      <div class="risk-icon high">📱</div>
+      <div class="risk-body">
+        <div class="risk-title">UX bonita mas fraca em uso real</div>
+        <div class="risk-desc">Onboarding confuso, jornadas incompreensíveis ou fluxo que parece óbvio para o time mas não para o usuário.</div>
+        <span class="risk-badge high">Impacto Alto</span>
+        <div class="risk-desc" style="margin-top:8px;"><strong>Mitigação:</strong> beta fechado com usuários reais nas Semanas 13–14, ajustes com base em dados antes do lançamento.</div>
+      </div>
+    </div>
+
+    <div class="risk-card">
+      <div class="risk-icon high">🐛</div>
+      <div class="risk-body">
+        <div class="risk-title">Bugs críticos em produção</div>
+        <div class="risk-desc">Falhas após publicação que comprometem a experiência ou expõem dados.</div>
+        <span class="risk-badge high">Impacto Alto</span>
+        <div class="risk-desc" style="margin-top:8px;"><strong>Mitigação:</strong> QA formal (Fase 4) + crash reporting ativo + monitoramento de produção desde o primeiro usuário.</div>
+      </div>
+    </div>
+
+    <div class="risk-card">
+      <div class="risk-icon medium">🏪</div>
+      <div class="risk-body">
+        <div class="risk-title">Rejeição ou atraso nas lojas</div>
+        <div class="risk-desc">Submissão incompleta ou falta de materiais pode atrasar a aprovação do app.</div>
+        <span class="risk-badge medium">Impacto Médio/Alto</span>
+        <div class="risk-desc" style="margin-top:8px;"><strong>Mitigação:</strong> assets e materiais de loja preparados na Fase 4 (S11–S12), antes da janela de submissão.</div>
+      </div>
+    </div>
+
+    <div class="risk-card">
+      <div class="risk-icon medium">🎯</div>
+      <div class="risk-body">
+        <div class="risk-title">Baixa compreensão do onboarding</div>
+        <div class="risk-desc">Usuário não entende a proposta de valor da POUP nos primeiros minutos e desinstala.</div>
+        <span class="risk-badge medium">Impacto Médio</span>
+        <div class="risk-desc" style="margin-top:8px;"><strong>Mitigação:</strong> onboarding testado no beta (S13–S14) com métrica de conclusão e ajustes antes do lançamento.</div>
+      </div>
+    </div>
+
+    <div class="risk-card">
+      <div class="risk-icon medium">🏛️</div>
+      <div class="risk-body">
+        <div class="risk-title">Dependência de aprovação externa (governo, parceiros)</div>
+        <div class="risk-desc">Iniciativas como parceria governamental ou aprovação de órgãos regulatórios fora do controle do time.</div>
+        <span class="risk-badge medium">Impacto Médio</span>
+        <div class="risk-desc" style="margin-top:8px;"><strong>Mitigação:</strong> parcerias estratégicas externas removidas do caminho crítico do MVP — geridas em paralelo, sem bloquear o lançamento.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ─── KPIs ───────────────────────────────────────────── -->
+  <div class="section-eyebrow">Métricas de Sucesso</div>
+  <h2 class="section-title">KPIs do <span class="hl">MVP</span></h2>
+  <div class="section-rule"></div>
+  <p class="section-intro">
+    O MVP é bem-sucedido quando os usuários chegam, entendem o produto e extraem valor real dele. Estas métricas dizem se isso está acontecendo.
+  </p>
+
+  <div class="kpi-columns">
+    <div class="kpi-block">
+      <div class="kpi-block-title">Primeiros Passos do Usuário</div>
+      <div class="kpi-list">
+        <div class="kpi-item">Cadastro concluído</div>
+        <div class="kpi-item">Apresentação inicial do app concluída</div>
+        <div class="kpi-item">Conexão bancária iniciada</div>
+        <div class="kpi-item">Conexão bancária concluída com sucesso</div>
+        <div class="kpi-item">Primeira importação manual de extrato concluída</div>
+      </div>
+    </div>
+    <div class="kpi-block">
+      <div class="kpi-block-title">Valor Entregue ao Usuário</div>
+      <div class="kpi-list">
+        <div class="kpi-item">Tempo até o usuário receber o primeiro dado útil</div>
+        <div class="kpi-item">% de movimentações classificadas automaticamente</div>
+        <div class="kpi-item">Usuários que concluem a Jornada 1</div>
+        <div class="kpi-item">Usuários que definem uma meta financeira</div>
+        <div class="kpi-item">Usuários que voltam ao app 7 dias após o cadastro</div>
+      </div>
+    </div>
+    <div class="kpi-block">
+      <div class="kpi-block-title">KPIs de Estabilidade</div>
+      <div class="kpi-list">
+        <div class="kpi-item">% de sessões sem falha no app (meta: acima de 99%)</div>
+        <div class="kpi-item">Taxa de erro na conexão bancária</div>
+        <div class="kpi-item">% de notificações abertas pelos usuários</div>
+        <div class="kpi-item">Volume de pedidos de suporte por usuário ativo</div>
+        <div class="kpi-item">Velocidade de resposta do servidor</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── EQUIPE ─────────────────────────────────────────── -->
+  <div class="section-eyebrow">Governança do Projeto</div>
+  <h2 class="section-title">Estrutura de <span class="hl">Equipe e Responsáveis</span></h2>
+  <div class="section-rule"></div>
+
+  <div class="team-grid" style="grid-template-columns: repeat(3, 1fr);">
+    <div class="team-card">
+      <div class="team-avatar">IG</div>
+      <div class="team-role">Sponsor Executivo</div>
+      <div class="team-name">Ignácio</div>
+      <div class="team-desc">Decisões executivas, checkpoints de aprovação, governança do projeto</div>
+    </div>
+    <div class="team-card">
+      <div class="team-avatar">RG</div>
+      <div class="team-role">Gestor do Projeto</div>
+      <div class="team-name">Rafael</div>
+      <div class="team-desc">Gestão do dia a dia, relatório semanal de andamento, controle de prioridades</div>
+    </div>
+    <div class="team-card">
+      <div class="team-avatar" style="background:#e04e1c;">VC</div>
+      <div class="team-role">Parceiro Estratégico</div>
+      <div class="team-name">vendo.vc</div>
+      <div class="team-desc">Estratégia comercial, marketing de lançamento, evento</div>
+    </div>
+  </div>
+
+  <div style="background:var(--gray-100);border:1.5px solid var(--gray-200);border-radius:var(--radius-lg);padding:28px 32px;margin-bottom:80px;">
+    <div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--blue);margin-bottom:16px;">Papéis a Definir Antes da Fase 1</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div style="font-size:13px;color:var(--gray-600);line-height:1.6;"><strong style="color:var(--text);">Dono do produto (Product Owner)</strong><br>Define o que entra e sai de cada sprint; representa o ponto de vista do usuário nas decisões.</div>
+      <div style="font-size:13px;color:var(--gray-600);line-height:1.6;"><strong style="color:var(--text);">Líder técnico</strong><br>Responsável pela estrutura do software, pela integração bancária e pelas decisões técnicas críticas.</div>
+      <div style="font-size:13px;color:var(--gray-600);line-height:1.6;"><strong style="color:var(--text);">Designer de experiência (UX/UI)</strong><br>Cria os fluxos de tela, a biblioteca visual e o protótipo navegável aprovado antes do desenvolvimento.</div>
+      <div style="font-size:13px;color:var(--gray-600);line-height:1.6;"><strong style="color:var(--text);">Responsável por dados e privacidade</strong><br>Garante que o app está em conformidade com a LGPD — mapeamento de dados, consentimentos e segurança.</div>
+    </div>
+  </div>
+
+</main>
+
+<!-- ══ FOOTER ════════════════════════════════════════════════ -->
+<footer class="footer">
+  <div class="footer-logo">vendo<span>.vc</span> × <span>POUP</span></div>
+  <div class="footer-sub">Relatório Executivo de Reestruturação · MVP 16 Semanas · Documento Confidencial · Abril 2026</div>
+</footer>
+
+</div><!-- #pdf-root -->
+
+<!-- ══ DOWNLOAD ═══════════════════════════════════════════════ -->
+<button class="btn-download" id="btnDownload" onclick="downloadPDF()">
+  <svg class="btn-icon" width="18" height="18" viewBox="0 0 18 18" fill="none">
+    <path d="M9 2v9m0 0l-3-3m3 3l3-3" stroke="#c0fd72" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M3 13v1a2 2 0 002 2h8a2 2 0 002-2v-1" stroke="#c0fd72" stroke-width="2" stroke-linecap="round"/>
+  </svg>
+  <div class="spinner"></div>
+  <span class="btn-label">Baixar PDF A4</span>
+</button>
+
+<style>
+  @keyframes spin-overlay { to { transform: rotate(360deg); } }
+  #pdf-overlay {
+    position: fixed; inset: 0; z-index: 99999;
+    background: var(--blue);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 20px;
+    font-family: 'Poppins', sans-serif;
+  }
+  #pdf-overlay .ov-ring {
+    width: 48px; height: 48px;
+    border: 3px solid rgba(192,253,114,0.25);
+    border-top-color: var(--green);
+    border-radius: 50%;
+    animation: spin-overlay 0.75s linear infinite;
+  }
+  #pdf-overlay .ov-text { font-size: 13px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: rgba(255,255,255,0.8); }
+  #pdf-overlay .ov-sub  { font-size: 11px; font-weight: 400; color: rgba(255,255,255,0.4); letter-spacing: 1px; }
+</style>
+
+<script>
+  async function downloadPDF() {
+    const btn  = document.getElementById('btnDownload');
+    const root = document.getElementById('pdf-root');
+    btn.classList.add('loading');
+    const overlay = document.createElement('div');
+    overlay.id = 'pdf-overlay';
+    overlay.innerHTML = `<div class="ov-ring"></div><span class="ov-text">Gerando PDF A4</span><span class="ov-sub">Aguarde alguns segundos…</span>`;
+    document.body.appendChild(overlay);
+    window.scrollTo(0, 0);
+    document.documentElement.style.cssText += ';max-width:794px!important;overflow:hidden!important;';
+    document.body.style.cssText           += ';width:794px!important;overflow:hidden!important;';
+    document.body.classList.add('pdf-generating');
+    await new Promise(r => setTimeout(r, 900));
+    const opt = {
+      margin:      [10, 10, 10, 10],
+      filename:    'relatorio-executivo-poup.pdf',
+      image:       { type: 'jpeg', quality: 0.97 },
+      html2canvas: {
+        scale: 2, useCORS: true, letterRendering: true,
+        scrollX: 0, scrollY: 0,
+        windowWidth: 794, windowHeight: 1123,
+        backgroundColor: '#ffffff'
+      },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      pagebreak: {
+        mode: ['css', 'legacy'],
+        before: '.page-break',
+        avoid: ['.gantt-row', '.tl-item', '.stat-card', '.dcard', '.diag-card', '.risk-card', '.no-break']
+      }
+    };
+    try {
+      await html2pdf().set(opt).from(root).save();
+    } catch (e) {
+      console.error('PDF error:', e);
+    } finally {
+      document.body.classList.remove('pdf-generating');
+      document.documentElement.style.maxWidth = '';
+      document.documentElement.style.overflow = '';
+      document.body.style.width    = '';
+      document.body.style.overflow = '';
+      overlay.remove();
+      btn.classList.remove('loading');
+    }
+  }
+</script>
+
+</body>
+</html>
