@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>POUP — Relatório Executivo · Reestruturação 16 Semanas</title>
+  <title>POUP — Relatório Executivo · Fase 0 · Atualização 07/04/2026</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
@@ -801,6 +801,210 @@
       * { -webkit-print-color-adjust:exact!important; print-color-adjust:exact!important; }
       .btn-download { display:none!important; }
     }
+
+    /* ─── FASE 0 PROGRESS — timeline concluída ─────────────── */
+    .tl-entry.done .tl-entry-name {
+      text-decoration: line-through;
+      color: #22c55e;
+    }
+    .tl-entry.done .tl-entry-num {
+      background: #22c55e;
+      color: #000;
+    }
+    .tl-entry.done {
+      opacity: 0.85;
+    }
+    .tl-done-badge {
+      margin-left: auto;
+      font-size: 10px; font-weight: 700;
+      letter-spacing: 1px; text-transform: uppercase;
+      color: #22c55e;
+      background: rgba(34,197,94,0.1);
+      border: 1px solid rgba(34,197,94,0.3);
+      border-radius: 20px;
+      padding: 2px 10px;
+      flex-shrink: 0;
+    }
+
+    /* ─── GANTT F0 PROGRESS PILL ────────────────────────────── */
+    .f0-progress-wrap {
+      display: flex; flex-direction: column; align-items: center;
+      gap: 4px; width: 100%;
+    }
+    .f0-progress-label {
+      font-size: 9px; font-weight: 700; letter-spacing: 1px;
+      color: var(--green); margin-top: 2px;
+    }
+    .f0-progress-bar {
+      width: 80%; height: 4px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 2px; overflow: hidden;
+    }
+    .f0-progress-fill {
+      height: 100%; width: 33%;
+      background: var(--green);
+      border-radius: 2px;
+    }
+
+    /* ─── FASE 0 GANTT ACCORDION ────────────────────────────── */
+    .f0-accordion {
+      margin-bottom: 80px;
+    }
+    .f0-accordion-toggle {
+      width: 100%;
+      display: flex; align-items: center; gap: 14px;
+      background: var(--gray-100);
+      border: 1.5px solid var(--gray-200);
+      border-radius: var(--radius-lg);
+      padding: 18px 24px;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s;
+      text-align: left;
+      font-family: 'Poppins', sans-serif;
+    }
+    .f0-accordion-toggle:hover { background: var(--gray-200); border-color: var(--blue-light); }
+    .f0-accordion-toggle.open { border-radius: var(--radius-lg) var(--radius-lg) 0 0; border-bottom-color: transparent; background: var(--blue); }
+    .f0-accordion-toggle.open .f0-acc-title { color: var(--white); }
+    .f0-accordion-toggle.open .f0-acc-sub   { color: rgba(255,255,255,0.6); }
+    .f0-accordion-toggle.open .f0-acc-arrow { transform: rotate(180deg); filter: brightness(10); }
+    .f0-acc-dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: #3a56e8; flex-shrink: 0;
+      box-shadow: 0 0 0 3px rgba(58,86,232,0.2);
+    }
+    .f0-acc-title {
+      font-size: 13px; font-weight: 700;
+      color: var(--text); letter-spacing: -0.3px;
+    }
+    .f0-acc-sub {
+      font-size: 11px; color: var(--gray-400);
+      margin-left: 4px;
+    }
+    .f0-acc-badge {
+      margin-left: auto;
+      font-size: 10px; font-weight: 700;
+      letter-spacing: 1px; text-transform: uppercase;
+      background: rgba(34,197,94,0.12);
+      color: #22c55e;
+      border: 1px solid rgba(34,197,94,0.25);
+      border-radius: 20px; padding: 3px 12px;
+      flex-shrink: 0;
+    }
+    .f0-acc-arrow {
+      width: 18px; height: 18px; flex-shrink: 0;
+      transition: transform 0.25s;
+      opacity: 0.5;
+    }
+    .f0-accordion-body {
+      display: none;
+      border: 1.5px solid var(--gray-200);
+      border-top: none;
+      border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+      overflow: hidden;
+      background: var(--white);
+      box-shadow: 0 4px 32px rgba(82,112,255,0.06);
+    }
+    .f0-accordion-body.open { display: block; }
+
+    /* ─── MINI GANTT FASE 0 ─────────────────────────────────── */
+    .f0-gantt {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .f0-gantt-header {
+      display: grid;
+      grid-template-columns: 2fr 110px 1fr 1fr 80px 80px;
+      background: #1F3C88;
+      padding: 10px 20px;
+      gap: 0;
+    }
+    .f0-gh { font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: rgba(255,255,255,0.6); padding: 0 6px; }
+    .f0-gh:first-child { padding-left: 0; }
+    .f0-gh.date { text-align: center; }
+    .f0-gantt-row {
+      display: grid;
+      grid-template-columns: 2fr 110px 1fr 1fr 80px 80px;
+      padding: 13px 20px;
+      gap: 0;
+      border-bottom: 1px solid var(--gray-200);
+      align-items: center;
+      transition: background 0.15s;
+    }
+    .f0-gantt-row:last-child { border-bottom: none; }
+    .f0-gantt-row:hover { background: var(--gray-100); }
+    .f0-gantt-row.done-row { background: rgba(34,197,94,0.04); }
+    .f0-gantt-row.done-row:hover { background: rgba(34,197,94,0.08); }
+    .f0-gantt-row.gate-row { background: rgba(82,112,255,0.04); }
+    .f0-task-info { display: flex; align-items: center; gap: 10px; padding-right: 12px; }
+    .f0-task-num {
+      font-size: 9px; font-weight: 800;
+      letter-spacing: 0.5px;
+      background: var(--blue); color: var(--white);
+      border-radius: 6px; padding: 3px 7px;
+      flex-shrink: 0;
+    }
+    .f0-task-num.done { background: #22c55e; color: #000; }
+    .f0-task-num.gate { background: var(--blue-dark); color: var(--white); }
+    .f0-task-text {
+      font-size: 11px; font-weight: 500; color: var(--text);
+      line-height: 1.4;
+    }
+    .f0-task-text.done-text {
+      text-decoration: line-through;
+      color: #22c55e;
+    }
+    .f0-owner {
+      font-size: 10px; color: var(--gray-400); font-weight: 500;
+      padding: 0 6px;
+    }
+    .f0-date-cell {
+      text-align: center; padding: 0 6px;
+    }
+    .f0-bar {
+      display: inline-block;
+      height: 6px; border-radius: 3px;
+      width: 70%;
+    }
+    .f0-bar.done  { background: linear-gradient(90deg, #16a34a, #22c55e); box-shadow: 0 1px 6px rgba(34,197,94,0.4); }
+    .f0-bar.pending { background: rgba(82,112,255,0.15); border: 1px dashed rgba(82,112,255,0.3); }
+    .f0-dot-gate {
+      display: inline-block;
+      width: 12px; height: 12px; border-radius: 50%;
+      background: var(--blue); vertical-align: middle;
+      box-shadow: 0 0 0 3px rgba(82,112,255,0.2), 0 2px 8px rgba(82,112,255,0.4);
+    }
+    .f0-status-badge {
+      font-size: 9px; font-weight: 700;
+      letter-spacing: 0.5px; text-transform: uppercase;
+      border-radius: 20px; padding: 3px 9px;
+      text-align: center;
+    }
+    .f0-status-badge.done    { background: rgba(34,197,94,0.12); color: #16a34a; border: 1px solid rgba(34,197,94,0.3); }
+    .f0-status-badge.pending { background: rgba(82,112,255,0.1); color: var(--blue); border: 1px solid rgba(82,112,255,0.2); }
+    .f0-status-badge.gate    { background: rgba(31,60,136,0.1); color: var(--blue-dark); border: 1px solid rgba(31,60,136,0.2); }
+    .f0-deadline {
+      font-size: 10px; font-weight: 600; color: var(--gray-600);
+      text-align: right; padding: 0 6px;
+    }
+    .f0-deadline.done { color: #16a34a; }
+    .f0-gantt-footer {
+      display: flex; align-items: center; gap: 16px;
+      padding: 12px 20px;
+      background: var(--gray-100);
+      border-top: 1px solid var(--gray-200);
+      flex-wrap: wrap;
+    }
+    .f0-legend-item {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 10px; color: var(--gray-400); font-weight: 500;
+    }
+    .f0-legend-bar {
+      width: 24px; height: 5px; border-radius: 3px;
+    }
+    .f0-progress-summary {
+      margin-left: auto; font-size: 11px; font-weight: 700;
+      color: var(--blue);
+    }
   </style>
 </head>
 <body>
@@ -818,6 +1022,13 @@
     <span class="pill">7 Fases</span>
     <span class="pill">6 Checkpoints de Aprovação</span>
     <span class="pill">1 MVP Publicável</span>
+  </div>
+  <div style="margin-top:32px;display:flex;flex-direction:column;align-items:center;gap:10px;position:relative;z-index:1;">
+    <div style="background:rgba(34,197,94,0.15);border:1.5px solid rgba(34,197,94,0.4);border-radius:40px;padding:8px 22px;display:flex;align-items:center;gap:10px;">
+      <div style="width:8px;height:8px;border-radius:50%;background:#22c55e;box-shadow:0 0 0 3px rgba(34,197,94,0.3);flex-shrink:0;"></div>
+      <span style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#22c55e;">Atualização · Fase 0 em Andamento</span>
+    </div>
+    <span style="font-size:12px;font-weight:500;color:rgba(255,255,255,0.5);letter-spacing:1px;">Reunião de alinhamento com Rafael · 07/04/2026 · 2 de 6 entregas concluídas</span>
   </div>
   <div class="cover-scroll-hint">
     <span>Scroll</span>
@@ -883,7 +1094,13 @@
     <!-- Phase super-header -->
     <div class="gantt-phase-row">
       <div class="gph" style="grid-column:1/3; text-align:left; padding-left:18px;">Trilha · Projeto POUP</div>
-      <div class="gph ph0" style="grid-column:3/4;">F0 · Setup<br><span style="font-weight:400;opacity:.7">S1</span></div>
+      <div class="gph ph0" style="grid-column:3/4; position:relative; overflow:hidden;">
+        <div class="f0-progress-wrap">
+          F0 · Setup
+          <div class="f0-progress-bar"><div class="f0-progress-fill"></div></div>
+          <span class="f0-progress-label">33% · 2/6 ✓</span>
+        </div>
+      </div>
       <div class="gph ph1" style="grid-column:4/5;">F1 · Fundação<br><span style="font-weight:400;opacity:.7">S2–S4</span></div>
       <div class="gph ph2" style="grid-column:5/6;">F2 · Núcleo Fin.<br><span style="font-weight:400;opacity:.7">S5–S6</span></div>
       <div class="gph ph2" style="grid-column:6/7;">F2 cont.<br><span style="font-weight:400;opacity:.7">S7–S8</span></div>
@@ -1088,6 +1305,130 @@
     </div>
   </div>
 
+  <!-- ─── FASE 0 ACCORDION GANTT ──────────────────────────── -->
+  <div class="f0-accordion">
+    <button class="f0-accordion-toggle" id="f0AccToggle" onclick="toggleF0Acc()" type="button">
+      <div class="f0-acc-dot"></div>
+      <span class="f0-acc-title">Fase 0 · Setup — Detalhamento de Prazos e Responsáveis</span>
+      <span class="f0-acc-sub">Semana 1 · 07–14 Abr 2026</span>
+      <span class="f0-acc-badge">2 / 6 concluídas</span>
+      <svg class="f0-acc-arrow" id="f0AccArrow" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M4 6.5l5 5 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+
+    <div class="f0-accordion-body" id="f0AccBody">
+      <!-- Header -->
+      <div class="f0-gantt-header">
+        <div class="f0-gh">Entregável</div>
+        <div class="f0-gh">Responsável</div>
+        <div class="f0-gh date">07 Abr</div>
+        <div class="f0-gh date">13 Abr</div>
+        <div class="f0-gh date" style="text-align:center;">Status</div>
+        <div class="f0-gh" style="text-align:right;">Prazo Fatal</div>
+      </div>
+
+      <!-- F0.1 — CONCLUÍDA -->
+      <div class="f0-gantt-row done-row">
+        <div class="f0-task-info">
+          <span class="f0-task-num done">F0.1</span>
+          <span class="f0-task-text done-text">Meta do produto definida e validada por todos</span>
+        </div>
+        <div class="f0-owner">Ignácio · Rafael</div>
+        <div class="f0-date-cell"><span class="f0-bar done"></span></div>
+        <div class="f0-date-cell"></div>
+        <div style="text-align:center;"><span class="f0-status-badge done">✓ Feito</span></div>
+        <div class="f0-deadline done">07/04/2026</div>
+      </div>
+
+      <!-- F0.2 — CONCLUÍDA -->
+      <div class="f0-gantt-row done-row">
+        <div class="f0-task-info">
+          <span class="f0-task-num done">F0.2</span>
+          <span class="f0-task-text done-text">Lista priorizada de funcionalidades — e o que fica de fora</span>
+        </div>
+        <div class="f0-owner">Ignácio · Rafael</div>
+        <div class="f0-date-cell"><span class="f0-bar done"></span></div>
+        <div class="f0-date-cell"></div>
+        <div style="text-align:center;"><span class="f0-status-badge done">✓ Feito</span></div>
+        <div class="f0-deadline done">07/04/2026</div>
+      </div>
+
+      <!-- F0.3 — PENDENTE -->
+      <div class="f0-gantt-row">
+        <div class="f0-task-info">
+          <span class="f0-task-num">F0.3</span>
+          <span class="f0-task-text">Parceiro de Open Finance definido</span>
+        </div>
+        <div class="f0-owner">Rafael</div>
+        <div class="f0-date-cell"></div>
+        <div class="f0-date-cell"><span class="f0-bar pending"></span></div>
+        <div style="text-align:center;"><span class="f0-status-badge pending">Pendente</span></div>
+        <div class="f0-deadline">13/04/2026</div>
+      </div>
+
+      <!-- F0.4 — PENDENTE -->
+      <div class="f0-gantt-row">
+        <div class="f0-task-info">
+          <span class="f0-task-num">F0.4</span>
+          <span class="f0-task-text">Estrutura técnica inicial do produto aprovada pelo time</span>
+        </div>
+        <div class="f0-owner">Rafael</div>
+        <div class="f0-date-cell"></div>
+        <div class="f0-date-cell"><span class="f0-bar pending"></span></div>
+        <div style="text-align:center;"><span class="f0-status-badge pending">Pendente</span></div>
+        <div class="f0-deadline">13/04/2026</div>
+      </div>
+
+      <!-- F0.5 — PENDENTE -->
+      <div class="f0-gantt-row">
+        <div class="f0-task-info">
+          <span class="f0-task-num">F0.5</span>
+          <span class="f0-task-text">Mapa dos principais riscos do projeto documentado</span>
+        </div>
+        <div class="f0-owner">Rafael</div>
+        <div class="f0-date-cell"></div>
+        <div class="f0-date-cell"><span class="f0-bar pending"></span></div>
+        <div style="text-align:center;"><span class="f0-status-badge pending">Pendente</span></div>
+        <div class="f0-deadline">13/04/2026</div>
+      </div>
+
+      <!-- F0.6 — PENDENTE -->
+      <div class="f0-gantt-row">
+        <div class="f0-task-info">
+          <span class="f0-task-num">F0.6</span>
+          <span class="f0-task-text">Levantamento dos dados pessoais que o app vai coletar (LGPD)</span>
+        </div>
+        <div class="f0-owner">Rafael</div>
+        <div class="f0-date-cell"></div>
+        <div class="f0-date-cell"><span class="f0-bar pending"></span></div>
+        <div style="text-align:center;"><span class="f0-status-badge pending">Pendente</span></div>
+        <div class="f0-deadline">13/04/2026</div>
+      </div>
+
+      <!-- APROVAÇÃO — GATE -->
+      <div class="f0-gantt-row gate-row">
+        <div class="f0-task-info">
+          <span class="f0-task-num gate">GATE</span>
+          <span class="f0-task-text" style="font-weight:600;color:var(--blue-dark);">Checkpoint 0 · Avança se: MVP definido + parceiro bancário decidido + estrutura técnica aprovada</span>
+        </div>
+        <div class="f0-owner" style="font-weight:600;color:var(--text);">Ignácio · Rafael</div>
+        <div class="f0-date-cell"></div>
+        <div class="f0-date-cell" style="text-align:center;"><span class="f0-dot-gate"></span></div>
+        <div style="text-align:center;"><span class="f0-status-badge gate">Checkpoint</span></div>
+        <div class="f0-deadline" style="color:var(--blue);font-weight:700;">14/04/2026</div>
+      </div>
+
+      <!-- Footer da legenda -->
+      <div class="f0-gantt-footer">
+        <div class="f0-legend-item"><span class="f0-legend-bar" style="background:linear-gradient(90deg,#16a34a,#22c55e);"></span>Concluído</div>
+        <div class="f0-legend-item"><span class="f0-legend-bar" style="background:rgba(82,112,255,0.2);border:1px dashed rgba(82,112,255,0.4);"></span>Pendente</div>
+        <div class="f0-legend-item"><span style="width:10px;height:10px;border-radius:50%;background:var(--blue);display:inline-block;box-shadow:0 0 0 3px rgba(82,112,255,0.2);"></span>Gate de aprovação</div>
+        <div class="f0-progress-summary">Progresso F0 · <strong>33%</strong> (2/6)</div>
+      </div>
+    </div>
+  </div>
+
   <!-- ─── TIMELINE ──────────────────────────────────────── -->
   <div class="page-break"></div>
   <div class="section-eyebrow">Linha do Tempo</div>
@@ -1103,8 +1444,8 @@
       <div class="tl-dot"></div>
       <div class="tl-week-label">Fase 0 · Semana 1 · Fechar o projeto antes de construir</div>
       <div class="tl-entries">
-        <div class="tl-entry"><span class="tl-entry-num">F0.1</span><span class="tl-entry-name">Meta do produto definida e validada por todos</span></div>
-        <div class="tl-entry"><span class="tl-entry-num">F0.2</span><span class="tl-entry-name">Lista priorizada de funcionalidades a construir — e o que fica de fora</span></div>
+        <div class="tl-entry done"><span class="tl-entry-num">F0.1</span><span class="tl-entry-name">Meta do produto definida e validada por todos</span><span class="tl-done-badge">✓ Concluído · 07/04</span></div>
+        <div class="tl-entry done"><span class="tl-entry-num">F0.2</span><span class="tl-entry-name">Lista priorizada de funcionalidades a construir — e o que fica de fora</span><span class="tl-done-badge">✓ Concluído · 07/04</span></div>
         <div class="tl-entry"><span class="tl-entry-num">F0.3</span><span class="tl-entry-name">Parceiro de Open Finance definido (sistema que permite ao app acessar dados bancários com autorização do usuário)</span></div>
         <div class="tl-entry"><span class="tl-entry-num">F0.4</span><span class="tl-entry-name">Estrutura técnica inicial do produto aprovada pelo time</span></div>
         <div class="tl-entry"><span class="tl-entry-num">F0.5</span><span class="tl-entry-name">Mapa dos principais riscos do projeto documentado</span></div>
@@ -1212,21 +1553,51 @@
 
   <div class="cards-grid">
 
-    <div class="dcard">
+    <div class="dcard" style="border:1.5px solid rgba(34,197,94,0.3);">
       <div class="dcard-header">
-        <div class="dcard-num">F0</div>
+        <div class="dcard-num" style="background:linear-gradient(135deg,#16a34a,#22c55e);color:#000;">F0</div>
         <div class="dcard-meta">
           <div class="dcard-title">Setup — Fechar o Projeto Antes de Construir</div>
-          <span class="week-tag">Semana 1</span>
+          <span class="week-tag" style="color:#16a34a;border-color:rgba(34,197,94,0.3);background:rgba(34,197,94,0.08);">Semana 1 · Em andamento</span>
         </div>
       </div>
-      <div class="dcard-body">
-        Antes de escrever uma linha de código, o projeto precisa ter <strong>meta única e clara para todos</strong>, lista de funcionalidades fechada e decisão tomada sobre como o app vai acessar os dados bancários do usuário (Open Finance). Nessa semana também sai o levantamento dos dados pessoais que o app vai coletar — o que é exigido pela LGPD (Lei Geral de Proteção de Dados).
-        <br><br>
+      <!-- Barra de progresso -->
+      <div style="margin:0 0 16px;background:var(--gray-200);border-radius:4px;height:6px;overflow:hidden;">
+        <div style="width:33%;height:100%;background:linear-gradient(90deg,#16a34a,#22c55e);border-radius:4px;"></div>
+      </div>
+      <div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#16a34a;margin-bottom:14px;">33% concluído · 2 de 6 entregas feitas</div>
+      <!-- Checklist de entregas -->
+      <div style="display:flex;flex-direction:column;gap:7px;margin-bottom:16px;">
+        <div style="display:flex;align-items:flex-start;gap:8px;font-size:12px;">
+          <span style="color:#22c55e;font-weight:700;flex-shrink:0;margin-top:1px;">✓</span>
+          <span style="text-decoration:line-through;color:#22c55e;line-height:1.4;">Meta do produto definida e validada por todos</span>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:8px;font-size:12px;">
+          <span style="color:#22c55e;font-weight:700;flex-shrink:0;margin-top:1px;">✓</span>
+          <span style="text-decoration:line-through;color:#22c55e;line-height:1.4;">Lista priorizada de funcionalidades — e o que fica de fora</span>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:8px;font-size:12px;">
+          <span style="color:var(--gray-400);flex-shrink:0;margin-top:1px;">○</span>
+          <span style="color:var(--text);line-height:1.4;">Parceiro de Open Finance definido <span style="color:var(--gray-400);font-size:10px;">· prazo: 13/04</span></span>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:8px;font-size:12px;">
+          <span style="color:var(--gray-400);flex-shrink:0;margin-top:1px;">○</span>
+          <span style="color:var(--text);line-height:1.4;">Estrutura técnica inicial aprovada <span style="color:var(--gray-400);font-size:10px;">· prazo: 13/04</span></span>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:8px;font-size:12px;">
+          <span style="color:var(--gray-400);flex-shrink:0;margin-top:1px;">○</span>
+          <span style="color:var(--text);line-height:1.4;">Mapa de riscos documentado <span style="color:var(--gray-400);font-size:10px;">· prazo: 13/04</span></span>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:8px;font-size:12px;">
+          <span style="color:var(--gray-400);flex-shrink:0;margin-top:1px;">○</span>
+          <span style="color:var(--text);line-height:1.4;">Levantamento de dados pessoais (LGPD) <span style="color:var(--gray-400);font-size:10px;">· prazo: 13/04</span></span>
+        </div>
+      </div>
+      <div class="dcard-body" style="border-top:1px solid var(--gray-200);padding-top:14px;margin-top:0;">
         <em>Projeto que começa sem escopo fechado não lança em 16 semanas.</em>
       </div>
       <div class="tags">
-        <span class="tag">Meta do Produto</span><span class="tag">Escopo Fechado</span><span class="tag">Open Finance</span><span class="tag">Riscos</span><span class="tag">LGPD</span>
+        <span class="tag" style="background:rgba(34,197,94,0.1);color:#16a34a;border:1px solid rgba(34,197,94,0.2);">✓ Meta do Produto</span><span class="tag" style="background:rgba(34,197,94,0.1);color:#16a34a;border:1px solid rgba(34,197,94,0.2);">✓ Escopo Fechado</span><span class="tag">Open Finance</span><span class="tag">Riscos</span><span class="tag">LGPD</span>
       </div>
     </div>
 
@@ -1799,7 +2170,7 @@
 <!-- ══ FOOTER ════════════════════════════════════════════════ -->
 <footer class="footer">
   <div class="footer-logo">vendo<span>.vc</span> × <span>POUP</span></div>
-  <div class="footer-sub">Relatório Executivo de Reestruturação · MVP 16 Semanas · Documento Confidencial · Abril 2026</div>
+  <div class="footer-sub">Relatório Executivo · Fase 0 em Andamento · Atualização 07/04/2026 · Documento Confidencial</div>
 </footer>
 
 </div><!-- #pdf-root -->
@@ -1835,6 +2206,15 @@
 </style>
 
 <script>
+  function toggleF0Acc() {
+    const toggle = document.getElementById('f0AccToggle');
+    const body   = document.getElementById('f0AccBody');
+    const arrow  = document.getElementById('f0AccArrow');
+    const isOpen = body.classList.contains('open');
+    body.classList.toggle('open', !isOpen);
+    toggle.classList.toggle('open', !isOpen);
+  }
+
   async function downloadPDF() {
     const btn  = document.getElementById('btnDownload');
     const root = document.getElementById('pdf-root');
