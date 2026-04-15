@@ -1006,87 +1006,56 @@
       color: var(--blue);
     }
 
-    /* ─── FILE UPLOAD ────────────────────────────────────────── */
-    .upload-section { margin-bottom: 80px; }
-    .upload-drop-area {
-      border: 2px dashed var(--gray-200);
-      border-radius: var(--radius-xl);
-      padding: 48px 32px;
-      text-align: center;
-      cursor: pointer;
-      transition: border-color .2s, background .2s;
-      background: var(--gray-100);
-      position: relative;
+    /* ─── INLINE ATTACHMENTS ─────────────────────────────────── */
+    .f0-task-inner {
+      display: flex; flex-direction: column; gap: 6px; width: 100%;
     }
-    .upload-drop-area:hover, .upload-drop-area.drag-over {
-      border-color: var(--blue);
-      background: var(--gray-200);
+    .f0-task-top {
+      display: flex; align-items: center; gap: 9px; width: 100%;
     }
-    .upload-drop-area.drag-over { background: rgba(82,112,255,0.06); }
-    .upload-icon-wrap {
-      width: 56px; height: 56px; border-radius: 14px;
-      background: var(--blue);
+    .f0-attach-btn {
+      flex-shrink: 0; width: 24px; height: 24px;
+      background: none; border: 1.5px dashed var(--gray-200); border-radius: 6px;
       display: flex; align-items: center; justify-content: center;
-      margin: 0 auto 16px;
+      cursor: pointer; transition: border-color .15s, background .15s, opacity .15s;
+      opacity: 0; padding: 0;
     }
-    .upload-drop-title {
-      font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 6px;
+    .f0-gantt-row:hover .f0-attach-btn,
+    .f0-gantt-row.done-row:hover .f0-attach-btn {
+      opacity: 1;
     }
-    .upload-drop-sub {
-      font-size: 12px; color: var(--gray-400); margin-bottom: 20px;
+    .f0-attach-btn:hover { background: var(--gray-100); border-color: var(--blue); opacity: 1 !important; }
+    .f0-attachments {
+      display: flex; flex-wrap: wrap; gap: 5px;
+      padding-left: 37px; /* alinha com o texto, após a tag de número */
+      min-height: 0;
     }
-    .upload-btn {
-      display: inline-flex; align-items: center; gap: 8px;
-      background: var(--blue); color: var(--white);
-      border: none; border-radius: 50px; padding: 10px 24px;
-      font-family: 'Poppins', sans-serif; font-size: 13px; font-weight: 600;
-      cursor: pointer; transition: background .2s, transform .2s;
+    .f0-attachments:empty { display: none; }
+    .att-chip {
+      display: inline-flex; align-items: center; gap: 4px;
+      background: var(--gray-100); border: 1px solid var(--gray-200);
+      border-radius: 20px; padding: 2px 6px 2px 5px;
+      font-size: 10px; font-weight: 500; color: var(--gray-600);
+      max-width: 220px; transition: border-color .15s;
     }
-    .upload-btn:hover { background: #3d58f0; transform: translateY(-1px); }
-    .files-list {
-      display: flex; flex-direction: column; gap: 10px; margin-top: 24px;
-    }
-    .file-card {
-      background: var(--white);
-      border: 1.5px solid var(--gray-200);
-      border-radius: var(--radius);
-      padding: 14px 18px;
-      display: flex; align-items: center; gap: 14px;
-      transition: border-color .2s, box-shadow .2s;
-    }
-    .file-card:hover { border-color: var(--blue-light); box-shadow: 0 2px 16px rgba(82,112,255,.07); }
-    .file-icon {
-      width: 40px; height: 40px; border-radius: 10px;
-      background: var(--gray-100);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 18px; flex-shrink: 0;
-      border: 1.5px solid var(--gray-200);
-    }
-    .file-meta { flex: 1; min-width: 0; }
-    .file-name {
-      font-size: 13px; font-weight: 600; color: var(--text);
+    .att-chip:hover { border-color: var(--blue-light); }
+    .att-chip-label {
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-      margin-bottom: 3px;
+      max-width: 150px;
     }
-    .file-info { font-size: 11px; color: var(--gray-400); }
-    .file-actions { display: flex; align-items: center; gap: 8px; }
-    .file-action-btn {
-      display: flex; align-items: center; gap: 5px;
-      font-size: 11px; font-weight: 600;
-      padding: 5px 12px; border-radius: 20px; border: none;
-      cursor: pointer; transition: background .15s;
-      font-family: 'Poppins', sans-serif;
+    .att-chip-dl {
+      background: none; border: none; cursor: pointer;
+      color: var(--blue); font-size: 11px; padding: 0; line-height: 1;
+      flex-shrink: 0;
     }
-    .file-action-btn.download { background: rgba(82,112,255,0.1); color: var(--blue); }
-    .file-action-btn.download:hover { background: rgba(82,112,255,0.18); }
-    .file-action-btn.delete { background: rgba(220,38,38,0.08); color: #dc2626; }
-    .file-action-btn.delete:hover { background: rgba(220,38,38,0.15); }
-    .files-empty {
-      text-align: center; padding: 32px;
-      color: var(--gray-400); font-size: 13px;
-      border: 1.5px dashed var(--gray-200);
-      border-radius: var(--radius-lg); margin-top: 16px;
+    .att-chip-dl:hover { color: #3d58f0; }
+    .att-chip-sep { color: var(--gray-200); font-size: 10px; }
+    .att-chip-del {
+      background: none; border: none; cursor: pointer;
+      color: var(--gray-400); font-size: 13px; padding: 0; line-height: 1;
+      flex-shrink: 0;
     }
+    .att-chip-del:hover { color: #dc2626; }
 
     /* ─── DELETE MODAL ───────────────────────────────────────── */
     .modal-overlay {
@@ -1458,8 +1427,17 @@
       <!-- F0.1 — CONCLUÍDA -->
       <div class="f0-gantt-row done-row">
         <div class="f0-task-info">
-          <span class="f0-task-num done">F0.1</span>
-          <span class="f0-task-text done-text">Meta do produto definida e validada por todos</span>
+          <div class="f0-task-inner">
+            <div class="f0-task-top">
+              <span class="f0-task-num done">F0.1</span>
+              <span class="f0-task-text done-text">Meta do produto definida e validada por todos</span>
+              <button class="f0-attach-btn" onclick="openFilePicker('f01')" title="Anexar arquivo">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M10 5.5L5.5 10A3 3 0 011.5 6l5-5a2 2 0 012.8 2.8L4.8 8.3A1 1 0 013.4 6.9l4.2-4.2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+            </div>
+            <div class="f0-attachments" id="att-f01"></div>
+            <input type="file" id="fp-f01" multiple style="display:none" onchange="handleAttachment(event,'f01')">
+          </div>
         </div>
         <div class="f0-owner">Ignácio · Rafael</div>
         <div class="f0-date-cell"><span class="f0-bar done"></span></div>
@@ -1471,8 +1449,17 @@
       <!-- F0.2 — CONCLUÍDA -->
       <div class="f0-gantt-row done-row">
         <div class="f0-task-info">
-          <span class="f0-task-num done">F0.2</span>
-          <span class="f0-task-text done-text">Lista priorizada de funcionalidades — e o que fica de fora</span>
+          <div class="f0-task-inner">
+            <div class="f0-task-top">
+              <span class="f0-task-num done">F0.2</span>
+              <span class="f0-task-text done-text">Lista priorizada de funcionalidades — e o que fica de fora</span>
+              <button class="f0-attach-btn" onclick="openFilePicker('f02')" title="Anexar arquivo">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M10 5.5L5.5 10A3 3 0 011.5 6l5-5a2 2 0 012.8 2.8L4.8 8.3A1 1 0 013.4 6.9l4.2-4.2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+            </div>
+            <div class="f0-attachments" id="att-f02"></div>
+            <input type="file" id="fp-f02" multiple style="display:none" onchange="handleAttachment(event,'f02')">
+          </div>
         </div>
         <div class="f0-owner">Ignácio · Rafael</div>
         <div class="f0-date-cell"><span class="f0-bar done"></span></div>
@@ -1484,8 +1471,17 @@
       <!-- F0.3 — PENDENTE -->
       <div class="f0-gantt-row">
         <div class="f0-task-info">
-          <span class="f0-task-num">F0.3</span>
-          <span class="f0-task-text">Parceiro de Open Finance selecionado — pesquisar e comparar 3 opções, documentar a decisão</span>
+          <div class="f0-task-inner">
+            <div class="f0-task-top">
+              <span class="f0-task-num">F0.3</span>
+              <span class="f0-task-text">Parceiro de Open Finance selecionado — pesquisar e comparar 3 opções, documentar a decisão</span>
+              <button class="f0-attach-btn" onclick="openFilePicker('f03')" title="Anexar arquivo">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M10 5.5L5.5 10A3 3 0 011.5 6l5-5a2 2 0 012.8 2.8L4.8 8.3A1 1 0 013.4 6.9l4.2-4.2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+            </div>
+            <div class="f0-attachments" id="att-f03"></div>
+            <input type="file" id="fp-f03" multiple style="display:none" onchange="handleAttachment(event,'f03')">
+          </div>
         </div>
         <div class="f0-owner">Rafael</div>
         <div class="f0-date-cell"></div>
@@ -1497,8 +1493,17 @@
       <!-- F0.4 — PENDENTE -->
       <div class="f0-gantt-row">
         <div class="f0-task-info">
-          <span class="f0-task-num">F0.4</span>
-          <span class="f0-task-text">Estrutura técnica inicial aprovada — documento com stack, arquitetura e banco de dados validado pelo time</span>
+          <div class="f0-task-inner">
+            <div class="f0-task-top">
+              <span class="f0-task-num">F0.4</span>
+              <span class="f0-task-text">Estrutura técnica inicial aprovada — documento com stack, arquitetura e banco de dados validado pelo time</span>
+              <button class="f0-attach-btn" onclick="openFilePicker('f04')" title="Anexar arquivo">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M10 5.5L5.5 10A3 3 0 011.5 6l5-5a2 2 0 012.8 2.8L4.8 8.3A1 1 0 013.4 6.9l4.2-4.2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+            </div>
+            <div class="f0-attachments" id="att-f04"></div>
+            <input type="file" id="fp-f04" multiple style="display:none" onchange="handleAttachment(event,'f04')">
+          </div>
         </div>
         <div class="f0-owner">Rafael</div>
         <div class="f0-date-cell"></div>
@@ -1510,8 +1515,17 @@
       <!-- F0.5 — PENDENTE -->
       <div class="f0-gantt-row">
         <div class="f0-task-info">
-          <span class="f0-task-num">F0.5</span>
-          <span class="f0-task-text">Mapa de riscos documentado — cada risco com probabilidade, impacto e plano de mitigação</span>
+          <div class="f0-task-inner">
+            <div class="f0-task-top">
+              <span class="f0-task-num">F0.5</span>
+              <span class="f0-task-text">Mapa de riscos documentado — cada risco com probabilidade, impacto e plano de mitigação</span>
+              <button class="f0-attach-btn" onclick="openFilePicker('f05')" title="Anexar arquivo">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M10 5.5L5.5 10A3 3 0 011.5 6l5-5a2 2 0 012.8 2.8L4.8 8.3A1 1 0 013.4 6.9l4.2-4.2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+            </div>
+            <div class="f0-attachments" id="att-f05"></div>
+            <input type="file" id="fp-f05" multiple style="display:none" onchange="handleAttachment(event,'f05')">
+          </div>
         </div>
         <div class="f0-owner">Rafael</div>
         <div class="f0-date-cell"></div>
@@ -1523,8 +1537,17 @@
       <!-- F0.6 — PENDENTE -->
       <div class="f0-gantt-row">
         <div class="f0-task-info">
-          <span class="f0-task-num">F0.6</span>
-          <span class="f0-task-text">Inventário LGPD — listar todos os dados pessoais que o app coletará e como o usuário autoriza cada um</span>
+          <div class="f0-task-inner">
+            <div class="f0-task-top">
+              <span class="f0-task-num">F0.6</span>
+              <span class="f0-task-text">Inventário LGPD — listar todos os dados pessoais que o app coletará e como o usuário autoriza cada um</span>
+              <button class="f0-attach-btn" onclick="openFilePicker('f06')" title="Anexar arquivo">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M10 5.5L5.5 10A3 3 0 011.5 6l5-5a2 2 0 012.8 2.8L4.8 8.3A1 1 0 013.4 6.9l4.2-4.2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+            </div>
+            <div class="f0-attachments" id="att-f06"></div>
+            <input type="file" id="fp-f06" multiple style="display:none" onchange="handleAttachment(event,'f06')">
+          </div>
         </div>
         <div class="f0-owner">Rafael</div>
         <div class="f0-date-cell"></div>
@@ -1536,8 +1559,17 @@
       <!-- APROVAÇÃO — GATE -->
       <div class="f0-gantt-row gate-row">
         <div class="f0-task-info">
-          <span class="f0-task-num gate">GATE</span>
-          <span class="f0-task-text" style="font-weight:600;">Checkpoint 0 · Avança se: MVP definido + parceiro bancário decidido + estrutura técnica aprovada</span>
+          <div class="f0-task-inner">
+            <div class="f0-task-top">
+              <span class="f0-task-num gate">GATE</span>
+              <span class="f0-task-text" style="font-weight:600;">Checkpoint 0 · Avança se: MVP definido + parceiro bancário decidido + estrutura técnica aprovada</span>
+              <button class="f0-attach-btn" onclick="openFilePicker('gate')" title="Anexar arquivo">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M10 5.5L5.5 10A3 3 0 011.5 6l5-5a2 2 0 012.8 2.8L4.8 8.3A1 1 0 013.4 6.9l4.2-4.2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+            </div>
+            <div class="f0-attachments" id="att-gate"></div>
+            <input type="file" id="fp-gate" multiple style="display:none" onchange="handleAttachment(event,'gate')">
+          </div>
         </div>
         <div class="f0-owner" style="font-weight:600;color:var(--text);">Ignácio · Rafael</div>
         <div class="f0-date-cell"></div>
@@ -1854,31 +1886,6 @@
     </div>
   </div>
 
-  <!-- ─── ARQUIVOS ─────────────────────────────────────────── -->
-  <div class="section-eyebrow">Entregas do Projeto</div>
-  <h2 class="section-title">Repositório de <span class="hl">Arquivos</span></h2>
-  <div class="section-rule"></div>
-  <p class="section-intro">
-    Faça upload dos documentos entregues em cada fase. Os arquivos ficam salvos no navegador e podem ser acessados a qualquer momento.
-  </p>
-
-  <div class="upload-section">
-    <div class="upload-drop-area" id="dropArea" onclick="document.getElementById('fileInput').click()" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
-      <div class="upload-icon-wrap">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" stroke="#c0fd72" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </div>
-      <div class="upload-drop-title">Arraste arquivos aqui</div>
-      <div class="upload-drop-sub">PDF, DOCX, XLSX, imagens — qualquer formato</div>
-      <button class="upload-btn" onclick="event.stopPropagation(); document.getElementById('fileInput').click();">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v8M3.5 5l3.5-4 3.5 4M1.5 10v1a1.5 1.5 0 001.5 1.5h8A1.5 1.5 0 0012.5 11v-1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        Selecionar Arquivos
-      </button>
-      <input type="file" id="fileInput" multiple style="display:none" onchange="handleFileSelect(event)">
-    </div>
-
-    <div id="filesList" class="files-list"></div>
-  </div>
-
   <!-- ─── EQUIPE ─────────────────────────────────────────── -->
   <div class="section-eyebrow">Governança do Projeto</div>
   <h2 class="section-title">Estrutura de <span class="hl">Equipe e Responsáveis</span></h2>
@@ -1926,8 +1933,8 @@
 <!-- ─── DELETE MODAL ─────────────────────────────────────── -->
 <div class="modal-overlay" id="deleteModal">
   <div class="modal-box">
-    <div class="modal-title">Excluir arquivo</div>
-    <div class="modal-sub" id="deleteModalFileName">Digite a senha de operador para confirmar a exclusão.</div>
+    <div class="modal-title">Excluir anexo</div>
+    <div class="modal-sub" id="deleteModalFileName">Digite a senha de operador para confirmar.</div>
     <input type="password" class="modal-input" id="deletePassword" placeholder="Senha de operador" onkeydown="if(event.key==='Enter')confirmDeleteFile()">
     <div class="modal-error" id="deletePasswordError">Senha incorreta. Tente novamente.</div>
     <div class="modal-actions">
@@ -2026,12 +2033,13 @@
 </script>
 
 <script>
-// ═══ FILE UPLOAD — IndexedDB ═══════════════════════════════════
+// ═══ POUP — INLINE FILE ATTACHMENTS ════════════════════════════
 const DB_NAME = 'poup_files_db';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 const STORE_NAME = 'files';
 let db = null;
 let pendingDeleteId = null;
+let pendingDeleteTaskId = null;
 
 function initDB() {
   return new Promise((resolve, reject) => {
@@ -2039,7 +2047,13 @@ function initDB() {
     req.onupgradeneeded = (e) => {
       const d = e.target.result;
       if (!d.objectStoreNames.contains(STORE_NAME)) {
-        d.createObjectStore(STORE_NAME, { keyPath: 'id' });
+        const store = d.createObjectStore(STORE_NAME, { keyPath: 'id' });
+        store.createIndex('taskId', 'taskId', { unique: false });
+      } else {
+        const store = e.target.transaction.objectStore(STORE_NAME);
+        if (!store.indexNames.contains('taskId')) {
+          store.createIndex('taskId', 'taskId', { unique: false });
+        }
       }
     };
     req.onsuccess = (e) => { db = e.target.result; resolve(db); };
@@ -2050,18 +2064,17 @@ function initDB() {
 function saveFileToDB(fileData) {
   return new Promise((resolve, reject) => {
     const tx = db.transaction(STORE_NAME, 'readwrite');
-    const store = tx.objectStore(STORE_NAME);
-    store.put(fileData);
+    tx.objectStore(STORE_NAME).put(fileData);
     tx.oncomplete = resolve;
     tx.onerror = reject;
   });
 }
 
-function getAllFilesFromDB() {
+function getFilesByTask(taskId) {
   return new Promise((resolve, reject) => {
     const tx = db.transaction(STORE_NAME, 'readonly');
-    const store = tx.objectStore(STORE_NAME);
-    const req = store.getAll();
+    const index = tx.objectStore(STORE_NAME).index('taskId');
+    const req = index.getAll(taskId);
     req.onsuccess = (e) => resolve(e.target.result);
     req.onerror = reject;
   });
@@ -2070,152 +2083,126 @@ function getAllFilesFromDB() {
 function deleteFileFromDB(id) {
   return new Promise((resolve, reject) => {
     const tx = db.transaction(STORE_NAME, 'readwrite');
-    const store = tx.objectStore(STORE_NAME);
-    store.delete(id);
+    tx.objectStore(STORE_NAME).delete(id);
     tx.oncomplete = resolve;
     tx.onerror = reject;
   });
 }
 
 function getFileIcon(type) {
+  if (!type) return '📎';
   if (type.includes('pdf')) return '📄';
   if (type.includes('word') || type.includes('document')) return '📝';
   if (type.includes('sheet') || type.includes('excel')) return '📊';
   if (type.includes('presentation') || type.includes('powerpoint')) return '📋';
   if (type.includes('image')) return '🖼️';
-  if (type.includes('zip') || type.includes('rar')) return '🗜️';
   return '📎';
 }
 
-function formatFileSize(bytes) {
-  if (bytes < 1024) return bytes + ' B';
-  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-  return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+async function renderTaskAttachments(taskId) {
+  const container = document.getElementById('att-' + taskId);
+  if (!container) return;
+  let files = [];
+  try { files = await getFilesByTask(taskId); } catch(e) { return; }
+  if (!files || files.length === 0) { container.innerHTML = ''; return; }
+  files.sort((a, b) => new Date(a.uploadedAt) - new Date(b.uploadedAt));
+  container.innerHTML = files.map(f => `
+    <div class="att-chip" id="chip-${f.id}">
+      <span>${getFileIcon(f.type)}</span>
+      <span class="att-chip-label" title="${f.name}">${f.name}</span>
+      <button class="att-chip-dl" onclick="downloadFile('${f.id}','${taskId}')" title="Baixar">↓</button>
+      <span class="att-chip-sep">|</span>
+      <button class="att-chip-del" onclick="openDeleteModal('${f.id}','${taskId}','${f.name.replace(/'/g,"\\'").replace(/"/g,'\\"')}')" title="Excluir">×</button>
+    </div>
+  `).join('');
 }
 
-function formatDate(iso) {
-  const d = new Date(iso);
-  return d.toLocaleDateString('pt-BR') + ' às ' + d.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
+async function renderAllAttachments() {
+  const tasks = ['f01','f02','f03','f04','f05','f06','gate'];
+  for (const t of tasks) await renderTaskAttachments(t);
 }
 
-async function processFiles(files) {
+function openFilePicker(taskId) {
+  const el = document.getElementById('fp-' + taskId);
+  if (el) el.click();
+}
+
+async function handleAttachment(event, taskId) {
+  const files = Array.from(event.target.files);
   for (const file of files) {
-    const reader = new FileReader();
-    await new Promise((resolve) => {
+    await new Promise(resolve => {
+      const reader = new FileReader();
       reader.onload = async (e) => {
-        const fileData = {
-          id: Date.now() + Math.random().toString(36).slice(2),
+        await saveFileToDB({
+          id: Date.now().toString(36) + Math.random().toString(36).slice(2),
+          taskId,
           name: file.name,
           size: file.size,
-          type: file.type,
+          type: file.type || '',
           uploadedAt: new Date().toISOString(),
           data: e.target.result
-        };
-        await saveFileToDB(fileData);
+        });
         resolve();
       };
       reader.readAsDataURL(file);
     });
   }
-  await renderFilesList();
+  event.target.value = '';
+  await renderTaskAttachments(taskId);
 }
 
-async function renderFilesList() {
-  const container = document.getElementById('filesList');
-  if (!container) return;
-  const files = await getAllFilesFromDB();
-  if (!files || files.length === 0) {
-    container.innerHTML = '<div class="files-empty">Nenhum arquivo enviado ainda.<br>Faça upload dos documentos entregues para mantê-los organizados aqui.</div>';
-    return;
-  }
-  files.sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt));
-  container.innerHTML = files.map(f => `
-    <div class="file-card" id="fc-${f.id}">
-      <div class="file-icon">${getFileIcon(f.type)}</div>
-      <div class="file-meta">
-        <div class="file-name">${f.name}</div>
-        <div class="file-info">${formatFileSize(f.size)} · Enviado em ${formatDate(f.uploadedAt)}</div>
-      </div>
-      <div class="file-actions">
-        <button class="file-action-btn download" onclick="downloadFile('${f.id}')">
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v7M3 5.5l3 3 3-3M1.5 9.5v.5a1 1 0 001 1h7a1 1 0 001-1v-.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          Baixar
-        </button>
-        <button class="file-action-btn delete" onclick="openDeleteModal('${f.id}', '${f.name.replace(/'/g,"\\'")}')">
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M1.5 3h9M4 3V2a1 1 0 011-1h2a1 1 0 011 1v1M9.5 3l-.5 7.5a1 1 0 01-1 .5h-4a1 1 0 01-1-.5L2.5 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-          Excluir
-        </button>
-      </div>
-    </div>
-  `).join('');
-}
-
-async function downloadFile(id) {
-  const files = await getAllFilesFromDB();
+async function downloadFile(id, taskId) {
+  const files = await getFilesByTask(taskId);
   const f = files.find(x => x.id === id);
   if (!f) return;
   const a = document.createElement('a');
-  a.href = f.data;
-  a.download = f.name;
-  a.click();
+  a.href = f.data; a.download = f.name; a.click();
 }
 
-function openDeleteModal(id, name) {
+function openDeleteModal(id, taskId, name) {
   pendingDeleteId = id;
-  document.getElementById('deleteModalFileName').textContent = `Arquivo: "${name}"`;
-  document.getElementById('deletePassword').value = '';
-  document.getElementById('deletePasswordError').classList.remove('show');
-  document.getElementById('deletePassword').classList.remove('error');
-  document.getElementById('deleteModal').classList.add('open');
-  setTimeout(() => document.getElementById('deletePassword').focus(), 100);
+  pendingDeleteTaskId = taskId;
+  const sub = document.getElementById('deleteModalFileName');
+  if (sub) sub.textContent = 'Arquivo: "' + name + '"';
+  const pwd = document.getElementById('deletePassword');
+  const err = document.getElementById('deletePasswordError');
+  if (pwd) { pwd.value = ''; pwd.classList.remove('error'); }
+  if (err) err.classList.remove('show');
+  const modal = document.getElementById('deleteModal');
+  if (modal) { modal.classList.add('open'); setTimeout(() => pwd && pwd.focus(), 100); }
 }
 
 function closeDeleteModal() {
-  pendingDeleteId = null;
-  document.getElementById('deleteModal').classList.remove('open');
+  pendingDeleteId = null; pendingDeleteTaskId = null;
+  const modal = document.getElementById('deleteModal');
+  if (modal) modal.classList.remove('open');
 }
 
 async function confirmDeleteFile() {
-  const pwd = document.getElementById('deletePassword').value;
-  if (pwd !== 'Jacare@17') {
-    document.getElementById('deletePasswordError').classList.add('show');
-    document.getElementById('deletePassword').classList.add('error');
-    document.getElementById('deletePassword').value = '';
-    document.getElementById('deletePassword').focus();
+  const pwd = document.getElementById('deletePassword');
+  const err = document.getElementById('deletePasswordError');
+  if (!pwd || pwd.value !== 'Jacare@17') {
+    if (pwd) { pwd.classList.add('error'); pwd.value = ''; pwd.focus(); }
+    if (err) err.classList.add('show');
     return;
   }
-  if (pendingDeleteId) {
+  if (pendingDeleteId && pendingDeleteTaskId) {
     await deleteFileFromDB(pendingDeleteId);
     closeDeleteModal();
-    await renderFilesList();
+    await renderTaskAttachments(pendingDeleteTaskId);
   }
 }
 
-function handleFileSelect(event) {
-  processFiles(Array.from(event.target.files));
-  event.target.value = '';
-}
-
-function handleDragOver(event) {
-  event.preventDefault();
-  document.getElementById('dropArea').classList.add('drag-over');
-}
-
-function handleDragLeave() {
-  document.getElementById('dropArea').classList.remove('drag-over');
-}
-
-function handleDrop(event) {
-  event.preventDefault();
-  document.getElementById('dropArea').classList.remove('drag-over');
-  processFiles(Array.from(event.dataTransfer.files));
-}
+// Fechar modal ao clicar fora
+document.addEventListener('click', (e) => {
+  const modal = document.getElementById('deleteModal');
+  if (modal && e.target === modal) closeDeleteModal();
+});
 
 // ═══ PHASE CARDS ACCORDION ═════════════════════════════════════
 function togglePhaseCards() {
   const body = document.getElementById('phaseCardsBody');
   const toggle = document.getElementById('phaseCardsToggle');
-  const arrow = document.getElementById('phaseCardsArrow');
   const isOpen = body.classList.contains('open');
   if (isOpen) {
     body.classList.remove('open');
@@ -2226,10 +2213,12 @@ function togglePhaseCards() {
   }
 }
 
-// Init on page load
+// Init
 document.addEventListener('DOMContentLoaded', async () => {
-  await initDB();
-  await renderFilesList();
+  try {
+    await initDB();
+    await renderAllAttachments();
+  } catch(e) { console.warn('IndexedDB init failed', e); }
 });
 </script>
 
