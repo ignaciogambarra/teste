@@ -906,60 +906,49 @@
     }
     .f0-accordion-body.open { display: block; }
 
-    /* ─── MINI GANTT FASE 0 ─────────────────────────────────── */
+    /* ─── MINI GANTT FASE 0 — revisado ─────────────────────── */
     .f0-gantt {
       width: 100%;
       border-collapse: collapse;
     }
     .f0-gantt-header {
       display: grid;
-      grid-template-columns: 3fr 110px 80px 80px 110px 100px;
+      grid-template-columns: 1fr 100px 70px 70px 100px 90px;
       background: #1F3C88;
       padding: 10px 20px;
-      gap: 0;
     }
     .f0-gh { font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: rgba(255,255,255,0.6); padding: 0 6px; }
     .f0-gh:first-child { padding-left: 0; }
     .f0-gh.date { text-align: center; }
     .f0-gantt-row {
       display: grid;
-      grid-template-columns: 3fr 110px 80px 80px 110px 100px;
-      padding: 13px 20px;
-      gap: 0;
+      grid-template-columns: 1fr 100px 70px 70px 100px 90px;
+      padding: 14px 20px;
       border-bottom: 1px solid var(--gray-200);
-      align-items: center;
+      align-items: start;
       transition: background 0.15s;
     }
     .f0-gantt-row:last-child { border-bottom: none; }
     .f0-gantt-row:hover { background: var(--gray-100); }
-    .f0-gantt-row.done-row { background: rgba(34,197,94,0.04); }
-    .f0-gantt-row.done-row:hover { background: rgba(34,197,94,0.08); }
+    .f0-gantt-row.done-row { background: rgba(34,197,94,0.03); }
+    .f0-gantt-row.done-row:hover { background: rgba(34,197,94,0.07); }
     .f0-gantt-row.gate-row { background: rgba(82,112,255,0.04); }
-    .f0-task-info { display: flex; align-items: center; gap: 10px; padding-right: 12px; }
+    .f0-task-info { display: flex; flex-direction: column; gap: 6px; padding-right: 8px; }
     .f0-task-num {
-      font-size: 9px; font-weight: 800;
-      letter-spacing: 0.5px;
+      font-size: 9px; font-weight: 800; letter-spacing: 0.5px;
       background: var(--blue); color: var(--white);
-      border-radius: 6px; padding: 3px 7px;
-      flex-shrink: 0;
+      border-radius: 6px; padding: 3px 7px; flex-shrink: 0; display: inline-block;
     }
     .f0-task-num.done { background: #22c55e; color: #000; }
     .f0-task-num.gate { background: var(--blue-dark); color: var(--white); }
-    .f0-task-text {
-      font-size: 11px; font-weight: 500; color: var(--text);
-      line-height: 1.4;
-    }
-    .f0-task-text.done-text {
-      text-decoration: line-through;
-      color: #22c55e;
-    }
-    .f0-owner {
-      font-size: 10px; color: var(--gray-400); font-weight: 500;
-      padding: 0 6px;
-    }
-    .f0-date-cell {
-      text-align: center; padding: 0 6px;
-    }
+    .f0-task-inner { display: flex; flex-direction: column; gap: 5px; width: 100%; }
+    .f0-task-top { display: flex; align-items: flex-start; gap: 8px; width: 100%; }
+    .f0-task-content { display: flex; flex-direction: column; gap: 3px; flex: 1; }
+    .f0-task-text { font-size: 12px; font-weight: 600; color: var(--text); line-height: 1.4; }
+    .f0-task-text.done-text { text-decoration: line-through; color: #22c55e; }
+    .f0-task-desc { font-size: 10.5px; font-weight: 400; color: var(--gray-400); line-height: 1.45; }
+    .f0-owner { font-size: 10px; color: var(--gray-400); font-weight: 500; padding: 4px 6px 0; }
+    .f0-date-cell { text-align: center; padding: 4px 6px 0; }
     .f0-bar {
       display: inline-block;
       height: 6px; border-radius: 3px;
@@ -968,24 +957,19 @@
     .f0-bar.done  { background: linear-gradient(90deg, #16a34a, #22c55e); box-shadow: 0 1px 6px rgba(34,197,94,0.4); }
     .f0-bar.pending { background: rgba(82,112,255,0.15); border: 1px dashed rgba(82,112,255,0.3); }
     .f0-dot-gate {
-      display: inline-block;
-      width: 12px; height: 12px; border-radius: 50%;
+      display: inline-block; width: 12px; height: 12px; border-radius: 50%;
       background: var(--blue); vertical-align: middle;
       box-shadow: 0 0 0 3px rgba(82,112,255,0.2), 0 2px 8px rgba(82,112,255,0.4);
     }
     .f0-status-badge {
-      font-size: 9px; font-weight: 700;
-      letter-spacing: 0.5px; text-transform: uppercase;
-      border-radius: 20px; padding: 3px 9px;
-      text-align: center;
+      font-size: 9px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase;
+      border-radius: 20px; padding: 4px 10px; text-align: center; white-space: nowrap;
+      margin-top: 2px; display: inline-block;
     }
     .f0-status-badge.done    { background: rgba(34,197,94,0.12); color: #16a34a; border: 1px solid rgba(34,197,94,0.3); }
     .f0-status-badge.pending { background: rgba(82,112,255,0.1); color: var(--blue); border: 1px solid rgba(82,112,255,0.2); }
     .f0-status-badge.gate    { background: rgba(31,60,136,0.1); color: var(--blue-dark); border: 1px solid rgba(31,60,136,0.2); }
-    .f0-deadline {
-      font-size: 10px; font-weight: 600; color: var(--gray-600);
-      text-align: right; padding: 0 6px;
-    }
+    .f0-deadline { font-size: 10px; font-weight: 600; color: var(--gray-600); text-align: right; padding: 4px 0 0; }
     .f0-deadline.done { color: #16a34a; }
     .f0-gantt-footer {
       display: flex; align-items: center; gap: 16px;
@@ -1007,30 +991,17 @@
     }
 
     /* ─── INLINE ATTACHMENTS ─────────────────────────────────── */
-    .f0-task-inner {
-      display: flex; flex-direction: column; gap: 6px; width: 100%;
-    }
-    .f0-task-top {
-      display: flex; align-items: center; gap: 9px; width: 100%;
-    }
+    .f0-attachments { display: flex; flex-wrap: wrap; gap: 5px; padding-left: 36px; }
+    .f0-attachments:empty { display: none; }
     .f0-attach-btn {
-      flex-shrink: 0; width: 24px; height: 24px;
+      flex-shrink: 0; margin-top: 2px; width: 22px; height: 22px;
       background: none; border: 1.5px dashed var(--gray-200); border-radius: 6px;
       display: flex; align-items: center; justify-content: center;
       cursor: pointer; transition: border-color .15s, background .15s, opacity .15s;
       opacity: 0; padding: 0;
     }
-    .f0-gantt-row:hover .f0-attach-btn,
-    .f0-gantt-row.done-row:hover .f0-attach-btn {
-      opacity: 1;
-    }
+    .f0-gantt-row:hover .f0-attach-btn { opacity: 1; }
     .f0-attach-btn:hover { background: var(--gray-100); border-color: var(--blue); opacity: 1 !important; }
-    .f0-attachments {
-      display: flex; flex-wrap: wrap; gap: 5px;
-      padding-left: 37px; /* alinha com o texto, após a tag de número */
-      min-height: 0;
-    }
-    .f0-attachments:empty { display: none; }
     .att-chip {
       display: inline-flex; align-items: center; gap: 4px;
       background: var(--gray-100); border: 1px solid var(--gray-200);
@@ -1432,9 +1403,11 @@
           <div class="f0-task-inner">
             <div class="f0-task-top">
               <span class="f0-task-num done">F0.1</span>
-              <span class="f0-task-text done-text">Meta do produto definida e validada por todos</span>
+              <div class="f0-task-content">
+                <span class="f0-task-text done-text">Meta do produto definida e validada por todos</span>
+              </div>
               <button class="f0-attach-btn" onclick="openFilePicker('f01')" title="Anexar arquivo">
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M10 5.5L5.5 10A3 3 0 011.5 6l5-5a2 2 0 012.8 2.8L4.8 8.3A1 1 0 013.4 6.9l4.2-4.2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M10 5.5L5.5 10A3 3 0 011.5 6l5-5a2 2 0 012.8 2.8L4.8 8.3A1 1 0 013.4 6.9l4.2-4.2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
               </button>
             </div>
             <div class="f0-attachments" id="att-f01"></div>
@@ -1444,7 +1417,7 @@
         <div class="f0-owner">Ignácio · Rafael</div>
         <div class="f0-date-cell"><span class="f0-bar done"></span></div>
         <div class="f0-date-cell"></div>
-        <div style="text-align:center;"><span class="f0-status-badge done">✓ Feito</span></div>
+        <div style="padding-top:2px;"><span class="f0-status-badge done">✓ Feito</span></div>
         <div class="f0-deadline done">07/04/2026</div>
       </div>
 
@@ -1454,9 +1427,12 @@
           <div class="f0-task-inner">
             <div class="f0-task-top">
               <span class="f0-task-num done">F0.2</span>
-              <span class="f0-task-text done-text">Lista priorizada de funcionalidades — e o que fica de fora</span>
+              <div class="f0-task-content">
+                <span class="f0-task-text done-text">Lista priorizada de funcionalidades — e o que fica de fora</span>
+                <span class="f0-task-desc">Listar objetivamente funcionalidades com importância</span>
+              </div>
               <button class="f0-attach-btn" onclick="openFilePicker('f02')" title="Anexar arquivo">
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M10 5.5L5.5 10A3 3 0 011.5 6l5-5a2 2 0 012.8 2.8L4.8 8.3A1 1 0 013.4 6.9l4.2-4.2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M10 5.5L5.5 10A3 3 0 011.5 6l5-5a2 2 0 012.8 2.8L4.8 8.3A1 1 0 013.4 6.9l4.2-4.2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
               </button>
             </div>
             <div class="f0-attachments" id="att-f02"></div>
@@ -1466,7 +1442,7 @@
         <div class="f0-owner">Ignácio · Rafael</div>
         <div class="f0-date-cell"><span class="f0-bar done"></span></div>
         <div class="f0-date-cell"></div>
-        <div style="text-align:center;"><span class="f0-status-badge done">✓ Feito</span></div>
+        <div style="padding-top:2px;"><span class="f0-status-badge done">✓ Feito</span></div>
         <div class="f0-deadline done">07/04/2026</div>
       </div>
 
@@ -1476,9 +1452,12 @@
           <div class="f0-task-inner">
             <div class="f0-task-top">
               <span class="f0-task-num">F0.3</span>
-              <span class="f0-task-text">Parceiro de Open Finance selecionado — pesquisar e comparar 3 opções, documentar a decisão</span>
+              <div class="f0-task-content">
+                <span class="f0-task-text">Parceiro de Open Finance definido</span>
+                <span class="f0-task-desc">Selecionar 3 parceiros, analisar custos</span>
+              </div>
               <button class="f0-attach-btn" onclick="openFilePicker('f03')" title="Anexar arquivo">
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M10 5.5L5.5 10A3 3 0 011.5 6l5-5a2 2 0 012.8 2.8L4.8 8.3A1 1 0 013.4 6.9l4.2-4.2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M10 5.5L5.5 10A3 3 0 011.5 6l5-5a2 2 0 012.8 2.8L4.8 8.3A1 1 0 013.4 6.9l4.2-4.2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
               </button>
             </div>
             <div class="f0-attachments" id="att-f03"></div>
@@ -1488,7 +1467,7 @@
         <div class="f0-owner">Rafael</div>
         <div class="f0-date-cell"></div>
         <div class="f0-date-cell"><span class="f0-bar pending"></span></div>
-        <div style="text-align:center;"><span class="f0-status-badge pending">Pendente</span></div>
+        <div style="padding-top:2px;"><span class="f0-status-badge pending">Pendente</span></div>
         <div class="f0-deadline">13/04/2026</div>
       </div>
 
@@ -1498,9 +1477,12 @@
           <div class="f0-task-inner">
             <div class="f0-task-top">
               <span class="f0-task-num">F0.4</span>
-              <span class="f0-task-text">Estrutura técnica inicial aprovada — documento com stack, arquitetura e banco de dados validado pelo time</span>
+              <div class="f0-task-content">
+                <span class="f0-task-text">Estrutura técnica inicial do produto aprovada pelo time</span>
+                <span class="f0-task-desc">Demonstrar estrutura com modelo definido</span>
+              </div>
               <button class="f0-attach-btn" onclick="openFilePicker('f04')" title="Anexar arquivo">
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M10 5.5L5.5 10A3 3 0 011.5 6l5-5a2 2 0 012.8 2.8L4.8 8.3A1 1 0 013.4 6.9l4.2-4.2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M10 5.5L5.5 10A3 3 0 011.5 6l5-5a2 2 0 012.8 2.8L4.8 8.3A1 1 0 013.4 6.9l4.2-4.2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
               </button>
             </div>
             <div class="f0-attachments" id="att-f04"></div>
@@ -1510,7 +1492,7 @@
         <div class="f0-owner">Rafael</div>
         <div class="f0-date-cell"></div>
         <div class="f0-date-cell"><span class="f0-bar pending"></span></div>
-        <div style="text-align:center;"><span class="f0-status-badge pending">Pendente</span></div>
+        <div style="padding-top:2px;"><span class="f0-status-badge pending">Pendente</span></div>
         <div class="f0-deadline">13/04/2026</div>
       </div>
 
@@ -1520,9 +1502,12 @@
           <div class="f0-task-inner">
             <div class="f0-task-top">
               <span class="f0-task-num">F0.5</span>
-              <span class="f0-task-text">Mapa de riscos documentado — cada risco com probabilidade, impacto e plano de mitigação</span>
+              <div class="f0-task-content">
+                <span class="f0-task-text">Mapa dos principais riscos do projeto documentado</span>
+                <span class="f0-task-desc">Lista com classificação baixa/média/alta</span>
+              </div>
               <button class="f0-attach-btn" onclick="openFilePicker('f05')" title="Anexar arquivo">
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M10 5.5L5.5 10A3 3 0 011.5 6l5-5a2 2 0 012.8 2.8L4.8 8.3A1 1 0 013.4 6.9l4.2-4.2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M10 5.5L5.5 10A3 3 0 011.5 6l5-5a2 2 0 012.8 2.8L4.8 8.3A1 1 0 013.4 6.9l4.2-4.2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
               </button>
             </div>
             <div class="f0-attachments" id="att-f05"></div>
@@ -1532,7 +1517,7 @@
         <div class="f0-owner">Rafael</div>
         <div class="f0-date-cell"></div>
         <div class="f0-date-cell"><span class="f0-bar pending"></span></div>
-        <div style="text-align:center;"><span class="f0-status-badge pending">Pendente</span></div>
+        <div style="padding-top:2px;"><span class="f0-status-badge pending">Pendente</span></div>
         <div class="f0-deadline">13/04/2026</div>
       </div>
 
@@ -1542,9 +1527,12 @@
           <div class="f0-task-inner">
             <div class="f0-task-top">
               <span class="f0-task-num">F0.6</span>
-              <span class="f0-task-text">Inventário LGPD — listar todos os dados pessoais que o app coletará e como o usuário autoriza cada um</span>
+              <div class="f0-task-content">
+                <span class="f0-task-text">Levantamento dos dados pessoais que o app vai coletar (LGPD)</span>
+                <span class="f0-task-desc">Listar dados extraídos na jornada do usuário</span>
+              </div>
               <button class="f0-attach-btn" onclick="openFilePicker('f06')" title="Anexar arquivo">
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M10 5.5L5.5 10A3 3 0 011.5 6l5-5a2 2 0 012.8 2.8L4.8 8.3A1 1 0 013.4 6.9l4.2-4.2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M10 5.5L5.5 10A3 3 0 011.5 6l5-5a2 2 0 012.8 2.8L4.8 8.3A1 1 0 013.4 6.9l4.2-4.2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
               </button>
             </div>
             <div class="f0-attachments" id="att-f06"></div>
@@ -1554,7 +1542,7 @@
         <div class="f0-owner">Rafael</div>
         <div class="f0-date-cell"></div>
         <div class="f0-date-cell"><span class="f0-bar pending"></span></div>
-        <div style="text-align:center;"><span class="f0-status-badge pending">Pendente</span></div>
+        <div style="padding-top:2px;"><span class="f0-status-badge pending">Pendente</span></div>
         <div class="f0-deadline">13/04/2026</div>
       </div>
 
@@ -1564,9 +1552,11 @@
           <div class="f0-task-inner">
             <div class="f0-task-top">
               <span class="f0-task-num gate">GATE</span>
-              <span class="f0-task-text" style="font-weight:600;">Checkpoint 0 · Avança se: MVP definido + parceiro bancário decidido + estrutura técnica aprovada</span>
+              <div class="f0-task-content">
+                <span class="f0-task-text" style="font-weight:600;color:var(--blue-dark);">Checkpoint 0 · Avança se: MVP definido + parceiro bancário decidido + estrutura técnica aprovada</span>
+              </div>
               <button class="f0-attach-btn" onclick="openFilePicker('gate')" title="Anexar arquivo">
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M10 5.5L5.5 10A3 3 0 011.5 6l5-5a2 2 0 012.8 2.8L4.8 8.3A1 1 0 013.4 6.9l4.2-4.2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M10 5.5L5.5 10A3 3 0 011.5 6l5-5a2 2 0 012.8 2.8L4.8 8.3A1 1 0 013.4 6.9l4.2-4.2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
               </button>
             </div>
             <div class="f0-attachments" id="att-gate"></div>
@@ -1575,9 +1565,9 @@
         </div>
         <div class="f0-owner" style="font-weight:600;color:var(--text);">Ignácio · Rafael</div>
         <div class="f0-date-cell"></div>
-        <div class="f0-date-cell" style="text-align:center;"><span class="f0-dot-gate"></span></div>
-        <div style="text-align:center;"><span class="f0-status-badge gate">Checkpoint</span></div>
-        <div class="f0-deadline">14/04/2026</div>
+        <div class="f0-date-cell" style="text-align:center;padding-top:4px;"><span class="f0-dot-gate"></span></div>
+        <div style="padding-top:2px;"><span class="f0-status-badge gate">Checkpoint</span></div>
+        <div class="f0-deadline" style="color:var(--blue);font-weight:700;">14/04/2026</div>
       </div>
 
       <!-- Footer da legenda -->
