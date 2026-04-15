@@ -1041,8 +1041,10 @@
     .att-chip:hover { border-color: var(--blue-light); }
     .att-chip-label {
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-      max-width: 150px;
+      max-width: 150px; cursor: pointer; color: var(--blue);
+      text-decoration: underline; text-decoration-style: dotted;
     }
+    .att-chip-label:hover { color: #3d58f0; }
     .att-chip-dl {
       background: none; border: none; cursor: pointer;
       color: var(--blue); font-size: 11px; padding: 0; line-height: 1;
@@ -2109,7 +2111,7 @@ async function renderTaskAttachments(taskId) {
   container.innerHTML = files.map(f => `
     <div class="att-chip" id="chip-${f.id}">
       <span>${getFileIcon(f.type)}</span>
-      <span class="att-chip-label" title="${f.name}">${f.name}</span>
+      <span class="att-chip-label" title="Clique para abrir · ${f.name}" onclick="viewFile('${f.id}','${taskId}')">${f.name}</span>
       <button class="att-chip-dl" onclick="downloadFile('${f.id}','${taskId}')" title="Baixar">↓</button>
       <span class="att-chip-sep">|</span>
       <button class="att-chip-del" onclick="openDeleteModal('${f.id}','${taskId}','${f.name.replace(/'/g,"\\'").replace(/"/g,'\\"')}')" title="Excluir">×</button>
@@ -2157,6 +2159,24 @@ async function downloadFile(id, taskId) {
   if (!f) return;
   const a = document.createElement('a');
   a.href = f.data; a.download = f.name; a.click();
+}
+
+async function viewFile(id, taskId) {
+  const files = await getFilesByTask(taskId);
+  const f = files.find(x => x.id === id);
+  if (!f) return;
+  // Converte base64 para Blob e abre em nova aba — o navegador usa o leitor nativo (PDF, imagem, etc.)
+  const parts = f.data.split(',');
+  const mime = parts[0].match(/:(.*?);/)[1];
+  const binary = atob(parts[1]);
+  const buf = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) buf[i] = binary.charCodeAt(i);
+  const blob = new Blob([buf], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const win = window.open(url, '_blank');
+  // Libera o objeto URL após a aba carregar
+  if (win) win.addEventListener('load', () => URL.revokeObjectURL(url), { once: true });
+  else setTimeout(() => URL.revokeObjectURL(url), 30000);
 }
 
 function openDeleteModal(id, taskId, name) {
