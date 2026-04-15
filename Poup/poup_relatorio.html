@@ -946,7 +946,27 @@
     .f0-task-content { display: flex; flex-direction: column; gap: 3px; flex: 1; }
     .f0-task-text { font-size: 12px; font-weight: 600; color: var(--text); line-height: 1.4; }
     .f0-task-text.done-text { text-decoration: line-through; color: #22c55e; }
-    .f0-task-desc { font-size: 10.5px; font-weight: 400; color: var(--gray-400); line-height: 1.45; }
+    .f0-task-desc { font-size: 11px; font-weight: 400; color: var(--gray-600); line-height: 1.55; margin-top: 1px; }
+    .f0-task-what {
+      margin-top: 8px; padding: 10px 12px;
+      background: var(--gray-100); border-left: 3px solid var(--blue);
+      border-radius: 0 8px 8px 0; font-size: 11px; color: var(--gray-600);
+      line-height: 1.65;
+    }
+    .f0-task-what a { color: var(--blue); font-weight: 600; text-decoration: underline; text-underline-offset: 2px; }
+    .f0-task-what a:hover { color: #3d58f0; }
+    .f0-task-checklist {
+      margin-top: 7px; display: flex; flex-direction: column; gap: 4px;
+    }
+    .f0-task-checklist-item {
+      display: flex; align-items: flex-start; gap: 6px;
+      font-size: 10.5px; color: var(--gray-600); line-height: 1.5;
+    }
+    .f0-task-checklist-item::before {
+      content: ''; flex-shrink: 0; margin-top: 5px;
+      width: 5px; height: 5px; border-radius: 50%;
+      background: var(--blue-light);
+    }
     .f0-owner { font-size: 10px; color: var(--gray-400); font-weight: 500; padding: 4px 6px 0; }
     .f0-date-cell { text-align: center; padding: 4px 6px 0; }
     .f0-bar {
@@ -1429,7 +1449,11 @@
               <span class="f0-task-num done">F0.2</span>
               <div class="f0-task-content">
                 <span class="f0-task-text done-text">Lista priorizada de funcionalidades — e o que fica de fora</span>
-                <span class="f0-task-desc">Listar objetivamente funcionalidades com importância</span>
+                <div class="f0-task-what">Listar objetivamente quais as funcionalidades que o aplicativo deve ter, garantindo uma lista simples de funcionalidades para que possamos analisar as estruturas necessárias.</div>
+                <div class="f0-task-checklist">
+                  <div class="f0-task-checklist-item">Listar as funcionalidades.</div>
+                  <div class="f0-task-checklist-item">Explicar em poucas palavras a importância da funcionalidade.</div>
+                </div>
               </div>
               <button class="f0-attach-btn" onclick="openFilePicker('f02')" title="Anexar arquivo">
                 <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M10 5.5L5.5 10A3 3 0 011.5 6l5-5a2 2 0 012.8 2.8L4.8 8.3A1 1 0 013.4 6.9l4.2-4.2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -1454,7 +1478,13 @@
               <span class="f0-task-num">F0.3</span>
               <div class="f0-task-content">
                 <span class="f0-task-text">Parceiro de Open Finance definido</span>
-                <span class="f0-task-desc">Selecionar 3 parceiros, analisar custos</span>
+                <div class="f0-task-what">Deve ir atrás de ao menos 3 possíveis parceiros, escolhendo a melhor opção entre os selecionados e explicando o por que.</div>
+                <div class="f0-task-checklist">
+                  <div class="f0-task-checklist-item">Selecionar 3 parceiros que possuam Open Finance.</div>
+                  <div class="f0-task-checklist-item">Analisar dentre os selecionados o melhor e explicar o porquê.</div>
+                  <div class="f0-task-checklist-item">Quais os custos para contratar?</div>
+                  <div class="f0-task-checklist-item">Quanto custa por conta conectada?</div>
+                </div>
               </div>
               <button class="f0-attach-btn" onclick="openFilePicker('f03')" title="Anexar arquivo">
                 <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M10 5.5L5.5 10A3 3 0 011.5 6l5-5a2 2 0 012.8 2.8L4.8 8.3A1 1 0 013.4 6.9l4.2-4.2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -1479,7 +1509,10 @@
               <span class="f0-task-num">F0.4</span>
               <div class="f0-task-content">
                 <span class="f0-task-text">Estrutura técnica inicial do produto aprovada pelo time</span>
-                <span class="f0-task-desc">Demonstrar estrutura com modelo definido</span>
+                <div class="f0-task-what">Com a lista de funcionalidades em mãos e o parceiro de Open Finance definido, precisamos de um entregável (Canva, Miro, Docs...) que demonstre uma explicação do que é o app e suas funcionalidades. <a href="#" onclick="return false;" title="Link disponível na planilha — acesse F0.4 para visualizar o modelo">📎 um modelo foi referenciado na planilha</a>.</div>
+                <div class="f0-task-checklist">
+                  <div class="f0-task-checklist-item">Estrutura técnica definida conforme modelo.</div>
+                </div>
               </div>
               <button class="f0-attach-btn" onclick="openFilePicker('f04')" title="Anexar arquivo">
                 <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M10 5.5L5.5 10A3 3 0 011.5 6l5-5a2 2 0 012.8 2.8L4.8 8.3A1 1 0 013.4 6.9l4.2-4.2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -1504,7 +1537,10 @@
               <span class="f0-task-num">F0.5</span>
               <div class="f0-task-content">
                 <span class="f0-task-text">Mapa dos principais riscos do projeto documentado</span>
-                <span class="f0-task-desc">Lista com classificação baixa/média/alta</span>
+                <div class="f0-task-what">Tendo definido as funcionalidades em F0.2, parcerias em F0.3 e estrutura em F0.4, precisamos analisar a jornada do cliente e imaginar quais os possíveis riscos que poderiam o nosso cliente ou nossa empresa correr nesse processo. Exemplo: não poderíamos indicar investimentos enquanto não tivermos CPA.</div>
+                <div class="f0-task-checklist">
+                  <div class="f0-task-checklist-item">Lista/mapa/tabela de riscos do projeto com o título do risco e uma breve descrição contendo uma classificação de baixa, média ou alta.</div>
+                </div>
               </div>
               <button class="f0-attach-btn" onclick="openFilePicker('f05')" title="Anexar arquivo">
                 <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M10 5.5L5.5 10A3 3 0 011.5 6l5-5a2 2 0 012.8 2.8L4.8 8.3A1 1 0 013.4 6.9l4.2-4.2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -1529,7 +1565,10 @@
               <span class="f0-task-num">F0.6</span>
               <div class="f0-task-content">
                 <span class="f0-task-text">Levantamento dos dados pessoais que o app vai coletar (LGPD)</span>
-                <span class="f0-task-desc">Listar dados extraídos na jornada do usuário</span>
+                <div class="f0-task-what">Tendo a jornada sido definida dentro da estrutura técnica inicial, saberemos listar todos os dados que extraíremos de alguma forma e armazenaremos em nosso banco de dados.</div>
+                <div class="f0-task-checklist">
+                  <div class="f0-task-checklist-item">Lista/tabela de dados extraídos ao longo da jornada do usuário.</div>
+                </div>
               </div>
               <button class="f0-attach-btn" onclick="openFilePicker('f06')" title="Anexar arquivo">
                 <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M10 5.5L5.5 10A3 3 0 011.5 6l5-5a2 2 0 012.8 2.8L4.8 8.3A1 1 0 013.4 6.9l4.2-4.2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
