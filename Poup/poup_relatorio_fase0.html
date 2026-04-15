@@ -913,7 +913,7 @@
     }
     .f0-gantt-header {
       display: grid;
-      grid-template-columns: 2fr 110px 1fr 1fr 80px 80px;
+      grid-template-columns: 3fr 110px 80px 80px 110px 100px;
       background: #1F3C88;
       padding: 10px 20px;
       gap: 0;
@@ -923,7 +923,7 @@
     .f0-gh.date { text-align: center; }
     .f0-gantt-row {
       display: grid;
-      grid-template-columns: 2fr 110px 1fr 1fr 80px 80px;
+      grid-template-columns: 3fr 110px 80px 80px 110px 100px;
       padding: 13px 20px;
       gap: 0;
       border-bottom: 1px solid var(--gray-200);
@@ -982,12 +982,6 @@
     .f0-status-badge.done    { background: rgba(34,197,94,0.12); color: #16a34a; border: 1px solid rgba(34,197,94,0.3); }
     .f0-status-badge.pending { background: rgba(82,112,255,0.1); color: var(--blue); border: 1px solid rgba(82,112,255,0.2); }
     .f0-status-badge.gate    { background: rgba(31,60,136,0.1); color: var(--blue-dark); border: 1px solid rgba(31,60,136,0.2); }
-    .f0-status-badge.overdue { background: rgba(220,38,38,0.1); color: #dc2626; border: 1px solid rgba(220,38,38,0.3); }
-    .f0-gantt-row.overdue-row { background: rgba(220,38,38,0.03); }
-    .f0-gantt-row.overdue-row:hover { background: rgba(220,38,38,0.07); }
-    .f0-task-num.overdue { background: #dc2626; color: #fff; }
-    .f0-task-text.overdue-text { color: #b91c1c; }
-    .f0-deadline.overdue { color: #dc2626; font-weight: 700; }
     .f0-deadline {
       font-size: 10px; font-weight: 600; color: var(--gray-600);
       text-align: right; padding: 0 6px;
@@ -1011,6 +1005,133 @@
       margin-left: auto; font-size: 11px; font-weight: 700;
       color: var(--blue);
     }
+
+    /* ─── FILE UPLOAD ────────────────────────────────────────── */
+    .upload-section { margin-bottom: 80px; }
+    .upload-drop-area {
+      border: 2px dashed var(--gray-200);
+      border-radius: var(--radius-xl);
+      padding: 48px 32px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color .2s, background .2s;
+      background: var(--gray-100);
+      position: relative;
+    }
+    .upload-drop-area:hover, .upload-drop-area.drag-over {
+      border-color: var(--blue);
+      background: var(--gray-200);
+    }
+    .upload-drop-area.drag-over { background: rgba(82,112,255,0.06); }
+    .upload-icon-wrap {
+      width: 56px; height: 56px; border-radius: 14px;
+      background: var(--blue);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 16px;
+    }
+    .upload-drop-title {
+      font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 6px;
+    }
+    .upload-drop-sub {
+      font-size: 12px; color: var(--gray-400); margin-bottom: 20px;
+    }
+    .upload-btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--blue); color: var(--white);
+      border: none; border-radius: 50px; padding: 10px 24px;
+      font-family: 'Poppins', sans-serif; font-size: 13px; font-weight: 600;
+      cursor: pointer; transition: background .2s, transform .2s;
+    }
+    .upload-btn:hover { background: #3d58f0; transform: translateY(-1px); }
+    .files-list {
+      display: flex; flex-direction: column; gap: 10px; margin-top: 24px;
+    }
+    .file-card {
+      background: var(--white);
+      border: 1.5px solid var(--gray-200);
+      border-radius: var(--radius);
+      padding: 14px 18px;
+      display: flex; align-items: center; gap: 14px;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .file-card:hover { border-color: var(--blue-light); box-shadow: 0 2px 16px rgba(82,112,255,.07); }
+    .file-icon {
+      width: 40px; height: 40px; border-radius: 10px;
+      background: var(--gray-100);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; flex-shrink: 0;
+      border: 1.5px solid var(--gray-200);
+    }
+    .file-meta { flex: 1; min-width: 0; }
+    .file-name {
+      font-size: 13px; font-weight: 600; color: var(--text);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      margin-bottom: 3px;
+    }
+    .file-info { font-size: 11px; color: var(--gray-400); }
+    .file-actions { display: flex; align-items: center; gap: 8px; }
+    .file-action-btn {
+      display: flex; align-items: center; gap: 5px;
+      font-size: 11px; font-weight: 600;
+      padding: 5px 12px; border-radius: 20px; border: none;
+      cursor: pointer; transition: background .15s;
+      font-family: 'Poppins', sans-serif;
+    }
+    .file-action-btn.download { background: rgba(82,112,255,0.1); color: var(--blue); }
+    .file-action-btn.download:hover { background: rgba(82,112,255,0.18); }
+    .file-action-btn.delete { background: rgba(220,38,38,0.08); color: #dc2626; }
+    .file-action-btn.delete:hover { background: rgba(220,38,38,0.15); }
+    .files-empty {
+      text-align: center; padding: 32px;
+      color: var(--gray-400); font-size: 13px;
+      border: 1.5px dashed var(--gray-200);
+      border-radius: var(--radius-lg); margin-top: 16px;
+    }
+
+    /* ─── DELETE MODAL ───────────────────────────────────────── */
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 99998;
+      background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);
+      display: none; align-items: center; justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-box {
+      background: var(--white); border-radius: var(--radius-xl);
+      padding: 36px 40px; max-width: 420px; width: 90%;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.2);
+      position: relative;
+    }
+    .modal-title {
+      font-size: 18px; font-weight: 800; color: var(--text);
+      margin-bottom: 8px; letter-spacing: -0.5px;
+    }
+    .modal-sub {
+      font-size: 13px; color: var(--gray-400); margin-bottom: 24px; line-height: 1.6;
+    }
+    .modal-input {
+      width: 100%; padding: 12px 16px;
+      border: 1.5px solid var(--gray-200); border-radius: var(--radius);
+      font-family: 'Poppins', sans-serif; font-size: 14px;
+      color: var(--text); outline: none; margin-bottom: 8px;
+      transition: border-color .2s;
+    }
+    .modal-input:focus { border-color: var(--blue); }
+    .modal-input.error { border-color: #dc2626; }
+    .modal-error {
+      font-size: 11px; color: #dc2626; margin-bottom: 16px; display: none;
+    }
+    .modal-error.show { display: block; }
+    .modal-actions { display: flex; gap: 10px; }
+    .modal-btn {
+      flex: 1; padding: 11px; border: none; border-radius: 50px;
+      font-family: 'Poppins', sans-serif; font-size: 13px; font-weight: 700;
+      cursor: pointer; transition: background .15s, transform .15s;
+    }
+    .modal-btn:hover { transform: translateY(-1px); }
+    .modal-btn.confirm { background: #dc2626; color: #fff; }
+    .modal-btn.confirm:hover { background: #b91c1c; }
+    .modal-btn.cancel { background: var(--gray-200); color: var(--gray-600); }
+    .modal-btn.cancel:hover { background: var(--gray-400); color: var(--white); }
   </style>
 </head>
 <body>
@@ -1034,7 +1155,7 @@
       <div style="width:8px;height:8px;border-radius:50%;background:#22c55e;box-shadow:0 0 0 3px rgba(34,197,94,0.3);flex-shrink:0;"></div>
       <span style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#22c55e;">Atualização · Fase 0 em Andamento</span>
     </div>
-    <span style="font-size:12px;font-weight:500;color:rgba(255,255,255,0.5);letter-spacing:1px;">Reunião de alinhamento com Rafael · 15/04/2026 · 2 de 6 entregas concluídas · 4 em atraso</span>
+    <span style="font-size:12px;font-weight:500;color:rgba(255,255,255,0.5);letter-spacing:1px;">Reunião de alinhamento com Rafael · 15/04/2026 · 2 de 6 entregas concluídas</span>
   </div>
   <div class="cover-scroll-hint">
     <span>Scroll</span>
@@ -1317,7 +1438,7 @@
       <div class="f0-acc-dot"></div>
       <span class="f0-acc-title">Fase 0 · Setup — Detalhamento de Prazos e Responsáveis</span>
       <span class="f0-acc-sub">Semanas 1–2 · 07–15 Abr 2026</span>
-      <span class="f0-acc-badge" style="background:rgba(220,38,38,0.12);color:#dc2626;border:1px solid rgba(220,38,38,0.3);">⚠ 4 em atraso · 2 / 6 feitas</span>
+      <span class="f0-acc-badge">2 / 6 concluídas</span>
       <svg class="f0-acc-arrow" id="f0AccArrow" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M4 6.5l5 5 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
@@ -1360,69 +1481,69 @@
         <div class="f0-deadline done">07/04/2026</div>
       </div>
 
-      <!-- F0.3 — EM ATRASO -->
-      <div class="f0-gantt-row overdue-row">
+      <!-- F0.3 — PENDENTE -->
+      <div class="f0-gantt-row">
         <div class="f0-task-info">
-          <span class="f0-task-num overdue">F0.3</span>
-          <span class="f0-task-text overdue-text">Parceiro de Open Finance selecionado — pesquisar e comparar 3 opções, documentar a decisão</span>
+          <span class="f0-task-num">F0.3</span>
+          <span class="f0-task-text">Parceiro de Open Finance selecionado — pesquisar e comparar 3 opções, documentar a decisão</span>
         </div>
         <div class="f0-owner">Rafael</div>
         <div class="f0-date-cell"></div>
         <div class="f0-date-cell"><span class="f0-bar pending"></span></div>
-        <div style="text-align:center;"><span class="f0-status-badge overdue">⚠ Em atraso</span></div>
-        <div class="f0-deadline overdue">⚠ 13/04/2026</div>
+        <div style="text-align:center;"><span class="f0-status-badge pending">Pendente</span></div>
+        <div class="f0-deadline">13/04/2026</div>
       </div>
 
-      <!-- F0.4 — EM ATRASO -->
-      <div class="f0-gantt-row overdue-row">
+      <!-- F0.4 — PENDENTE -->
+      <div class="f0-gantt-row">
         <div class="f0-task-info">
-          <span class="f0-task-num overdue">F0.4</span>
-          <span class="f0-task-text overdue-text">Estrutura técnica inicial aprovada — documento com stack, arquitetura e banco de dados validado pelo time</span>
+          <span class="f0-task-num">F0.4</span>
+          <span class="f0-task-text">Estrutura técnica inicial aprovada — documento com stack, arquitetura e banco de dados validado pelo time</span>
         </div>
         <div class="f0-owner">Rafael</div>
         <div class="f0-date-cell"></div>
         <div class="f0-date-cell"><span class="f0-bar pending"></span></div>
-        <div style="text-align:center;"><span class="f0-status-badge overdue">⚠ Em atraso</span></div>
-        <div class="f0-deadline overdue">⚠ 13/04/2026</div>
+        <div style="text-align:center;"><span class="f0-status-badge pending">Pendente</span></div>
+        <div class="f0-deadline">13/04/2026</div>
       </div>
 
-      <!-- F0.5 — EM ATRASO -->
-      <div class="f0-gantt-row overdue-row">
+      <!-- F0.5 — PENDENTE -->
+      <div class="f0-gantt-row">
         <div class="f0-task-info">
-          <span class="f0-task-num overdue">F0.5</span>
-          <span class="f0-task-text overdue-text">Mapa de riscos documentado — cada risco com probabilidade, impacto e plano de mitigação</span>
+          <span class="f0-task-num">F0.5</span>
+          <span class="f0-task-text">Mapa de riscos documentado — cada risco com probabilidade, impacto e plano de mitigação</span>
         </div>
         <div class="f0-owner">Rafael</div>
         <div class="f0-date-cell"></div>
         <div class="f0-date-cell"><span class="f0-bar pending"></span></div>
-        <div style="text-align:center;"><span class="f0-status-badge overdue">⚠ Em atraso</span></div>
-        <div class="f0-deadline overdue">⚠ 13/04/2026</div>
+        <div style="text-align:center;"><span class="f0-status-badge pending">Pendente</span></div>
+        <div class="f0-deadline">13/04/2026</div>
       </div>
 
-      <!-- F0.6 — EM ATRASO -->
-      <div class="f0-gantt-row overdue-row">
+      <!-- F0.6 — PENDENTE -->
+      <div class="f0-gantt-row">
         <div class="f0-task-info">
-          <span class="f0-task-num overdue">F0.6</span>
-          <span class="f0-task-text overdue-text">Inventário LGPD — listar todos os dados pessoais que o app coletará e como o usuário autoriza cada um</span>
+          <span class="f0-task-num">F0.6</span>
+          <span class="f0-task-text">Inventário LGPD — listar todos os dados pessoais que o app coletará e como o usuário autoriza cada um</span>
         </div>
         <div class="f0-owner">Rafael</div>
         <div class="f0-date-cell"></div>
         <div class="f0-date-cell"><span class="f0-bar pending"></span></div>
-        <div style="text-align:center;"><span class="f0-status-badge overdue">⚠ Em atraso</span></div>
-        <div class="f0-deadline overdue">⚠ 13/04/2026</div>
+        <div style="text-align:center;"><span class="f0-status-badge pending">Pendente</span></div>
+        <div class="f0-deadline">13/04/2026</div>
       </div>
 
       <!-- APROVAÇÃO — GATE -->
-      <div class="f0-gantt-row gate-row" style="background:rgba(220,38,38,0.04);">
+      <div class="f0-gantt-row gate-row">
         <div class="f0-task-info">
-          <span class="f0-task-num gate" style="background:#dc2626;">GATE</span>
-          <span class="f0-task-text" style="font-weight:600;color:#b91c1c;">Checkpoint 0 · Aguardando entregas em atraso — F0.3, F0.4, F0.5, F0.6 ainda pendentes</span>
+          <span class="f0-task-num gate">GATE</span>
+          <span class="f0-task-text" style="font-weight:600;">Checkpoint 0 · Avança se: MVP definido + parceiro bancário decidido + estrutura técnica aprovada</span>
         </div>
         <div class="f0-owner" style="font-weight:600;color:var(--text);">Ignácio · Rafael</div>
         <div class="f0-date-cell"></div>
-        <div class="f0-date-cell" style="text-align:center;"><span class="f0-dot-gate" style="background:#dc2626;box-shadow:0 0 0 3px rgba(220,38,38,0.2),0 2px 8px rgba(220,38,38,0.4);"></span></div>
-        <div style="text-align:center;"><span class="f0-status-badge overdue">⚠ Bloqueado</span></div>
-        <div class="f0-deadline overdue">⚠ 14/04/2026</div>
+        <div class="f0-date-cell" style="text-align:center;"><span class="f0-dot-gate"></span></div>
+        <div style="text-align:center;"><span class="f0-status-badge gate">Checkpoint</span></div>
+        <div class="f0-deadline">14/04/2026</div>
       </div>
 
       <!-- Footer da legenda -->
@@ -1430,8 +1551,7 @@
         <div class="f0-legend-item"><span class="f0-legend-bar" style="background:linear-gradient(90deg,#16a34a,#22c55e);"></span>Concluído</div>
         <div class="f0-legend-item"><span class="f0-legend-bar" style="background:rgba(82,112,255,0.2);border:1px dashed rgba(82,112,255,0.4);"></span>Pendente</div>
         <div class="f0-legend-item"><span style="width:10px;height:10px;border-radius:50%;background:var(--blue);display:inline-block;box-shadow:0 0 0 3px rgba(82,112,255,0.2);"></span>Gate de aprovação</div>
-        <div class="f0-legend-item"><span style="width:10px;height:10px;border-radius:50%;background:#dc2626;display:inline-block;box-shadow:0 0 0 3px rgba(220,38,38,0.2);"></span>Em atraso</div>
-        <div class="f0-progress-summary">Progresso F0 · <strong style="color:#dc2626;">33%</strong> (2/6 · 4 em atraso)</div>
+        <div class="f0-progress-summary">Progresso F0 · <strong>33%</strong> (2/6)</div>
       </div>
     </div>
   </div>
@@ -1453,10 +1573,10 @@
       <div class="tl-entries">
         <div class="tl-entry done"><span class="tl-entry-num">F0.1</span><span class="tl-entry-name">Meta do produto definida e validada por todos</span><span class="tl-done-badge">✓ Concluído · 07/04</span></div>
         <div class="tl-entry done"><span class="tl-entry-num">F0.2</span><span class="tl-entry-name">Lista priorizada de funcionalidades a construir — e o que fica de fora</span><span class="tl-done-badge">✓ Concluído · 07/04</span></div>
-        <div class="tl-entry" style="border-color:rgba(220,38,38,0.3);background:rgba(220,38,38,0.02);"><span class="tl-entry-num" style="color:#dc2626;border-color:rgba(220,38,38,0.3);background:rgba(220,38,38,0.08);">F0.3</span><span class="tl-entry-name" style="color:#b91c1c;">Parceiro de Open Finance selecionado — pesquisar no mínimo 3 opções, comparar (custo, compliance, integração) e documentar a decisão</span><span class="tl-done-badge" style="color:#dc2626;background:rgba(220,38,38,0.1);border-color:rgba(220,38,38,0.3);">⚠ Em atraso</span></div>
-        <div class="tl-entry" style="border-color:rgba(220,38,38,0.3);background:rgba(220,38,38,0.02);"><span class="tl-entry-num" style="color:#dc2626;border-color:rgba(220,38,38,0.3);background:rgba(220,38,38,0.08);">F0.4</span><span class="tl-entry-name" style="color:#b91c1c;">Estrutura técnica inicial aprovada — documento com stack, arquitetura, banco de dados e APIs principais, validado pelo time</span><span class="tl-done-badge" style="color:#dc2626;background:rgba(220,38,38,0.1);border-color:rgba(220,38,38,0.3);">⚠ Em atraso</span></div>
-        <div class="tl-entry" style="border-color:rgba(220,38,38,0.3);background:rgba(220,38,38,0.02);"><span class="tl-entry-num" style="color:#dc2626;border-color:rgba(220,38,38,0.3);background:rgba(220,38,38,0.08);">F0.5</span><span class="tl-entry-name" style="color:#b91c1c;">Mapa de riscos documentado — cada risco com probabilidade, impacto estimado e plano de mitigação</span><span class="tl-done-badge" style="color:#dc2626;background:rgba(220,38,38,0.1);border-color:rgba(220,38,38,0.3);">⚠ Em atraso</span></div>
-        <div class="tl-entry" style="border-color:rgba(220,38,38,0.3);background:rgba(220,38,38,0.02);"><span class="tl-entry-num" style="color:#dc2626;border-color:rgba(220,38,38,0.3);background:rgba(220,38,38,0.08);">F0.6</span><span class="tl-entry-name" style="color:#b91c1c;">Inventário LGPD — listar todos os dados pessoais que o app coletará (nome, CPF, dados bancários, etc.) e como o usuário autoriza cada um</span><span class="tl-done-badge" style="color:#dc2626;background:rgba(220,38,38,0.1);border-color:rgba(220,38,38,0.3);">⚠ Em atraso</span></div>
+        <div class="tl-entry"><span class="tl-entry-num">F0.3</span><span class="tl-entry-name">Parceiro de Open Finance selecionado — pesquisar no mínimo 3 opções, comparar (custo, compliance, integração) e documentar a decisão</span></div>
+        <div class="tl-entry"><span class="tl-entry-num">F0.4</span><span class="tl-entry-name">Estrutura técnica inicial aprovada — documento com stack, arquitetura, banco de dados e APIs principais, validado pelo time</span></div>
+        <div class="tl-entry"><span class="tl-entry-num">F0.5</span><span class="tl-entry-name">Mapa de riscos documentado — cada risco com probabilidade, impacto estimado e plano de mitigação</span></div>
+        <div class="tl-entry"><span class="tl-entry-num">F0.6</span><span class="tl-entry-name">Inventário LGPD — listar todos os dados pessoais que o app coletará (nome, CPF, dados bancários, etc.) e como o usuário autoriza cada um</span></div>
         <div class="tl-entry"><span class="tl-entry-num">APROVAÇÃO</span><span class="tl-entry-name">Só avança se: funcionalidades do MVP definidas + parceiro de dados bancários decidido + estrutura técnica aprovada</span><span class="tl-gate">Checkpoint 0</span></div>
       </div>
     </div>
@@ -1549,16 +1669,29 @@
 
   </div>
 
-  <!-- ─── PHASE CARDS ───────────────────────────────────── -->
+  <!-- ─── PHASE CARDS ACCORDION ──────────────────────────── -->
   <div class="page-break"></div>
-  <div class="section-eyebrow">Detalhamento das Fases</div>
-  <h2 class="section-title">O que <span class="hl">Construiremos</span> em Cada Fase</h2>
-  <div class="section-rule"></div>
-  <p class="section-intro">
-    Cada fase tem propósito único e entregáveis verificáveis. Nenhuma fase é "pensar" ou "planejar" — todas terminam com resultado tangível e aprovável.
-  </p>
-
-  <div class="cards-grid">
+  <div class="f0-accordion" id="phaseCardsAccordion">
+    <button class="f0-accordion-toggle" id="phaseCardsToggle" onclick="togglePhaseCards()" type="button">
+      <div class="f0-acc-dot" style="background:#5270ff;box-shadow:0 0 0 3px rgba(82,112,255,0.2);"></div>
+      <span class="f0-acc-title">O que Construiremos em Cada Fase</span>
+      <span class="f0-acc-sub">F0 → F6 · 7 fases · 16 semanas</span>
+      <span class="f0-acc-badge" style="background:rgba(82,112,255,0.12);color:var(--blue);border:1px solid rgba(82,112,255,0.25);">Ver detalhes</span>
+      <svg class="f0-acc-arrow" id="phaseCardsArrow" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M4 6.5l5 5 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+    <div class="f0-accordion-body" id="phaseCardsBody" style="border-radius:0 0 var(--radius-lg) var(--radius-lg);">
+      <div style="padding:32px 32px 8px;">
+        <div class="section-eyebrow">Detalhamento das Fases</div>
+        <h2 class="section-title">O que <span class="hl">Construiremos</span> em Cada Fase</h2>
+        <div class="section-rule"></div>
+        <p class="section-intro">
+          Cada fase tem propósito único e entregáveis verificáveis. Nenhuma fase é "pensar" ou "planejar" — todas terminam com resultado tangível e aprovável.
+        </p>
+      </div>
+      <div style="padding:0 32px 32px;">
+        <div class="cards-grid">
 
     <div class="dcard" style="border:1.5px solid rgba(34,197,94,0.3);">
       <div class="dcard-header">
@@ -1572,7 +1705,7 @@
       <div style="margin:0 0 16px;background:var(--gray-200);border-radius:4px;height:6px;overflow:hidden;">
         <div style="width:33%;height:100%;background:linear-gradient(90deg,#16a34a,#22c55e);border-radius:4px;"></div>
       </div>
-      <div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#dc2626;margin-bottom:14px;">33% concluído · 2 de 6 feitas · 4 em atraso desde 13/04</div>
+      <div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#16a34a;margin-bottom:14px;">33% concluído · 2 de 6 entregas feitas</div>
       <!-- Checklist de entregas -->
       <div style="display:flex;flex-direction:column;gap:7px;margin-bottom:16px;">
         <div style="display:flex;align-items:flex-start;gap:8px;font-size:12px;">
@@ -1583,28 +1716,28 @@
           <span style="color:#22c55e;font-weight:700;flex-shrink:0;margin-top:1px;">✓</span>
           <span style="text-decoration:line-through;color:#22c55e;line-height:1.4;">Lista priorizada de funcionalidades — e o que fica de fora</span>
         </div>
-        <div style="display:flex;align-items:flex-start;gap:8px;font-size:12px;padding:8px 10px;background:rgba(220,38,38,0.05);border:1px solid rgba(220,38,38,0.15);border-radius:8px;">
-          <span style="color:#dc2626;font-weight:700;flex-shrink:0;margin-top:1px;">⚠</span>
-          <span style="color:#b91c1c;line-height:1.4;"><strong>F0.3</strong> · Parceiro Open Finance — pesquisar 3 opções, comparar e documentar a decisão <span style="color:#dc2626;font-size:10px;font-weight:700;">· venceu 13/04</span></span>
+        <div style="display:flex;align-items:flex-start;gap:8px;font-size:12px;">
+          <span style="color:var(--gray-400);flex-shrink:0;margin-top:1px;">○</span>
+          <span style="color:var(--text);line-height:1.4;">Parceiro de Open Finance selecionado — análise de 3 opções <span style="color:var(--gray-400);font-size:10px;">· prazo: 13/04</span></span>
         </div>
-        <div style="display:flex;align-items:flex-start;gap:8px;font-size:12px;padding:8px 10px;background:rgba(220,38,38,0.05);border:1px solid rgba(220,38,38,0.15);border-radius:8px;">
-          <span style="color:#dc2626;font-weight:700;flex-shrink:0;margin-top:1px;">⚠</span>
-          <span style="color:#b91c1c;line-height:1.4;"><strong>F0.4</strong> · Estrutura técnica — documento com stack, arquitetura e banco de dados para aprovação <span style="color:#dc2626;font-size:10px;font-weight:700;">· venceu 13/04</span></span>
+        <div style="display:flex;align-items:flex-start;gap:8px;font-size:12px;">
+          <span style="color:var(--gray-400);flex-shrink:0;margin-top:1px;">○</span>
+          <span style="color:var(--text);line-height:1.4;">Estrutura técnica inicial aprovada — stack, arquitetura e BD <span style="color:var(--gray-400);font-size:10px;">· prazo: 13/04</span></span>
         </div>
-        <div style="display:flex;align-items:flex-start;gap:8px;font-size:12px;padding:8px 10px;background:rgba(220,38,38,0.05);border:1px solid rgba(220,38,38,0.15);border-radius:8px;">
-          <span style="color:#dc2626;font-weight:700;flex-shrink:0;margin-top:1px;">⚠</span>
-          <span style="color:#b91c1c;line-height:1.4;"><strong>F0.5</strong> · Mapa de riscos — cada risco com probabilidade, impacto e mitigação <span style="color:#dc2626;font-size:10px;font-weight:700;">· venceu 13/04</span></span>
+        <div style="display:flex;align-items:flex-start;gap:8px;font-size:12px;">
+          <span style="color:var(--gray-400);flex-shrink:0;margin-top:1px;">○</span>
+          <span style="color:var(--text);line-height:1.4;">Mapa de riscos documentado — probabilidade, impacto e mitigação <span style="color:var(--gray-400);font-size:10px;">· prazo: 13/04</span></span>
         </div>
-        <div style="display:flex;align-items:flex-start;gap:8px;font-size:12px;padding:8px 10px;background:rgba(220,38,38,0.05);border:1px solid rgba(220,38,38,0.15);border-radius:8px;">
-          <span style="color:#dc2626;font-weight:700;flex-shrink:0;margin-top:1px;">⚠</span>
-          <span style="color:#b91c1c;line-height:1.4;"><strong>F0.6</strong> · Inventário LGPD — dados coletados pelo app + forma de consentimento de cada um <span style="color:#dc2626;font-size:10px;font-weight:700;">· venceu 13/04</span></span>
+        <div style="display:flex;align-items:flex-start;gap:8px;font-size:12px;">
+          <span style="color:var(--gray-400);flex-shrink:0;margin-top:1px;">○</span>
+          <span style="color:var(--text);line-height:1.4;">Inventário de dados pessoais (LGPD) com forma de consentimento <span style="color:var(--gray-400);font-size:10px;">· prazo: 13/04</span></span>
         </div>
       </div>
       <div class="dcard-body" style="border-top:1px solid var(--gray-200);padding-top:14px;margin-top:0;">
         <em>Projeto que começa sem escopo fechado não lança em 16 semanas.</em>
       </div>
       <div class="tags">
-        <span class="tag" style="background:rgba(34,197,94,0.1);color:#16a34a;border:1px solid rgba(34,197,94,0.2);">✓ Meta do Produto</span><span class="tag" style="background:rgba(34,197,94,0.1);color:#16a34a;border:1px solid rgba(34,197,94,0.2);">✓ Escopo Fechado</span><span class="tag" style="background:rgba(220,38,38,0.08);color:#dc2626;border:1px solid rgba(220,38,38,0.2);">⚠ Open Finance</span><span class="tag" style="background:rgba(220,38,38,0.08);color:#dc2626;border:1px solid rgba(220,38,38,0.2);">⚠ Riscos</span><span class="tag" style="background:rgba(220,38,38,0.08);color:#dc2626;border:1px solid rgba(220,38,38,0.2);">⚠ LGPD</span>
+        <span class="tag" style="background:rgba(34,197,94,0.1);color:#16a34a;border:1px solid rgba(34,197,94,0.2);">✓ Meta do Produto</span><span class="tag" style="background:rgba(34,197,94,0.1);color:#16a34a;border:1px solid rgba(34,197,94,0.2);">✓ Escopo Fechado</span><span class="tag">Open Finance</span><span class="tag">Riscos</span><span class="tag">LGPD</span>
       </div>
     </div>
 
@@ -1716,424 +1849,34 @@
       </div>
     </div>
 
+        </div>
+      </div>
+    </div>
   </div>
 
-  <!-- ════════════════════════════════════════════════════════════
-       DIAGNÓSTICO DO PLANO ORIGINAL
-  ════════════════════════════════════════════════════════════ -->
-  <hr class="divider" />
-  <div class="page-break"></div>
-  <div class="section-eyebrow">Análise Crítica</div>
-  <h2 class="section-title">Diagnóstico do <span class="hl">Plano Original do Rafael</span></h2>
+  <!-- ─── ARQUIVOS ─────────────────────────────────────────── -->
+  <div class="section-eyebrow">Entregas do Projeto</div>
+  <h2 class="section-title">Repositório de <span class="hl">Arquivos</span></h2>
   <div class="section-rule"></div>
   <p class="section-intro">
-    O cronograma original mostra boa intenção — e alguns pontos estão na direção certa. Mas como plano de execução de produto financeiro, ele ainda estava frágil. Cada item abaixo recebe um diagnóstico: o que foi preservado, o que foi reformulado, o que foi cortado — e por quê.
+    Faça upload dos documentos entregues em cada fase. Os arquivos ficam salvos no navegador e podem ser acessados a qualquer momento.
   </p>
 
-  <div class="diag-intro-block">
-    <p><strong>Como ler os diagnósticos:</strong> o corte de escopo não é crítica — é uma decisão de gestão. Um plano que tenta fazer tudo em 16 semanas não lança nada. O critério é simples: <strong>isso bloqueia o primeiro lançamento?</strong> Se não bloqueia, sai do caminho principal e vai para a lista de melhorias pós-lançamento.</p>
-  </div>
-
-  <!-- Sub-seção 1: Fase 1 do plano original -->
-  <div class="diag-subsection">
-    <div class="diag-subsection-title">Fase 1 do plano original — Pré-organização do Projeto</div>
-    <div class="diag-grid">
-
-      <div class="diag-card">
-        <span class="diag-badge badge-incorporated">Incorporado</span>
-        <div class="diag-content">
-          <div class="diag-original">Preenchimento do Canvas (SEBRAE) para Criação de Empresas <span class="diag-phase-tag">Item 1.1</span></div>
-          <div class="diag-reason">O Canvas continua no plano — está na Fase 0 como parte do fechamento da proposta de valor. Mas o escopo da Fase 0 vai além: inclui meta do produto, lista priorizada de funcionalidades, mapa de riscos e decisão sobre acesso aos dados bancários. O canvas é um dos insumos, não a entrega principal.</div>
-        </div>
+  <div class="upload-section">
+    <div class="upload-drop-area" id="dropArea" onclick="document.getElementById('fileInput').click()" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
+      <div class="upload-icon-wrap">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" stroke="#c0fd72" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </div>
-
-      <div class="diag-card">
-        <span class="diag-badge badge-reformed">Reformulado</span>
-        <div class="diag-content">
-          <div class="diag-original">Ideias Sobre o Software e a Empresa ao Desenvolvedor <span class="diag-phase-tag">Item 1.1.1</span></div>
-          <div class="diag-reason">"Passar ideias ao desenvolvedor" não é um entregável concreto — o desenvolvedor não sabe por onde começar com uma lista de ideias. Na nova estrutura, essa entrega virou um documento técnico formal com funcionalidades priorizadas e critérios claros do que precisa funcionar.</div>
-        </div>
-      </div>
-
-      <div class="diag-card">
-        <span class="diag-badge badge-cut">Eliminado</span>
-        <div class="diag-content">
-          <div class="diag-original">Desenvolvimento das Ideias sobre o Software e a Empresa <span class="diag-phase-tag">Item 1.2</span></div>
-          <div class="diag-reason">"Desenvolver ideias" não é uma tarefa verificável — quando se considera concluída? Os resultados concretos dessas ideias (esboço das telas, lista de funcionalidades, especificações técnicas) já existem como entregas nas frentes de Produto e Desenvolvimento.</div>
-        </div>
-      </div>
-
-      <div class="diag-card">
-        <span class="diag-badge badge-expanded">Expandido</span>
-        <div class="diag-content">
-          <div class="diag-original">Cronograma de Etapas (e responsáveis) do Projeto <span class="diag-phase-tag">Item 1.3</span></div>
-          <div class="diag-reason">Estava no caminho certo. Foi expandido para incluir meta do produto, 8 frentes de trabalho, critérios claros de aprovação por fase, mapa de riscos e responsáveis definidos. Cronograma sem critério de quando uma etapa está realmente concluída não funciona como ferramenta de controle.</div>
-        </div>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- Sub-seção 2: Fase 2 do plano original -->
-  <div class="diag-subsection">
-    <div class="diag-subsection-title">Fase 2 do plano original — Até o MVP</div>
-    <div class="diag-grid">
-
-      <div class="diag-card">
-        <span class="diag-badge badge-reformed">Reformulado</span>
-        <div class="diag-content">
-          <div class="diag-original">Formato Visual em PWA (App) do Software <span class="diag-phase-tag">Item 2.1</span></div>
-          <div class="diag-reason">A escolha do formato técnico (app nativo, PWA ou híbrido) deve vir depois que os fluxos e a experiência do usuário estiverem definidos — não antes. A frente de design e experiência do usuário começa na Fase 0 e a decisão técnica de formato entra como parte da estrutura técnica aprovada nessa mesma semana.</div>
-        </div>
-      </div>
-
-      <div class="diag-card">
-        <span class="diag-badge badge-cut">Eliminado do MVP</span>
-        <div class="diag-content">
-          <div class="diag-original">Ideias de Atualizações do Software <span class="diag-phase-tag">Itens 2.2 · 3.6</span></div>
-          <div class="diag-reason">Pensar em atualizações antes do lançamento é gastar energia no que ainda não existe. Esses itens vão para a lista de melhorias pós-lançamento (v1.1). O foco das 16 semanas é lançar o que foi definido — não ampliar enquanto constrói.</div>
-        </div>
-      </div>
-
-      <div class="diag-card">
-        <span class="diag-badge badge-cut">Eliminado do MVP</span>
-        <div class="diag-content">
-          <div class="diag-original">Desenvolvimento das Ideias de Atualizações no Software <span class="diag-phase-tag">Itens 2.3 · 3.7</span></div>
-          <div class="diag-reason">Mesmo raciocínio do item anterior. Desenvolver atualizações antes de lançar o produto base consome o tempo do time técnico no que menos importa agora. O roadmap de versões futuras existe — mas fora das 16 semanas do lançamento.</div>
-        </div>
-      </div>
-
-      <div class="diag-card">
-        <span class="diag-badge badge-reformed">Reformulado</span>
-        <div class="diag-content">
-          <div class="diag-original">Arquitetura Operacional da Companhia e do Software <span class="diag-phase-tag">Item 2.4</span></div>
-          <div class="diag-reason">Estava certo em existir, mas era ampla demais. Foi dividida em duas partes com responsáveis distintos: estrutura técnica do software (frente de Desenvolvimento) e governança operacional da empresa (frente de Gestão). Ambas entram na Fase 0.</div>
-        </div>
-      </div>
-
-      <div class="diag-card">
-        <span class="diag-badge badge-expanded">Expandido</span>
-        <div class="diag-content">
-          <div class="diag-original">Jornada do Cliente e Manipulação de Dados <span class="diag-phase-tag">Item 2.5</span></div>
-          <div class="diag-reason">Era o item mais próximo do correto, mas condensava demais. Na nova estrutura esse tema se divide em 4 frentes separadas: experiência do usuário, conexão com dados bancários (Open Finance), categorização e alertas automáticos, e jornadas educativas. Cada frente tem responsável e entregáveis próprios.</div>
-        </div>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- Sub-seção 3: Fase 3 do plano original -->
-  <div class="diag-subsection">
-    <div class="diag-subsection-title">Fase 3 do plano original — Entrega da Versão 1.0</div>
-    <div class="diag-grid">
-
-      <div class="diag-card">
-        <span class="diag-badge badge-cut">Fora do caminho crítico</span>
-        <div class="diag-content">
-          <div class="diag-original">Diretrizes Institucionais da Companhia <span class="diag-phase-tag">Item 3.1</span></div>
-          <div class="diag-reason">Missão, visão e valores da empresa são importantes — mas nenhum usuário pergunta qual é a missão da POUP antes de instalar o app. Essa agenda existe, mas fora do caminho crítico do lançamento, em paralelo.</div>
-        </div>
-      </div>
-
-      <div class="diag-card">
-        <span class="diag-badge badge-cut">Removido do MVP</span>
-        <div class="diag-content">
-          <div class="diag-original">LP's e Site <span class="diag-phase-tag">Item 3.2</span></div>
-          <div class="diag-reason">O app é distribuído pelas lojas (App Store e Google Play) — elas já são o canal de descoberta. Uma landing page não é necessária para o primeiro lançamento e pode ser construída depois, com dados reais de uso para guiar o texto e a comunicação.</div>
-        </div>
-      </div>
-
-      <div class="diag-card">
-        <span class="diag-badge badge-displaced">Deslocado</span>
-        <div class="diag-content">
-          <div class="diag-original">Estratégia de Marketing e Expansão Comercial <span class="diag-phase-tag">Item 3.3</span></div>
-          <div class="diag-reason">Estava no lugar errado — marketing antes de o produto estar testado é planejar para o que ainda pode mudar. A estratégia de comunicação entra nas semanas 13–16, quando o app já passou pelo teste com usuários reais e as jornadas estão validadas.</div>
-        </div>
-      </div>
-
-      <div class="diag-card">
-        <span class="diag-badge badge-expanded">Antecipado e ampliado</span>
-        <div class="diag-content">
-          <div class="diag-original">Compliance do Software (Poup) <span class="diag-phase-tag">Item 3.4</span></div>
-          <div class="diag-reason">Era o único item de proteção de dados no plano — e estava tarde demais (Semana 9 em diante). Para um app que lê dados bancários, a LGPD (Lei Geral de Proteção de Dados) começa na Semana 1. Na nova estrutura, privacidade e segurança formam uma frente inteira com entregáveis desde a Fase 0.</div>
-        </div>
-      </div>
-
-      <div class="diag-card">
-        <span class="diag-badge badge-incorporated">Incorporado</span>
-        <div class="diag-content">
-          <div class="diag-original">Orçamento e Planejamento da Companhia para o Próximo Trimestre <span class="diag-phase-tag">Item 3.5</span></div>
-          <div class="diag-reason">Existe no novo plano, dentro da frente de Governança, na Fase 0. Orçamento e planejamento financeiro da empresa são parte da gestão do projeto — não uma fase de produto com data de início e fim.</div>
-        </div>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- Sub-seção 4: Fase 4 do plano original -->
-  <div class="diag-subsection">
-    <div class="diag-subsection-title">Fase 4 do plano original — Lançamento Oficial</div>
-    <div class="diag-grid">
-
-      <div class="diag-card">
-        <span class="diag-badge badge-expanded">Incorporado e expandido</span>
-        <div class="diag-content">
-          <div class="diag-original">Estratégia de Lançamento <span class="diag-phase-tag">Item 4.1</span></div>
-          <div class="diag-reason">Correto. Na nova estrutura virou uma fase dedicada (Fase 6, S15–S16) com entregas específicas: envio para Android e iOS, monitoramento ativo desde o primeiro usuário, suporte estruturado e lista de próximas melhorias já priorizada. A preparação dos materiais das lojas começa antes, na Fase 4.</div>
-        </div>
-      </div>
-
-      <div class="diag-card">
-        <span class="diag-badge badge-cut">Removido do plano de 16 semanas</span>
-        <div class="diag-content">
-          <div class="diag-original">Parceria com o Governo Federal (Jogo de Educação Financeira) <span class="diag-phase-tag">Item 4.2</span></div>
-          <div class="diag-reason">É uma iniciativa estratégica valiosa, mas envolve aprovações externas e prazos fora do controle do time. Se entrar no caminho crítico, pode atrasar o lançamento por um fator que a POUP não controla. Vai para o roadmap após o v1.0.</div>
-        </div>
-      </div>
-
-      <div class="diag-card">
-        <span class="diag-badge badge-kept">Mantido e antecipado</span>
-        <div class="diag-content">
-          <div class="diag-original">Distribuição em Lojas Oficiais (Apple &amp; Google Play) <span class="diag-phase-tag">Item 4.3</span></div>
-          <div class="diag-reason">Correto e essencial. Mantido no plano. A preparação começa antes: ícone, capturas de tela e descrição do app são produzidos na Fase 4 para que o envio não atrase por falta de material. Google Play e App Store têm processo de análise formal — envio incompleto pode rejeitar ou atrasar o app por dias.</div>
-        </div>
-      </div>
-
-      <div class="diag-card">
-        <span class="diag-badge badge-kept">Mantido</span>
-        <div class="diag-content">
-          <div class="diag-original">Evento de Lançamento <span class="diag-phase-tag">Item 4.4</span></div>
-          <div class="diag-reason">Mantido no plano. Posicionado após a publicação nas lojas — quando o produto já está no ar e pode ser demonstrado com dados reais. Evento antes da publicação cria expectativa sem entrega; evento depois amplifica o que já existe. Coordenado pela vendo.vc nas semanas 15–16.</div>
-        </div>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- Sub-seção 5: Frentes ausentes -->
-  <div class="diag-subsection">
-    <div class="diag-subsection-title missing">Frentes críticas ausentes no plano original</div>
-    <p style="font-size:13.5px;color:var(--gray-600);line-height:1.75;margin-bottom:24px;">
-      Estes itens não estavam no plano original — e são os que mais podem comprometer o lançamento se não forem abertos agora. Cada um tem impacto direto no prazo, na qualidade ou na legalidade do app.
-    </p>
-    <div class="diag-grid">
-
-      <div class="diag-card missing">
-        <span class="diag-badge badge-missing">Ausente · Crítico</span>
-        <div class="diag-content">
-          <div class="diag-original">Open Finance — integração bancária e consentimento</div>
-          <div class="diag-reason">Tudo que torna a POUP funcional depende de Open Finance — o sistema oficial do Banco Central que permite ao app acessar dados bancários com autorização do usuário. O processo exige parceiro habilitado, fluxo de consentimento formal e tratamento de reconexão quando a autorização expira. A escolha do parceiro precisa acontecer na Semana 1 — não dá para improvisar isso no meio do projeto.</div>
-        </div>
-      </div>
-
-      <div class="diag-card missing">
-        <span class="diag-badge badge-missing">Ausente · Crítico</span>
-        <div class="diag-content">
-          <div class="diag-original">LGPD e privacidade desde a concepção</div>
-          <div class="diag-reason">Para um app que acessa dados bancários, a LGPD (Lei Geral de Proteção de Dados) não é item de checklist do final — é parte da estrutura do produto desde o dia 1. No plano original havia um único item de "compliance" posicionado tarde. Na nova estrutura, proteção de dados é uma frente completa com entregáveis desde a Fase 0.</div>
-        </div>
-      </div>
-
-      <div class="diag-card missing">
-        <span class="diag-badge badge-missing">Ausente · Crítico</span>
-        <div class="diag-content">
-          <div class="diag-original">QA formal com critérios de aceite verificáveis</div>
-          <div class="diag-reason">O plano tinha "fase de testes" sem critérios claros — sem definir o que precisa funcionar para aprovar, tudo passa. Testes de qualidade (QA) formais incluem roteiro de casos de teste, testes em celulares físicos e uma condição explícita: zero erros graves em aberto para avançar ao lançamento.</div>
-        </div>
-      </div>
-
-      <div class="diag-card missing">
-        <span class="diag-badge badge-missing">Ausente · Crítico</span>
-        <div class="diag-content">
-          <div class="diag-original">Segurança da API e do app</div>
-          <div class="diag-reason">App financeiro que transmite dados bancários tem requisito mínimo de segurança que não é opcional — nem pode ser deixado para o final. A revisão de segurança precisa ser uma entrega verificável com responsável e data, não uma "preocupação geral". Estava completamente ausente no plano original.</div>
-        </div>
-      </div>
-
-      <div class="diag-card missing">
-        <span class="diag-badge badge-missing">Ausente · Relevante</span>
-        <div class="diag-content">
-          <div class="diag-original">Analytics, logs e observabilidade</div>
-          <div class="diag-reason">Sem registro de uso desde o início, o time lança o app e não sabe onde os usuários travam, saem ou têm dificuldade. Isso inviabiliza melhorias com base em dados reais. Monitoramento ativo também é o que faz um erro de produção ser identificado em horas, não dias.</div>
-        </div>
-      </div>
-
-      <div class="diag-card missing">
-        <span class="diag-badge badge-missing">Ausente · Relevante</span>
-        <div class="diag-content">
-          <div class="diag-original">Crash reporting e monitoramento de produção</div>
-          <div class="diag-reason">Lançar sem rastreamento automático de falhas é lançar às cegas. A ferramenta precisa estar ativa antes do beta — não instalada no dia do lançamento. Toda falha que ocorre no teste sem ser rastreada é uma oportunidade de correção perdida.</div>
-        </div>
-      </div>
-
-      <div class="diag-card missing">
-        <span class="diag-badge badge-missing">Ausente · Relevante</span>
-        <div class="diag-content">
-          <div class="diag-original">Design system formal e protótipo navegável como artefato</div>
-          <div class="diag-reason">O plano original tinha "formato visual do app" — muito diferente de uma biblioteca visual com componentes padronizados e um protótipo navegável aprovado antes do desenvolvimento começar. Sem isso, cada tela é construída de forma diferente, o resultado final é inconsistente e o retrabalho é alto.</div>
-        </div>
-      </div>
-
-      <div class="diag-card missing">
-        <span class="diag-badge badge-missing">Ausente · Relevante</span>
-        <div class="diag-content">
-          <div class="diag-original">Gates de decisão GO/NÃO GO por fase</div>
-          <div class="diag-reason">Sem critérios claros para passar de uma fase para outra, o projeto avança por calendário — não por resultado. O time chega ao lançamento com problemas acumulados que "ficaram para depois". Os 6 checkpoints do novo plano garantem que cada fase só avança quando o mínimo necessário foi entregue e aprovado.</div>
-        </div>
-      </div>
-
-      <div class="diag-card missing">
-        <span class="diag-badge badge-missing">Ausente · Relevante</span>
-        <div class="diag-content">
-          <div class="diag-original">Importação manual como fallback de Open Finance</div>
-          <div class="diag-reason">Se a conexão bancária falhar ou o usuário não quiser autorizá-la, o app não pode simplesmente parar de funcionar. A importação manual por extrato em PDF ou planilha garante que qualquer pessoa consegue usar a POUP desde o primeiro dia — independente do banco ou do status da autorização.</div>
-        </div>
-      </div>
-
-      <div class="diag-card missing">
-        <span class="diag-badge badge-missing">Ausente · Relevante</span>
-        <div class="diag-content">
-          <div class="diag-original">Preparação formal das lojas (materiais, assets, processo de review)</div>
-          <div class="diag-reason">Publicar nas lojas não é apenas fazer o upload do app. Envolve capturas de tela em resoluções específicas, ícone formatado, descrição em português, política de privacidade com URL pública e classificação etária. O processo de análise das lojas pode levar dias e rejeitar o app por inconsistências — a preparação começa na Fase 4, não na semana do lançamento.</div>
-        </div>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- ─── RISCOS ──────────────────────────────────────────── -->
-  <hr class="divider" />
-  <div class="page-break"></div>
-  <div class="section-eyebrow">Gestão de Riscos</div>
-  <h2 class="section-title">Riscos <span class="hl">Críticos do Projeto</span></h2>
-  <div class="section-rule"></div>
-  <p class="section-intro">
-    Os riscos abaixo têm mitigação ativa no plano — não são problemas a resolver depois, são ameaças gerenciadas desde a Fase 0.
-  </p>
-
-  <div class="risk-grid">
-
-    <div class="risk-card">
-      <div class="risk-icon high">⚡</div>
-      <div class="risk-body">
-        <div class="risk-title">Atraso na integração financeira (Open Finance)</div>
-        <div class="risk-desc">Parceiro escolhido fora do prazo ou integração mais complexa que o esperado trava toda a Fase 2.</div>
-        <span class="risk-badge high">Impacto Alto</span>
-        <div class="risk-desc" style="margin-top:8px;"><strong>Mitigação:</strong> parceiro habilitador definido na Semana 1 + fallback manual por PDF/CSV como plano B obrigatório.</div>
-      </div>
+      <div class="upload-drop-title">Arraste arquivos aqui</div>
+      <div class="upload-drop-sub">PDF, DOCX, XLSX, imagens — qualquer formato</div>
+      <button class="upload-btn" onclick="event.stopPropagation(); document.getElementById('fileInput').click();">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v8M3.5 5l3.5-4 3.5 4M1.5 10v1a1.5 1.5 0 001.5 1.5h8A1.5 1.5 0 0012.5 11v-1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Selecionar Arquivos
+      </button>
+      <input type="file" id="fileInput" multiple style="display:none" onchange="handleFileSelect(event)">
     </div>
 
-    <div class="risk-card">
-      <div class="risk-icon high">📦</div>
-      <div class="risk-body">
-        <div class="risk-title">Escopo crescer demais (scope creep)</div>
-        <div class="risk-desc">Features não previstas entram no MVP e consomem capacidade do time no caminho crítico.</div>
-        <span class="risk-badge high">Impacto Alto</span>
-        <div class="risk-desc" style="margin-top:8px;"><strong>Mitigação:</strong> escopo congelado na Fase 0 + qualquer novo item vai para o backlog v1.1, não para o MVP.</div>
-      </div>
-    </div>
-
-    <div class="risk-card">
-      <div class="risk-icon high">🔒</div>
-      <div class="risk-body">
-        <div class="risk-title">Falta de base legal e consentimento</div>
-        <div class="risk-desc">App financeiro sem tratamento adequado de dados pode ter problemas com ANPD e App Stores.</div>
-        <span class="risk-badge high">Impacto Alto</span>
-        <div class="risk-desc" style="margin-top:8px;"><strong>Mitigação:</strong> Trilha 7 (Compliance) ativa desde a Fase 0 com revisão jurídica antes da submissão.</div>
-      </div>
-    </div>
-
-    <div class="risk-card">
-      <div class="risk-icon high">📱</div>
-      <div class="risk-body">
-        <div class="risk-title">UX bonita mas fraca em uso real</div>
-        <div class="risk-desc">Onboarding confuso, jornadas incompreensíveis ou fluxo que parece óbvio para o time mas não para o usuário.</div>
-        <span class="risk-badge high">Impacto Alto</span>
-        <div class="risk-desc" style="margin-top:8px;"><strong>Mitigação:</strong> beta fechado com usuários reais nas Semanas 13–14, ajustes com base em dados antes do lançamento.</div>
-      </div>
-    </div>
-
-    <div class="risk-card">
-      <div class="risk-icon high">🐛</div>
-      <div class="risk-body">
-        <div class="risk-title">Bugs críticos em produção</div>
-        <div class="risk-desc">Falhas após publicação que comprometem a experiência ou expõem dados.</div>
-        <span class="risk-badge high">Impacto Alto</span>
-        <div class="risk-desc" style="margin-top:8px;"><strong>Mitigação:</strong> QA formal (Fase 4) + crash reporting ativo + monitoramento de produção desde o primeiro usuário.</div>
-      </div>
-    </div>
-
-    <div class="risk-card">
-      <div class="risk-icon medium">🏪</div>
-      <div class="risk-body">
-        <div class="risk-title">Rejeição ou atraso nas lojas</div>
-        <div class="risk-desc">Submissão incompleta ou falta de materiais pode atrasar a aprovação do app.</div>
-        <span class="risk-badge medium">Impacto Médio/Alto</span>
-        <div class="risk-desc" style="margin-top:8px;"><strong>Mitigação:</strong> assets e materiais de loja preparados na Fase 4 (S11–S12), antes da janela de submissão.</div>
-      </div>
-    </div>
-
-    <div class="risk-card">
-      <div class="risk-icon medium">🎯</div>
-      <div class="risk-body">
-        <div class="risk-title">Baixa compreensão do onboarding</div>
-        <div class="risk-desc">Usuário não entende a proposta de valor da POUP nos primeiros minutos e desinstala.</div>
-        <span class="risk-badge medium">Impacto Médio</span>
-        <div class="risk-desc" style="margin-top:8px;"><strong>Mitigação:</strong> onboarding testado no beta (S13–S14) com métrica de conclusão e ajustes antes do lançamento.</div>
-      </div>
-    </div>
-
-    <div class="risk-card">
-      <div class="risk-icon medium">🏛️</div>
-      <div class="risk-body">
-        <div class="risk-title">Dependência de aprovação externa (governo, parceiros)</div>
-        <div class="risk-desc">Iniciativas como parceria governamental ou aprovação de órgãos regulatórios fora do controle do time.</div>
-        <span class="risk-badge medium">Impacto Médio</span>
-        <div class="risk-desc" style="margin-top:8px;"><strong>Mitigação:</strong> parcerias estratégicas externas removidas do caminho crítico do MVP — geridas em paralelo, sem bloquear o lançamento.</div>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- ─── KPIs ───────────────────────────────────────────── -->
-  <div class="section-eyebrow">Métricas de Sucesso</div>
-  <h2 class="section-title">KPIs do <span class="hl">MVP</span></h2>
-  <div class="section-rule"></div>
-  <p class="section-intro">
-    O MVP é bem-sucedido quando os usuários chegam, entendem o produto e extraem valor real dele. Estas métricas dizem se isso está acontecendo.
-  </p>
-
-  <div class="kpi-columns">
-    <div class="kpi-block">
-      <div class="kpi-block-title">Primeiros Passos do Usuário</div>
-      <div class="kpi-list">
-        <div class="kpi-item">Cadastro concluído</div>
-        <div class="kpi-item">Apresentação inicial do app concluída</div>
-        <div class="kpi-item">Conexão bancária iniciada</div>
-        <div class="kpi-item">Conexão bancária concluída com sucesso</div>
-        <div class="kpi-item">Primeira importação manual de extrato concluída</div>
-      </div>
-    </div>
-    <div class="kpi-block">
-      <div class="kpi-block-title">Valor Entregue ao Usuário</div>
-      <div class="kpi-list">
-        <div class="kpi-item">Tempo até o usuário receber o primeiro dado útil</div>
-        <div class="kpi-item">% de movimentações classificadas automaticamente</div>
-        <div class="kpi-item">Usuários que concluem a Jornada 1</div>
-        <div class="kpi-item">Usuários que definem uma meta financeira</div>
-        <div class="kpi-item">Usuários que voltam ao app 7 dias após o cadastro</div>
-      </div>
-    </div>
-    <div class="kpi-block">
-      <div class="kpi-block-title">KPIs de Estabilidade</div>
-      <div class="kpi-list">
-        <div class="kpi-item">% de sessões sem falha no app (meta: acima de 99%)</div>
-        <div class="kpi-item">Taxa de erro na conexão bancária</div>
-        <div class="kpi-item">% de notificações abertas pelos usuários</div>
-        <div class="kpi-item">Volume de pedidos de suporte por usuário ativo</div>
-        <div class="kpi-item">Velocidade de resposta do servidor</div>
-      </div>
-    </div>
+    <div id="filesList" class="files-list"></div>
   </div>
 
   <!-- ─── EQUIPE ─────────────────────────────────────────── -->
@@ -2179,6 +1922,20 @@
   <div class="footer-logo">vendo<span>.vc</span> × <span>POUP</span></div>
   <div class="footer-sub">Relatório Executivo · Fase 0 em Andamento · Atualização 15/04/2026 · Documento Confidencial</div>
 </footer>
+
+<!-- ─── DELETE MODAL ─────────────────────────────────────── -->
+<div class="modal-overlay" id="deleteModal">
+  <div class="modal-box">
+    <div class="modal-title">Excluir arquivo</div>
+    <div class="modal-sub" id="deleteModalFileName">Digite a senha de operador para confirmar a exclusão.</div>
+    <input type="password" class="modal-input" id="deletePassword" placeholder="Senha de operador" onkeydown="if(event.key==='Enter')confirmDeleteFile()">
+    <div class="modal-error" id="deletePasswordError">Senha incorreta. Tente novamente.</div>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" onclick="closeDeleteModal()">Cancelar</button>
+      <button class="modal-btn confirm" onclick="confirmDeleteFile()">Excluir</button>
+    </div>
+  </div>
+</div>
 
 </div><!-- #pdf-root -->
 
@@ -2266,6 +2023,214 @@
       btn.classList.remove('loading');
     }
   }
+</script>
+
+<script>
+// ═══ FILE UPLOAD — IndexedDB ═══════════════════════════════════
+const DB_NAME = 'poup_files_db';
+const DB_VERSION = 1;
+const STORE_NAME = 'files';
+let db = null;
+let pendingDeleteId = null;
+
+function initDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, DB_VERSION);
+    req.onupgradeneeded = (e) => {
+      const d = e.target.result;
+      if (!d.objectStoreNames.contains(STORE_NAME)) {
+        d.createObjectStore(STORE_NAME, { keyPath: 'id' });
+      }
+    };
+    req.onsuccess = (e) => { db = e.target.result; resolve(db); };
+    req.onerror = (e) => reject(e);
+  });
+}
+
+function saveFileToDB(fileData) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_NAME, 'readwrite');
+    const store = tx.objectStore(STORE_NAME);
+    store.put(fileData);
+    tx.oncomplete = resolve;
+    tx.onerror = reject;
+  });
+}
+
+function getAllFilesFromDB() {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_NAME, 'readonly');
+    const store = tx.objectStore(STORE_NAME);
+    const req = store.getAll();
+    req.onsuccess = (e) => resolve(e.target.result);
+    req.onerror = reject;
+  });
+}
+
+function deleteFileFromDB(id) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_NAME, 'readwrite');
+    const store = tx.objectStore(STORE_NAME);
+    store.delete(id);
+    tx.oncomplete = resolve;
+    tx.onerror = reject;
+  });
+}
+
+function getFileIcon(type) {
+  if (type.includes('pdf')) return '📄';
+  if (type.includes('word') || type.includes('document')) return '📝';
+  if (type.includes('sheet') || type.includes('excel')) return '📊';
+  if (type.includes('presentation') || type.includes('powerpoint')) return '📋';
+  if (type.includes('image')) return '🖼️';
+  if (type.includes('zip') || type.includes('rar')) return '🗜️';
+  return '📎';
+}
+
+function formatFileSize(bytes) {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+}
+
+function formatDate(iso) {
+  const d = new Date(iso);
+  return d.toLocaleDateString('pt-BR') + ' às ' + d.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
+}
+
+async function processFiles(files) {
+  for (const file of files) {
+    const reader = new FileReader();
+    await new Promise((resolve) => {
+      reader.onload = async (e) => {
+        const fileData = {
+          id: Date.now() + Math.random().toString(36).slice(2),
+          name: file.name,
+          size: file.size,
+          type: file.type,
+          uploadedAt: new Date().toISOString(),
+          data: e.target.result
+        };
+        await saveFileToDB(fileData);
+        resolve();
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+  await renderFilesList();
+}
+
+async function renderFilesList() {
+  const container = document.getElementById('filesList');
+  if (!container) return;
+  const files = await getAllFilesFromDB();
+  if (!files || files.length === 0) {
+    container.innerHTML = '<div class="files-empty">Nenhum arquivo enviado ainda.<br>Faça upload dos documentos entregues para mantê-los organizados aqui.</div>';
+    return;
+  }
+  files.sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt));
+  container.innerHTML = files.map(f => `
+    <div class="file-card" id="fc-${f.id}">
+      <div class="file-icon">${getFileIcon(f.type)}</div>
+      <div class="file-meta">
+        <div class="file-name">${f.name}</div>
+        <div class="file-info">${formatFileSize(f.size)} · Enviado em ${formatDate(f.uploadedAt)}</div>
+      </div>
+      <div class="file-actions">
+        <button class="file-action-btn download" onclick="downloadFile('${f.id}')">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v7M3 5.5l3 3 3-3M1.5 9.5v.5a1 1 0 001 1h7a1 1 0 001-1v-.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Baixar
+        </button>
+        <button class="file-action-btn delete" onclick="openDeleteModal('${f.id}', '${f.name.replace(/'/g,"\\'")}')">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M1.5 3h9M4 3V2a1 1 0 011-1h2a1 1 0 011 1v1M9.5 3l-.5 7.5a1 1 0 01-1 .5h-4a1 1 0 01-1-.5L2.5 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          Excluir
+        </button>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function downloadFile(id) {
+  const files = await getAllFilesFromDB();
+  const f = files.find(x => x.id === id);
+  if (!f) return;
+  const a = document.createElement('a');
+  a.href = f.data;
+  a.download = f.name;
+  a.click();
+}
+
+function openDeleteModal(id, name) {
+  pendingDeleteId = id;
+  document.getElementById('deleteModalFileName').textContent = `Arquivo: "${name}"`;
+  document.getElementById('deletePassword').value = '';
+  document.getElementById('deletePasswordError').classList.remove('show');
+  document.getElementById('deletePassword').classList.remove('error');
+  document.getElementById('deleteModal').classList.add('open');
+  setTimeout(() => document.getElementById('deletePassword').focus(), 100);
+}
+
+function closeDeleteModal() {
+  pendingDeleteId = null;
+  document.getElementById('deleteModal').classList.remove('open');
+}
+
+async function confirmDeleteFile() {
+  const pwd = document.getElementById('deletePassword').value;
+  if (pwd !== 'Jacare@17') {
+    document.getElementById('deletePasswordError').classList.add('show');
+    document.getElementById('deletePassword').classList.add('error');
+    document.getElementById('deletePassword').value = '';
+    document.getElementById('deletePassword').focus();
+    return;
+  }
+  if (pendingDeleteId) {
+    await deleteFileFromDB(pendingDeleteId);
+    closeDeleteModal();
+    await renderFilesList();
+  }
+}
+
+function handleFileSelect(event) {
+  processFiles(Array.from(event.target.files));
+  event.target.value = '';
+}
+
+function handleDragOver(event) {
+  event.preventDefault();
+  document.getElementById('dropArea').classList.add('drag-over');
+}
+
+function handleDragLeave() {
+  document.getElementById('dropArea').classList.remove('drag-over');
+}
+
+function handleDrop(event) {
+  event.preventDefault();
+  document.getElementById('dropArea').classList.remove('drag-over');
+  processFiles(Array.from(event.dataTransfer.files));
+}
+
+// ═══ PHASE CARDS ACCORDION ═════════════════════════════════════
+function togglePhaseCards() {
+  const body = document.getElementById('phaseCardsBody');
+  const toggle = document.getElementById('phaseCardsToggle');
+  const arrow = document.getElementById('phaseCardsArrow');
+  const isOpen = body.classList.contains('open');
+  if (isOpen) {
+    body.classList.remove('open');
+    toggle.classList.remove('open');
+  } else {
+    body.classList.add('open');
+    toggle.classList.add('open');
+  }
+}
+
+// Init on page load
+document.addEventListener('DOMContentLoaded', async () => {
+  await initDB();
+  await renderFilesList();
+});
 </script>
 
 </body>
