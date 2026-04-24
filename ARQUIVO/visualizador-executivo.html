@@ -751,8 +751,9 @@
   const OAUTH_ENDPOINT = 'https://accounts.google.com/o/oauth2/v2/auth';
 
   // ── Módulo Comercial ──────────────────────────────────────
-  const COMERCIAL_SPREADSHEET_ID = '1TrMEP7_J5Vqepo5xGki2J2Pnz65IATGX82Xo3WCrHIg';
-  const COMERCIAL_SHEET_NAME     = 'COMERCIAL - 2026';
+  const COMERCIAL_SPREADSHEET_ID     = '1TrMEP7_J5Vqepo5xGki2J2Pnz65IATGX82Xo3WCrHIg';
+  const COMERCIAL_PDV_SPREADSHEET_ID = '12GYevdaChZGfdwqgimKf1hgRbtzIOlG6X_Vz0reTyXs';
+  const COMERCIAL_SHEET_NAME         = 'COMERCIAL - 2026';
 
   // ── Módulo Acordos ────────────────────────────────────────
   const ACORDOS_SPREADSHEET_ID = '1PVeSRGKD781WJrvLdZAHrA0RztFLJdTNDucpKvlc1q4';
@@ -1570,41 +1571,62 @@
     document.getElementById('comercial-section').style.display = 'none';
 
     const range = encodeURIComponent(`'${COMERCIAL_SHEET_NAME}'`);
-    const url   = `${API_BASE}/${COMERCIAL_SPREADSHEET_ID}/values/${range}`;
+    const url1  = `${API_BASE}/${COMERCIAL_SPREADSHEET_ID}/values/${range}`;
+    const url2  = `${API_BASE}/${COMERCIAL_PDV_SPREADSHEET_ID}/values/${range}`;
 
-    console.log('[Comercial] Iniciando requisição');
-    console.log('[Comercial] Planilha ID:', COMERCIAL_SPREADSHEET_ID);
-    console.log('[Comercial] Aba:', COMERCIAL_SHEET_NAME);
-    console.log('[Comercial] URL:', url);
-    console.log('[Comercial] Token (primeiros 20 chars):', accessToken?.slice(0, 20) + '…');
+    console.log('[Comercial] Buscando equipe interna + PDVs em paralelo');
 
     try {
-      const res = await fetch(url, {
-        headers: { Authorization: `Bearer ${accessToken}` }
-      });
+      const [res1, res2] = await Promise.all([
+        fetch(url1, { headers: { Authorization: `Bearer ${accessToken}` } }),
+        fetch(url2, { headers: { Authorization: `Bearer ${accessToken}` } }),
+      ]);
 
-      console.log('[Comercial] HTTP status:', res.status, res.statusText);
+      console.log('[Comercial] Interna HTTP:', res1.status, '| PDVs HTTP:', res2.status);
 
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        console.warn('[Comercial] Erro da API:', res.status, err?.error?.message);
-        showAlert(`<strong>Módulo Comercial (${res.status}):</strong> ${err?.error?.message || 'Erro ao carregar aba Comercial.'}`);
+      if (!res1.ok) {
+        const err = await res1.json().catch(() => ({}));
+        showAlert(`<strong>Módulo Comercial (${res1.status}):</strong> ${err?.error?.message || 'Erro ao carregar planilha interna.'}`);
         return;
       }
 
-      const json = await res.json();
-      const rows = json.values || [];
-      console.log('[Comercial] Total de linhas retornadas:', rows.length);
-      const preview = Math.min(10, rows.length);
-      for (let i = 0; i < preview; i++) {
-        console.log(`[Comercial] Linha ${i + 1}:`, rows[i] ?? '—');
+      const json1 = await res1.json();
+      const rows1 = json1.values || [];
+      console.log('[Comercial] Linhas interna:', rows1.length);
+
+      let mergedRows = rows1;
+
+      if (res2.ok) {
+        const json2 = await res2.json();
+        const rows2 = json2.values || [];
+        console.log('[Comercial] Linhas PDVs:', rows2.length);
+
+        if (rows2.length >= 2) {
+          const HEADER_MARKERS = ['CLIENTE', 'FECHAMENTO', 'TOTAL EM HONORÁRIOS', 'TOTAL EM HONORARIOS'];
+          const scanLimit = Math.min(15, rows2.length);
+          let pdvHeaderIdx = 0;
+          for (let i = 0; i < scanLimit; i++) {
+            const upper = (rows2[i] || []).map(c => (c || '').trim().toUpperCase());
+            if (HEADER_MARKERS.some(m => upper.some(cell => cell.includes(m)))) {
+              pdvHeaderIdx = i;
+              break;
+            }
+          }
+          const pdvDataRows = rows2.slice(pdvHeaderIdx + 1).filter(r => r.some(c => (c || '').trim()));
+          console.log('[Comercial] Linhas PDVs (dados):', pdvDataRows.length);
+          mergedRows = [...rows1, ...pdvDataRows];
+        }
+      } else {
+        console.warn('[Comercial] PDVs indisponível (', res2.status, ') — exibindo apenas equipe interna.');
       }
 
-      if (rows.length < 2) {
-        console.warn('[Comercial] Nenhum dado encontrado na aba (menos de 2 linhas).');
+      console.log('[Comercial] Total unificado:', mergedRows.length, 'linhas');
+
+      if (mergedRows.length < 2) {
+        console.warn('[Comercial] Nenhum dado encontrado.');
         return;
       }
-      renderComercial(rows);
+      renderComercial(mergedRows);
 
     } catch (e) {
       console.error('Comercial fetch error:', e);
@@ -1655,7 +1677,7 @@
     const colCloser     = findCol('CAPTAÇÃO CLOSER', 'CAPTACAO CLOSER', 'CLOSER');
     const colUF         = findCol('UF');
     const colBanco      = findCol('BANCO');
-    const colConsultor  = findCol('QUEM GERIU', 'CONSULTOR');
+    const colConsultor  = findCol('QUEM GERIU', 'CONSULTOR', 'RESPONSÁVEL', 'RESPONSAVEL');
     const colCidade     = findCol('CIDADE');
 
     // ── filtra pelo mês atual ────────────────────────────────
@@ -1693,7 +1715,7 @@
 
     // ── atualiza título da seção ─────────────────────────────
     document.getElementById('comercial-title').textContent =
-      `Comercial — ${MESES_PT[curMonth]}`;
+      `Comercial — ${MESES_PT[curMonth]} · Equipe + PDVs`;
 
     // ── calcula cards ────────────────────────────────────────
     let totalHon = 0, totalParc = 0, parcCount = 0;
@@ -1994,7 +2016,7 @@
     if (heroVgv)   { heroVgv.textContent   = formatBRL(totalHon); applyColor(heroVgv, totalHon); }
     if (heroVidas) heroVidas.textContent   = clientes.toLocaleString('pt-BR');
     if (heroMedia) heroMedia.textContent   = formatBRL(mediaContrato);
-    if (heroSub)   heroSub.textContent     = `Comercial · ${MESES_PT[curMonth]}`;
+    if (heroSub)   heroSub.textContent     = `Comercial · ${MESES_PT[curMonth]} · Equipe + PDVs`;
 
     document.getElementById('comercial-section').style.display = 'flex';
   }
