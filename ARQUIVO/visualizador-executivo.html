@@ -338,6 +338,8 @@
       grid-template-columns: 1fr;
       flex: 1;
     }
+    /* Row com 3 cards iguais */
+    .tv-charts-row-3 { grid-template-columns: 1fr 1fr 1fr; }
     /* Ranking full-width: itens maiores, mais respiro */
     .ranking-list-wide .ranking-item { padding: 5px 0; gap: 8px; }
     .ranking-list-wide .ranking-pos  { font-size: 12px; width: 20px; }
@@ -929,8 +931,8 @@
         <div id="com-card-vidas-sub"></div>
       </div>
 
-      <!-- Charts row 1: Canal + UF Rankings -->
-      <div class="tv-charts-row">
+      <!-- Charts row 1: Canal (top 3) + Estado (top 3) + Interna vs PDVs -->
+      <div class="tv-charts-row tv-charts-row-3">
         <div class="card chart-card">
           <div class="chart-card-title">Canal de Captação Closer</div>
           <div class="ranking-list ranking-list-wide" id="ranking-canal"></div>
@@ -938,6 +940,13 @@
         <div class="card chart-card">
           <div class="chart-card-title">Contratos por Estado</div>
           <div class="ranking-list ranking-list-wide" id="ranking-uf"></div>
+        </div>
+        <div class="card chart-card">
+          <div class="chart-card-title">Interna vs PDVs</div>
+          <div class="pie-table-layout">
+            <div class="pie-table-canvas-wrap"><canvas id="chart-equipe-pizza"></canvas></div>
+            <div class="pie-table" id="table-equipe-pizza"></div>
+          </div>
         </div>
       </div>
 
@@ -1515,13 +1524,69 @@
   }
 
   // ── Ranking HTML puro (substitui pizza + mapa D3) ─────────
+  function makePizzaEquipe(canvasId, tableId, nInterna, nPdv) {
+    const total  = nInterna + nPdv;
+    if (total === 0) return;
+    const labels = ['Equipe Interna', 'PDVs'];
+    const values = [nInterna, nPdv];
+    const colors = ['#5B4FE8', '#10C96E'];
+    const ctx = document.getElementById(canvasId);
+    if (!ctx) return;
+    _comercialCharts[canvasId] = new Chart(ctx.getContext('2d'), {
+      type: 'pie',
+      data: {
+        labels,
+        datasets: [{
+          data: values,
+          backgroundColor: colors,
+          borderColor: '#FFFFFF',
+          borderWidth: 2,
+          hoverOffset: 4,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: c => {
+                const pct = ((c.parsed / total) * 100).toFixed(1);
+                return `  ${c.label}: ${c.parsed} (${pct}%)`;
+              }
+            }
+          }
+        }
+      }
+    });
+    const tableEl = document.getElementById(tableId);
+    if (!tableEl) return;
+    tableEl.innerHTML = `
+      <table>
+        <thead><tr><th>Origem</th><th>Vidas</th><th>%</th></tr></thead>
+        <tbody>
+          ${values.map((v, i) => {
+            const pct = ((v / total) * 100).toFixed(1);
+            return `<tr>
+              <td><span class="pie-dot" style="background:${colors[i]}"></span>${labels[i]}</td>
+              <td>${v}</td>
+              <td>${pct}%</td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+        <tfoot><tr><td>Total</td><td>${total}</td><td>100%</td></tr></tfoot>
+      </table>`;
+  }
+
   function makeRankingHTML(containerId, counts, opts) {
     opts = opts || {};
     const barClass = opts.barClass || '';
     const valFmt   = opts.valFmt   || (v => v.toLocaleString('pt-BR'));
+    const limit    = opts.limit    || 8;
     const container = document.getElementById(containerId);
     if (!container) return;
-    const entries = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 8);
+    const entries = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, limit);
     if (!entries.length) {
       container.innerHTML = '<div style="color:var(--text-muted);font-size:11px;padding:8px 0;">Sem dados</div>';
       return;
@@ -1542,7 +1607,7 @@
     }).join('');
   }
 
-  function makeUFRankingHTML(containerId, ufCounts) {
+  function makeUFRankingHTML(containerId, ufCounts, extraOpts) {
     // normaliza chaves: sigla ou nome → sigla canônica
     const normalized = {};
     Object.entries(ufCounts).forEach(([k, v]) => {
@@ -1556,10 +1621,10 @@
         else       normalized[k]     = (normalized[k] || 0) + v;
       }
     });
-    makeRankingHTML(containerId, normalized, {
+    makeRankingHTML(containerId, normalized, Object.assign({
       barClass: 'blue',
       valFmt: v => String(v),
-    });
+    }, extraOpts || {}));
   }
 
   async function loadComercial() {
@@ -1594,7 +1659,33 @@
       const rows1 = json1.values || [];
       console.log('[Comercial] Linhas interna:', rows1.length);
 
-      let mergedRows = rows1;
+      // ── helper: detecta índice do cabeçalho em qualquer planilha ──
+      function findHeaderIdx(rows) {
+        const MARKERS = ['CLIENTE', 'FECHAMENTO', 'TOTAL EM HONORÁRIOS', 'TOTAL EM HONORARIOS'];
+        const limit = Math.min(15, rows.length);
+        for (let i = 0; i < limit; i++) {
+          const up = (rows[i] || []).map(c => (c || '').trim().toUpperCase());
+          if (MARKERS.some(m => up.some(cell => cell.includes(m)))) return i;
+        }
+        return 0;
+      }
+
+      // ── normaliza cabeçalho sem acento para comparação robusta ──
+      function normCol(s) {
+        return (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toUpperCase().trim();
+      }
+
+      // Detecta cabeçalho da planilha interna
+      const intHeaderIdx = findHeaderIdx(rows1);
+      const intHeader    = (rows1[intHeaderIdx] || []).map(h => (h || '').trim().toUpperCase());
+      const normIntHeader = intHeader.map(normCol);
+      const intDataRows  = rows1.slice(intHeaderIdx + 1).filter(r => r.some(c => (c || '').trim()));
+
+      // Cabeçalho aumentado com marcador de origem
+      const augHeader  = [...intHeader, '__FONTE__'];
+      const augIntRows = intDataRows.map(r => [...r, 'interna']);
+
+      let augPdvRows = [];
 
       if (res2.ok) {
         const json2 = await res2.json();
@@ -1602,25 +1693,29 @@
         console.log('[Comercial] Linhas PDVs:', rows2.length);
 
         if (rows2.length >= 2) {
-          const HEADER_MARKERS = ['CLIENTE', 'FECHAMENTO', 'TOTAL EM HONORÁRIOS', 'TOTAL EM HONORARIOS'];
-          const scanLimit = Math.min(15, rows2.length);
-          let pdvHeaderIdx = 0;
-          for (let i = 0; i < scanLimit; i++) {
-            const upper = (rows2[i] || []).map(c => (c || '').trim().toUpperCase());
-            if (HEADER_MARKERS.some(m => upper.some(cell => cell.includes(m)))) {
-              pdvHeaderIdx = i;
-              break;
-            }
-          }
-          const pdvDataRows = rows2.slice(pdvHeaderIdx + 1).filter(r => r.some(c => (c || '').trim()));
+          const pdvHeaderIdx  = findHeaderIdx(rows2);
+          const pdvHeader     = (rows2[pdvHeaderIdx] || []).map(h => (h || '').trim().toUpperCase());
+          const normPdvHeader = pdvHeader.map(normCol);
+          const pdvDataRows   = rows2.slice(pdvHeaderIdx + 1).filter(r => r.some(c => (c || '').trim()));
           console.log('[Comercial] Linhas PDVs (dados):', pdvDataRows.length);
-          mergedRows = [...rows1, ...pdvDataRows];
+          console.log('[Comercial] Cabeçalho PDVs:', pdvHeader);
+
+          // Remapeia cada linha PDV para a estrutura de colunas da planilha interna
+          augPdvRows = pdvDataRows.map(pdvRow => {
+            const remapped = normIntHeader.map(intCol => {
+              const idx = normPdvHeader.indexOf(intCol);
+              return idx >= 0 ? (pdvRow[idx] || '') : '';
+            });
+            remapped.push('pdv');
+            return remapped;
+          });
         }
       } else {
         console.warn('[Comercial] PDVs indisponível (', res2.status, ') — exibindo apenas equipe interna.');
       }
 
-      console.log('[Comercial] Total unificado:', mergedRows.length, 'linhas');
+      const mergedRows = [augHeader, ...augIntRows, ...augPdvRows];
+      console.log('[Comercial] Total unificado:', mergedRows.length, 'linhas (', augIntRows.length, 'interna +', augPdvRows.length, 'PDV)');
 
       if (mergedRows.length < 2) {
         console.warn('[Comercial] Nenhum dado encontrado.');
@@ -1679,6 +1774,7 @@
     const colBanco      = findCol('BANCO');
     const colConsultor  = findCol('QUEM GERIU', 'CONSULTOR', 'RESPONSÁVEL', 'RESPONSAVEL');
     const colCidade     = findCol('CIDADE');
+    const colFonte      = findCol('__FONTE__');
 
     // ── filtra pelo mês atual ────────────────────────────────
     const now          = new Date();
@@ -1999,14 +2095,26 @@
     }
 
     // ── renderiza ────────────────────────────────────────────
-    if (colCloser >= 0) makeRankingHTML('ranking-canal', countBy(colCloser));
+    if (colCloser >= 0) makeRankingHTML('ranking-canal', countBy(colCloser), { limit: 3 });
     if (colBanco  >= 0) makePie('chart-banco', 'table-banco', 'Banco / Credor', countBy(colBanco));
     if (colConsultor >= 0 && colHonorarios >= 0)
       makeBarConsultor('chart-consultor', sumBy(colConsultor, colHonorarios), countBy(colConsultor), 6);
     if (colFechamento >= 0)
       makeVendasPorDia('chart-vendas-dia', filtered, colFechamento);
     if (colUF >= 0)
-      makeUFRankingHTML('ranking-uf', countBy(colUF));
+      makeUFRankingHTML('ranking-uf', countBy(colUF), { limit: 3 });
+
+    // ── pizza: Equipe Interna vs PDVs ─────────────────────
+    let countInterna = 0, countPdv = 0;
+    if (colFonte >= 0) {
+      filtered.forEach(r => {
+        if ((r[colFonte] || '').toLowerCase() === 'pdv') countPdv++;
+        else countInterna++;
+      });
+    } else {
+      countInterna = filtered.length;
+    }
+    makePizzaEquipe('chart-equipe-pizza', 'table-equipe-pizza', countInterna, countPdv);
 
     // ── hero strip — Comercial ────────────────────────────
     const heroVgv   = document.getElementById('hero-com-vgv');
