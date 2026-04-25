@@ -15,46 +15,57 @@
 
   <style>
     :root {
-      --bg:        #F8F9FC;
+      --bg:        #F0F2F8;
       --surface:   #FFFFFF;
-      --surface-h: #F3F4F8;
-      --border:    #E8EAF0;
+      --surface-h: #F4F6FC;
+      --border:    #E2E8F0;
       --accent:    #5B4FE8;
       --accent-h:  #4A3FD9;
-      --text:      #0F1117;
-      --text-muted:#6B7280;
-      --success:   #0CAF60;
-      --danger:    #E53E3E;
-      --radius:    8px;
-      --chart-grid:#E8EAF0;
-      --chart-tick:#6B7280;
-      --chart-label:#0F1117;
+      --text:      #0E1420;
+      --text-muted:#64748B;
+      --success:   #059669;
+      --danger:    #DC2626;
+      --radius:    10px;
+      --chart-grid:#E2E8F0;
+      --chart-tick:#64748B;
+      --chart-label:#0E1420;
+      --fin:       #7C3AED;
+      --com:       #059669;
+      --acor:      #0284C7;
     }
     :root.dark {
-      --bg:        #0C0E14;
-      --surface:   #141720;
-      --surface-h: #1B1F2E;
-      --border:    #252B3B;
+      --bg:        #060A13;
+      --surface:   #0D1729;
+      --surface-h: #152038;
+      --border:    rgba(255,255,255,0.07);
       --accent:    #7C6AF7;
       --accent-h:  #6B59F5;
-      --text:      #E8EBF3;
-      --text-muted:#8B95A8;
-      --success:   #10C96E;
-      --danger:    #F87171;
-      --radius:    8px;
-      --chart-grid:#252B3B;
-      --chart-tick:#8B95A8;
-      --chart-label:#E8EBF3;
+      --text:      #C8D4EE;
+      --text-muted:#546484;
+      --success:   #00D97A;
+      --danger:    #FF6B6B;
+      --radius:    10px;
+      --chart-grid:rgba(255,255,255,0.06);
+      --chart-tick:#546484;
+      --chart-label:#C8D4EE;
+      --fin:       #8B5CF6;
+      --com:       #00D97A;
+      --acor:      #38BDF8;
     }
 
     /* ── DARK MODE — overrides para cores hardcoded ─────── */
     .dark header                { background: var(--surface); border-bottom-color: var(--border); }
     .dark .hero-kpi             { background: var(--surface) !important; }
-    .dark .card-total           { background: linear-gradient(135deg, var(--surface) 0%, #1D1A38 100%) !important; border-color: rgba(124,106,247,.25) !important; }
-    .dark .card-total:hover     { background: #1D1A38 !important; }
-    .dark .fin-card-featured    { background: linear-gradient(135deg, var(--surface) 0%, #1D1A38 100%) !important; }
-    .dark .ranking-bar-wrap     { background: #252B3B; }
+    .dark .hero-kpi.fin         { background: linear-gradient(135deg, var(--surface) 0%, #130E2A 100%) !important; }
+    .dark .hero-kpi.com         { background: linear-gradient(135deg, var(--surface) 0%, #071A0F 100%) !important; }
+    .dark .hero-kpi.acor        { background: linear-gradient(135deg, var(--surface) 0%, #071520 100%) !important; }
+    .dark .card-total           { background: linear-gradient(135deg, var(--surface) 0%, #121030 100%) !important; border-color: rgba(124,106,247,.2) !important; }
+    .dark .card-total:hover     { background: linear-gradient(135deg, var(--surface-h) 0%, #1A1440 100%) !important; }
+    .dark .fin-card-featured    { background: linear-gradient(135deg, var(--surface) 0%, #130E2A 100%) !important; }
+    .dark .ranking-bar-wrap     { background: rgba(255,255,255,0.06); }
     .dark .btn-theme svg        { stroke: var(--text-muted); }
+    .dark .chart-card           { border-color: var(--border); }
+    .dark .card:hover           { background: var(--surface-h) !important; border-color: rgba(255,255,255,0.12); }
 
     /* ── RESET & BASE — TV 1920×1080 ─────────────────────── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -165,7 +176,7 @@
 
     /* ── HERO KPI STRIP ──────────────────────────────────── */
     .hero-strip {
-      height: 106px;
+      height: 116px;
       flex-shrink: 0;
       display: flex;
       gap: 8px;
@@ -176,38 +187,40 @@
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 10px 16px 10px 20px;
+      padding: 12px 16px 12px 22px;
       display: flex;
       flex-direction: column;
       justify-content: center;
-      gap: 3px;
+      gap: 4px;
       position: relative;
       overflow: hidden;
-      box-shadow: 0 1px 8px rgba(0,0,0,.08);
+      box-shadow: 0 2px 12px rgba(0,0,0,.12);
       min-width: 0;
+      transition: box-shadow .2s;
     }
+    .hero-kpi:hover { box-shadow: 0 4px 24px rgba(0,0,0,.2); }
     .hero-kpi::before {
       content: '';
       position: absolute;
       left: 0; top: 0; bottom: 0;
-      width: 4px;
+      width: 3px;
       border-radius: var(--radius) 0 0 var(--radius);
     }
-    .hero-kpi.fin::before  { background: #5B4FE8; }
-    .hero-kpi.com::before  { background: #0CAF60; }
-    .hero-kpi.acor::before { background: #3B82F6; }
+    .hero-kpi.fin::before  { background: var(--fin); }
+    .hero-kpi.com::before  { background: var(--com); }
+    .hero-kpi.acor::before { background: var(--acor); }
     .hero-kpi-label {
-      font-size: 10px;
+      font-size: 9px;
       font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: .09em;
+      letter-spacing: .11em;
       color: var(--text-muted);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
     .hero-kpi-value {
-      font-size: 24px;
+      font-size: 28px;
       font-weight: 800;
       font-variant-numeric: tabular-nums;
       letter-spacing: -.04em;
@@ -217,7 +230,7 @@
       overflow: hidden;
       text-overflow: ellipsis;
     }
-    .hero-kpi-value.positive { color: var(--success); }
+    .hero-kpi-value.positive { color: var(--com); }
     .hero-kpi-value.negative { color: var(--danger); }
     .hero-kpi-sub {
       font-size: 10px;
@@ -227,7 +240,7 @@
       text-overflow: ellipsis;
     }
 
-    /* ── RANKING LIST (substitui pizza + mapa) ───────────── */
+    /* ── RANKING LIST ────────────────────────────────────── */
     .ranking-list {
       flex: 1;
       display: flex;
@@ -242,16 +255,19 @@
       align-items: center;
       gap: 8px;
       flex-shrink: 0;
-      padding: 3px 0;
+      padding: 4px 0;
     }
     .ranking-pos {
       font-size: 11px;
-      font-weight: 700;
+      font-weight: 800;
       color: var(--text-muted);
-      width: 16px;
+      width: 18px;
       text-align: center;
       flex-shrink: 0;
     }
+    .ranking-pos.medal-gold   { color: #F59E0B; font-size: 13px; }
+    .ranking-pos.medal-silver { color: #94A3B8; }
+    .ranking-pos.medal-bronze { color: #CD7F32; }
     .ranking-name {
       font-size: 12px;
       font-weight: 500;
@@ -264,23 +280,23 @@
     }
     .ranking-bar-wrap {
       flex: 1.4;
-      height: 14px;
-      background: #EDEEF6;
-      border-radius: 4px;
+      height: 6px;
+      background: rgba(128,128,160,0.12);
+      border-radius: 3px;
       overflow: hidden;
       min-width: 40px;
     }
     .ranking-bar {
       height: 100%;
-      border-radius: 4px;
-      background: linear-gradient(90deg, #5B4FE8 0%, #7C6AF7 100%);
-      transition: width .4s ease;
+      border-radius: 3px;
+      background: linear-gradient(90deg, var(--accent) 0%, #9B8EFC 100%);
+      transition: width .5s cubic-bezier(.4,0,.2,1);
       min-width: 4px;
     }
-    .ranking-bar.green { background: linear-gradient(90deg, #0CAF60 0%, #34D399 100%); }
-    .ranking-bar.blue  { background: linear-gradient(90deg, #3B82F6 0%, #60A5FA 100%); }
+    .ranking-bar.green { background: linear-gradient(90deg, var(--com) 0%, #34D399 100%); }
+    .ranking-bar.blue  { background: linear-gradient(90deg, var(--acor) 0%, #7DD3FC 100%); }
     .ranking-val {
-      font-size: 12px;
+      font-size: 13px;
       font-weight: 700;
       color: var(--text);
       font-variant-numeric: tabular-nums;
@@ -446,40 +462,41 @@
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 11px 14px;
+      padding: 12px 14px;
       display: flex;
       flex-direction: column;
       gap: 4px;
-      transition: background .15s;
+      transition: background .18s, box-shadow .18s, border-color .18s;
       flex-shrink: 0;
+      box-shadow: 0 1px 6px rgba(0,0,0,.08);
     }
-    .card:hover { background: var(--surface-h); }
+    .card:hover { background: var(--surface-h); box-shadow: 0 3px 16px rgba(0,0,0,.14); }
     .card-label {
-      font-size: 11px;
-      font-weight: 600;
+      font-size: 10px;
+      font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: .07em;
+      letter-spacing: .09em;
       color: var(--text-muted);
     }
     .card-value {
-      font-size: 20px;
-      font-weight: 700;
+      font-size: 22px;
+      font-weight: 800;
       font-variant-numeric: tabular-nums;
-      letter-spacing: -.02em;
+      letter-spacing: -.03em;
       line-height: 1.1;
       color: var(--text);
     }
-    .card-value.positive { color: var(--success); }
+    .card-value.positive { color: var(--com); }
     .card-value.negative { color: var(--danger); }
     .card-value.neutral  { color: var(--text); }
-    .card-sub { font-size: 10px; color: var(--text-muted); }
+    .card-sub { font-size: 10px; color: var(--text-muted); margin-top: 1px; }
 
     .card-total {
       background: linear-gradient(135deg, #FFFFFF 0%, #EEF0FF 100%);
-      border-color: rgba(91,79,232,.2);
+      border-color: rgba(91,79,232,.18);
     }
-    .card-total:hover { background: #EDE9FF; border-color: rgba(91,79,232,.38); }
-    .card-total .card-value { font-size: 22px; }
+    .card-total:hover { background: #EDE9FF; border-color: rgba(91,79,232,.32); }
+    .card-total .card-value { font-size: 24px; }
 
     /* ── METRIC CARDS — fixed height ────────────────────── */
     .com-cards-grid .card { height: 96px; justify-content: center; }
@@ -704,9 +721,10 @@
      CONFIGURAÇÃO — altere apenas estas constantes
      ══════════════════════════════════════════════════════════ -->
 <script>
-  // ── DARK MODE ────────────────────────────────────────────
+  // ── DARK MODE — padrão executivo ─────────────────────────
   (function initTheme() {
-    if (localStorage.getItem('theme') === 'dark') {
+    const saved = localStorage.getItem('theme');
+    if (saved !== 'light') {  // dark é o padrão
       document.documentElement.classList.add('dark');
       const icon = document.getElementById('theme-icon');
       if (icon) icon.innerHTML = '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>';
@@ -903,12 +921,12 @@
     <div id="comercial-section" style="display:none;">
       <span id="comercial-title" style="display:none;"></span>
 
-      <!-- 2 metric cards secundários (VGV e Vidas já estão no hero strip) -->
-      <div class="com-cards-grid com-cards-grid-2">
+      <!-- 3 metric cards: Ticket, Parcela, MRR Projetado -->
+      <div class="com-cards-grid com-cards-grid-3">
         <div class="card">
           <div class="com-card-icon">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-            Média por Contrato
+            Ticket Médio
           </div>
           <div class="card-value neutral" id="com-card-media">—</div>
           <div class="card-sub">VGV ÷ Vidas</div>
@@ -920,6 +938,14 @@
           </div>
           <div class="card-value neutral" id="com-card-parcela">—</div>
           <div class="card-sub">Média da parcela</div>
+        </div>
+        <div class="card card-total">
+          <div class="com-card-icon">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+            MRR Projetado
+          </div>
+          <div class="card-value neutral" id="com-card-mrr">—</div>
+          <div class="card-sub">Parcela × Vidas ativas</div>
         </div>
       </div>
 
@@ -1597,8 +1623,9 @@
       const pct    = total > 0 ? ((e[1] / total) * 100).toFixed(1) : '0.0';
       const barPct = max  > 0 ? ((e[1] / max)   * 100).toFixed(1) : '0';
       const name   = e[0].length > 18 ? e[0].slice(0, 17) + '\u2026' : e[0];
+      const medal  = i === 0 ? 'medal-gold' : i === 1 ? 'medal-silver' : i === 2 ? 'medal-bronze' : '';
       return `<div class="ranking-item">
-        <span class="ranking-pos">${i + 1}</span>
+        <span class="ranking-pos ${medal}">${i + 1}</span>
         <span class="ranking-name" title="${e[0]}">${name}</span>
         <div class="ranking-bar-wrap"><div class="ranking-bar${barClass ? ' ' + barClass : ''}" style="width:${barPct}%"></div></div>
         <span class="ranking-val">${valFmt(e[1])}</span>
@@ -1838,6 +1865,10 @@
       `${clientes} vida${clientes !== 1 ? 's' : ''} em ${MESES_PT[curMonth]}`;
     document.getElementById('com-card-vidas-sub').textContent  =
       `${clientes} vida${clientes !== 1 ? 's' : ''} em ${MESES_PT[curMonth]}`;
+    // MRR projetado = parcela média × nº de contratos ativos
+    const mrr = mediaParcela * clientes;
+    const mrrEl = document.getElementById('com-card-mrr');
+    if (mrrEl) mrrEl.textContent = formatBRL(mrr);
 
     // ── helpers de agregação ─────────────────────────────────
     function countBy(ci) {
@@ -2100,7 +2131,8 @@
     if (colConsultor >= 0 && colHonorarios >= 0)
       makeBarConsultor('chart-consultor', sumBy(colConsultor, colHonorarios), countBy(colConsultor), 6);
     if (colFechamento >= 0)
-      makeVendasPorDia('chart-vendas-dia', filtered, colFechamento);
+      makeVendasPorDia('chart-vendas-dia', filtered, colFechamento, _comercialCharts,
+        getComputedStyle(document.documentElement).getPropertyValue('--com').trim() || '#00D97A');
     if (colUF >= 0)
       makeUFRankingHTML('ranking-uf', countBy(colUF), { limit: 3 });
 
@@ -2406,11 +2438,11 @@
           labels,
           datasets: [{
             data: values,
-            backgroundColor: 'rgba(91,79,232,.85)',
-            hoverBackgroundColor: '#5B4FE8',
-            borderRadius: 3,
+            backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--acor').trim() || '#38BDF8',
+            hoverBackgroundColor: '#7DD3FC',
+            borderRadius: 4,
             borderSkipped: false,
-            barThickness: 24,
+            barThickness: 22,
           }]
         },
         options: {
@@ -2450,7 +2482,8 @@
     if (colCredor     >= 0) makeRankingHTML('ranking-acor-credor', countBy(colCredor));
     if (colForma      >= 0) makePieAcor('chart-acor-pgto', 'table-acor-pgto', 'Forma de Pgto.', countBy(colForma));
     if (colAssessoria >= 0) makeBarAssessores('chart-acor-assessores', countBy(colAssessoria), 6);
-    if (colDataPgto   >= 0) makeVendasPorDia('chart-acor-dias', filtered, colDataPgto, _acordosCharts);
+    if (colDataPgto   >= 0) makeVendasPorDia('chart-acor-dias', filtered, colDataPgto, _acordosCharts,
+      getComputedStyle(document.documentElement).getPropertyValue('--acor').trim() || '#38BDF8');
     if (colMapa       >= 0) makeUFRankingHTML('ranking-acor-uf', countBy(colMapa));
 
     // ── hero strip — Acordos ──────────────────────────────
@@ -2481,8 +2514,9 @@
   }
 
   // ── Gráfico: Vidas por Dia (bar + linha de média) ───────────
-  function makeVendasPorDia(canvasId, filteredRows, colFech, registry) {
+  function makeVendasPorDia(canvasId, filteredRows, colFech, registry, barColor) {
     registry = registry || _comercialCharts;
+    barColor = barColor || getComputedStyle(document.documentElement).getPropertyValue('--com').trim() || '#00D97A';
     const now = new Date();
     const year = now.getFullYear(), month = now.getMonth();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
@@ -2512,7 +2546,7 @@
           const val = daily[i];
           if (!val) return;
           c.font = 'bold 10px "Inter", "Segoe UI", system-ui, sans-serif';
-          c.fillStyle = '#0F1117';
+          c.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--chart-label').trim() || '#C8D4EE';
           c.textAlign = 'center';
           c.textBaseline = 'bottom';
           c.fillText(val, bar.x, bar.y - 2);
@@ -2542,10 +2576,10 @@
             type: 'bar',
             label: 'Vidas fechadas',
             data: daily,
-            backgroundColor: '#5B4FE8',
-            hoverBackgroundColor: '#7C6AF7',
+            backgroundColor: barColor,
+            hoverBackgroundColor: barColor,
             borderRadius: { topLeft: 6, topRight: 6, bottomLeft: 0, bottomRight: 0 },
-            barPercentage: 0.8,
+            barPercentage: 0.78,
             order: 2,
           },
           {
