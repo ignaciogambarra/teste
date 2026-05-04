@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
@@ -713,6 +713,92 @@
 
     /* TV mode — no media queries needed */
 
+    /* ── FILTER BAR ─────────────────────────────────────── */
+    #filter-bar {
+      height: 36px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 0 16px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      z-index: 100;
+    }
+    .filter-label {
+      font-size: .59rem;
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .filter-preset {
+      padding: 3px 9px;
+      border-radius: 99px;
+      font-size: .6rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-muted);
+      transition: background .15s, color .15s, border-color .15s;
+      font-family: inherit;
+      letter-spacing: .03em;
+      white-space: nowrap;
+    }
+    .filter-preset:hover { background: var(--surface-h); color: var(--text); }
+    .filter-preset.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .filter-sep { width: 1px; height: 18px; background: var(--border); margin: 0 4px; flex-shrink: 0; }
+    #filter-date-start, #filter-date-end {
+      padding: 2px 8px;
+      border-radius: 5px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      font-size: .62rem;
+      font-family: inherit;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    #filter-date-start:focus, #filter-date-end:focus { outline: 1px solid var(--accent); border-color: var(--accent); }
+    .filter-apply {
+      padding: 3px 11px;
+      border-radius: 6px;
+      font-size: .62rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid var(--accent);
+      background: var(--accent);
+      color: #fff;
+      transition: background .15s;
+      font-family: inherit;
+      white-space: nowrap;
+    }
+    .filter-apply:hover { background: var(--accent-h); border-color: var(--accent-h); }
+    #filter-status {
+      font-size: .58rem;
+      color: var(--text-muted);
+      margin-left: 6px;
+      font-style: italic;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .fin-snapshot-badge {
+      font-size: 9px;
+      font-weight: 600;
+      color: var(--text-muted);
+      background: var(--surface-h);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 1px 5px;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      flex-shrink: 0;
+    }
+
   </style>
 </head>
 <body>
@@ -817,6 +903,22 @@
   </div>
 </header>
 
+<!-- ═══════════════════════ FILTER BAR ════════════════════════ -->
+<div id="filter-bar">
+  <span class="filter-label">Período</span>
+  <button class="filter-preset active" id="fp-mes-atual"  onclick="setPreset('mes-atual')">Mês Atual</button>
+  <button class="filter-preset"        id="fp-mes-ant"    onclick="setPreset('mes-anterior')">Mês Anterior</button>
+  <button class="filter-preset"        id="fp-tri"        onclick="setPreset('trimestre')">Trimestre</button>
+  <button class="filter-preset"        id="fp-ano"        onclick="setPreset('ano')">Ano</button>
+  <div class="filter-sep"></div>
+  <span class="filter-label">De</span>
+  <input type="date" id="filter-date-start" />
+  <span class="filter-label">Até</span>
+  <input type="date" id="filter-date-end" />
+  <button class="filter-apply" onclick="applyCustomFilter()">Aplicar</button>
+  <span id="filter-status"></span>
+</div>
+
 <!-- ═══════════════════════ HERO KPI STRIP ═══════════════════ -->
 <div class="hero-strip">
   <div class="hero-kpi fin">
@@ -880,6 +982,7 @@
 
     <div class="section-header">
       <span class="section-header-title">Financeiro</span>
+      <span class="fin-snapshot-badge" title="Exibe a posição atual da planilha — não é afetado pelo filtro de período">posição atual</span>
       <span class="section-header-line"></span>
       <span class="section-header-badge" id="fin-badge">Fluxo Diário</span>
     </div>
@@ -1078,6 +1181,139 @@
   let accessToken   = null;
   let tokenExpiresAt = 0;
 
+  // ── FILTRO DE PERÍODO ────────────────────────────────────────
+  let _filterStart      = null;
+  let _filterEnd        = null;
+  let _activePreset     = 'mes-atual';
+  let _comercialRawRows = null;
+  let _acordosRawRows   = null;
+
+  function getFilterRange() {
+    if (_filterStart && _filterEnd) return { start: _filterStart, end: _filterEnd };
+    const now   = new Date();
+    const start = new Date(now.getFullYear(), now.getMonth(), 1);
+    const end   = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+    return { start, end };
+  }
+
+  function _fmtDateFull(d) {
+    return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  }
+
+  function _fmtDateShort(d) {
+    return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+  }
+
+  function _filterLabel() {
+    const { start, end } = getFilterRange();
+    const sameMonth = start.getMonth() === end.getMonth() && start.getFullYear() === end.getFullYear();
+    const lastOfMonth = new Date(end.getFullYear(), end.getMonth() + 1, 0).getDate();
+    if (sameMonth && start.getDate() === 1 && end.getDate() === lastOfMonth) {
+      return (typeof MESES_PT !== 'undefined' ? MESES_PT[start.getMonth()] : '') + ' ' + start.getFullYear();
+    }
+    return `${_fmtDateShort(start)} a ${_fmtDateShort(end)}/${end.getFullYear()}`;
+  }
+
+  function _updateFilterStatus() {
+    const el = document.getElementById('filter-status');
+    if (!el) return;
+    const { start, end } = getFilterRange();
+    el.textContent = `Exibindo: ${_fmtDateFull(start)} – ${_fmtDateFull(end)}`;
+  }
+
+  const _PRESET_MAP = {
+    'mes-atual':    'fp-mes-atual',
+    'mes-anterior': 'fp-mes-ant',
+    'trimestre':    'fp-tri',
+    'ano':          'fp-ano',
+  };
+
+  function _setActivePreset(preset) {
+    Object.values(_PRESET_MAP).forEach(id => {
+      const btn = document.getElementById(id);
+      if (btn) btn.classList.remove('active');
+    });
+    if (preset && _PRESET_MAP[preset]) {
+      const btn = document.getElementById(_PRESET_MAP[preset]);
+      if (btn) btn.classList.add('active');
+    }
+    _activePreset = preset;
+  }
+
+  function _toISO(d) { return d.toISOString().slice(0, 10); }
+
+  function _setDateInputs(start, end) {
+    const si = document.getElementById('filter-date-start');
+    const ei = document.getElementById('filter-date-end');
+    if (si) si.value = _toISO(start);
+    if (ei) ei.value = _toISO(end);
+  }
+
+  function setPreset(preset) {
+    const now = new Date();
+    let start, end;
+    if (preset === 'mes-atual') {
+      start = new Date(now.getFullYear(), now.getMonth(), 1);
+      end   = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+    } else if (preset === 'mes-anterior') {
+      start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      end   = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
+    } else if (preset === 'trimestre') {
+      const q = Math.floor(now.getMonth() / 3);
+      start = new Date(now.getFullYear(), q * 3, 1);
+      end   = new Date(now.getFullYear(), q * 3 + 3, 0, 23, 59, 59);
+    } else if (preset === 'ano') {
+      start = new Date(now.getFullYear(), 0, 1);
+      end   = new Date(now.getFullYear(), 11, 31, 23, 59, 59);
+    } else {
+      return;
+    }
+    _filterStart = start;
+    _filterEnd   = end;
+    _setDateInputs(start, end);
+    _setActivePreset(preset);
+    _updateFilterStatus();
+    _reRender();
+  }
+
+  function applyCustomFilter() {
+    const si = document.getElementById('filter-date-start');
+    const ei = document.getElementById('filter-date-end');
+    if (!si || !ei || !si.value || !ei.value) {
+      showAlert('Preencha as duas datas para filtrar por período customizado.');
+      return;
+    }
+    const start = new Date(si.value + 'T00:00:00');
+    const end   = new Date(ei.value + 'T23:59:59');
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+      showAlert('Datas inválidas. Use o formato AAAA-MM-DD.');
+      return;
+    }
+    if (start > end) {
+      showAlert('A data inicial deve ser anterior ou igual à data final.');
+      return;
+    }
+    _filterStart = start;
+    _filterEnd   = end;
+    _setActivePreset('');
+    _updateFilterStatus();
+    _reRender();
+  }
+
+  function _reRender() {
+    if (_comercialRawRows) renderComercial(_comercialRawRows);
+    if (_acordosRawRows)   renderAcordos(_acordosRawRows);
+    _updateSectionBadges();
+  }
+
+  function _updateSectionBadges() {
+    const lbl = _filterLabel();
+    ['com-badge', 'acor-badge'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = lbl;
+    });
+  }
+
   /* ── helpers de UI ──────────────────────────────────────── */
   function show(id)  { document.getElementById(id).style.display = 'flex'; }
   function hide(id)  { document.getElementById(id).style.display = 'none'; }
@@ -1184,6 +1420,16 @@
   }
 
   /* ── inicialização — roda ao carregar a página ───────────── */
+  (function initFilter() {
+    const now   = new Date();
+    const start = new Date(now.getFullYear(), now.getMonth(), 1);
+    const end   = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+    _filterStart = start;
+    _filterEnd   = end;
+    _setDateInputs(start, end);
+    _updateFilterStatus();
+  })();
+
   (function init() {
     // 1. Tenta ler token do hash (retorno do Google)
     const fromHash = parseTokenFromHash();
@@ -1748,6 +1994,7 @@
         console.warn('[Comercial] Nenhum dado encontrado.');
         return;
       }
+      _comercialRawRows = mergedRows;
       renderComercial(mergedRows);
 
     } catch (e) {
@@ -1803,10 +2050,10 @@
     const colCidade     = findCol('CIDADE');
     const colFonte      = findCol('__FONTE__');
 
-    // ── filtra pelo mês atual ────────────────────────────────
-    const now          = new Date();
-    const curMonth     = now.getMonth();
-    const curYear      = now.getFullYear();
+    // ── filtra pelo intervalo selecionado ───────────────────
+    const { start: _fStart, end: _fEnd } = getFilterRange();
+    const curMonth = _fStart.getMonth();
+    const curYear  = _fStart.getFullYear();
 
     const filtered = data.filter(row => {
       if (colFechamento < 0) return true;
@@ -1820,7 +2067,7 @@
         d = new Date(raw);
       }
       if (isNaN(d.getTime())) return false;
-      return d.getMonth() === curMonth && d.getFullYear() === curYear;
+      return d >= _fStart && d <= _fEnd;
     });
 
     console.log('[Comercial] Colunas detectadas:', {
@@ -1830,7 +2077,7 @@
       'QUEM GERIU': colConsultor, CIDADE: colCidade,
     });
     console.log(`[Comercial] Linhas totais na aba (sem cabeçalho): ${data.length}`);
-    console.log(`[Comercial] Linhas após filtro ${MESES_PT[curMonth]}/${curYear}: ${filtered.length}`);
+    console.log(`[Comercial] Linhas após filtro (${_fmtDateFull(_fStart)} → ${_fmtDateFull(_fEnd)}): ${filtered.length}`);
     if (filtered.length === 0 && colFechamento >= 0) {
       const amostra = data.slice(0, 5).map(r => r[colFechamento]);
       console.warn('[Comercial] Nenhum registro passou o filtro. Amostra da coluna FECHAMENTO:', amostra);
@@ -1838,7 +2085,7 @@
 
     // ── atualiza título da seção ─────────────────────────────
     document.getElementById('comercial-title').textContent =
-      `Comercial — ${MESES_PT[curMonth]} · Equipe + PDVs`;
+      `Comercial — ${_filterLabel()} · Equipe + PDVs`;
 
     // ── calcula cards ────────────────────────────────────────
     let totalHon = 0, totalParc = 0, parcCount = 0;
@@ -1862,9 +2109,9 @@
     document.getElementById('com-card-media').textContent      = formatBRL(mediaContrato);
     document.getElementById('com-card-parcela').textContent    = formatBRL(mediaParcela);
     document.getElementById('com-card-hon-sub').textContent    =
-      `${clientes} vida${clientes !== 1 ? 's' : ''} em ${MESES_PT[curMonth]}`;
+      `${clientes} vida${clientes !== 1 ? 's' : ''} · ${_filterLabel()}`;
     document.getElementById('com-card-vidas-sub').textContent  =
-      `${clientes} vida${clientes !== 1 ? 's' : ''} em ${MESES_PT[curMonth]}`;
+      `${clientes} vida${clientes !== 1 ? 's' : ''} · ${_filterLabel()}`;
     // MRR projetado = parcela média × nº de contratos ativos
     const mrr = mediaParcela * clientes;
     const mrrEl = document.getElementById('com-card-mrr');
@@ -2156,7 +2403,7 @@
     if (heroVgv)   { heroVgv.textContent   = formatBRL(totalHon); applyColor(heroVgv, totalHon); }
     if (heroVidas) heroVidas.textContent   = clientes.toLocaleString('pt-BR');
     if (heroMedia) heroMedia.textContent   = formatBRL(mediaContrato);
-    if (heroSub)   heroSub.textContent     = `Comercial · ${MESES_PT[curMonth]} · Equipe + PDVs`;
+    if (heroSub)   heroSub.textContent     = `Comercial · ${_filterLabel()}`;
 
     document.getElementById('comercial-section').style.display = 'flex';
   }
@@ -2204,6 +2451,7 @@
         console.warn('[Acordos] Nenhum dado encontrado (menos de 2 linhas).');
         return;
       }
+      _acordosRawRows = rows;
       renderAcordos(rows);
 
     } catch (e) {
@@ -2263,50 +2511,44 @@
       ENTRADA: colEntrada, MAPA: colMapa,
     });
 
-    // ── filtra pelo mês atual ─────────────────────────────────
-    const now         = new Date();
-    const curMonth    = now.getMonth();
-    const curYear     = now.getFullYear();
-    const curMesNorm   = MESES_PT[curMonth]
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '');
-    const curMesComAno = `${curMesNorm}/${curYear}`;
+    // ── filtra pelo intervalo selecionado ─────────────────────
+    const { start: _fStart, end: _fEnd } = getFilterRange();
+    const curMonth = _fStart.getMonth();
+    const curYear  = _fStart.getFullYear();
 
-    // Filtro de mês — prioriza DATA PGTO. (dd/mm/yyyy) pois inclui o ano sem ambiguidade;
-    // se não disponível, cai para coluna MÊS com match exato mês/ano
+    // Prioriza DATA PGTO (dd/mm/yyyy) para comparação precisa com intervalo;
+    // fallback para coluna MÊS usando o mês inicial do intervalo como referência
     const filteredMes = data.filter(row => {
       if (colDataPgto >= 0) {
         const rawDate = (row[colDataPgto] || '').trim();
         const m = rawDate.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
         if (m) {
-          return parseInt(m[2], 10) === curMonth + 1 && parseInt(m[3], 10) === curYear;
+          const d = new Date(+m[3], +m[2] - 1, +m[1]);
+          return d >= _fStart && d <= _fEnd;
         }
-        // data presente mas não parseável → exclui
         if (rawDate) return false;
       }
-      // fallback: coluna MÊS
+      // fallback: coluna MÊS — compara contra o mês inicial do intervalo
       if (colMes < 0) return true;
-      const raw = (row[colMes] || '').trim()
-        .toLowerCase()
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '');
+      const curMesNorm   = MESES_PT[curMonth].toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      const curMesComAno = `${curMesNorm}/${curYear}`;
+      const raw = (row[colMes] || '').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
       if (raw.includes('/')) return raw === curMesComAno;
       return raw === curMesNorm || raw.startsWith(curMesNorm.slice(0, 3));
     });
 
-    // todos os registros do mês (pagos + pendentes)
+    // todos os registros do período (pagos + pendentes)
     const filtered = filteredMes;
 
     console.log(`[Acordos] Linhas brutas (sem cabeçalho): ${data.length}`);
-    console.log(`[Acordos] Após filtro de mês (${MESES_PT[curMonth]}/${curYear}): ${filtered.length}`);
+    console.log(`[Acordos] Após filtro: ${filtered.length}`);
     if (filtered.length === 0) {
       const amostra = data.slice(0, 5).map(r => r[colDataPgto >= 0 ? colDataPgto : colMes]);
       console.warn('[Acordos] Nenhum registro passou o filtro. Amostra:', amostra);
     }
 
     // ── atualiza título ───────────────────────────────────────
-    document.getElementById('acordos-title').textContent = `Acordos — ${MESES_PT[curMonth]}`;
+    document.getElementById('acordos-title').textContent = `Acordos — ${_filterLabel()}`;
 
     // ── calcula cards ─────────────────────────────────────────
     let totalEntrada = 0;
@@ -2324,7 +2566,7 @@
     document.getElementById('acor-card-contratos').textContent  = contratos.toLocaleString('pt-BR');
     document.getElementById('acor-card-media').textContent      = formatBRL(mediaAcordo);
     document.getElementById('acor-card-total-sub').textContent  =
-      `${contratos} acordo${contratos !== 1 ? 's' : ''} em ${MESES_PT[curMonth]}`;
+      `${contratos} acordo${contratos !== 1 ? 's' : ''} · ${_filterLabel()}`;
     document.getElementById('acor-card-contratos-sub').textContent =
       `${contratos} acordo${contratos !== 1 ? 's' : ''} em ${MESES_PT[curMonth]}`;
 
@@ -2492,7 +2734,7 @@
     const heroEntradaSub = document.getElementById('hero-acor-entrada-sub');
     if (heroEntrada)    { heroEntrada.textContent    = formatBRL(totalEntrada); applyColor(heroEntrada, totalEntrada); }
     if (heroCount)      heroCount.textContent        = contratos.toLocaleString('pt-BR');
-    if (heroEntradaSub) heroEntradaSub.textContent   = `Acordos · ${MESES_PT[curMonth]}`;
+    if (heroEntradaSub) heroEntradaSub.textContent   = `Acordos · ${_filterLabel()}`;
 
     document.getElementById('acordos-section').style.display = 'flex';
   }
@@ -2517,23 +2759,40 @@
   function makeVendasPorDia(canvasId, filteredRows, colFech, registry, barColor) {
     registry = registry || _comercialCharts;
     barColor = barColor || getComputedStyle(document.documentElement).getPropertyValue('--com').trim() || '#00D97A';
-    const now = new Date();
-    const year = now.getFullYear(), month = now.getMonth();
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-    const daily = new Array(daysInMonth).fill(0);
 
-    // conta vidas (linhas) por dia — sem soma de valores
+    // Usa o intervalo do filtro ativo para construir o eixo de dias
+    const { start: _fStart, end: _fEnd } = getFilterRange();
+    const msPerDay   = 86400000;
+    const totalDays  = Math.round((_fEnd - _fStart) / msPerDay) + 1;
+    const multiMonth = _fStart.getMonth() !== _fEnd.getMonth() || _fStart.getFullYear() !== _fEnd.getFullYear();
+
+    const daily  = new Array(totalDays).fill(0);
+    const labels = Array.from({ length: totalDays }, (_, i) => {
+      const d = new Date(_fStart.getTime() + i * msPerDay);
+      return multiMonth
+        ? String(d.getDate()).padStart(2, '0') + '/' + String(d.getMonth() + 1).padStart(2, '0')
+        : d.getDate();
+    });
+
+    // Mapa data (YYYY-MM-DD) → índice no array
+    const dateMap = {};
+    for (let i = 0; i < totalDays; i++) {
+      const d = new Date(_fStart.getTime() + i * msPerDay);
+      const key = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+      dateMap[key] = i;
+    }
+
+    // conta vidas (linhas) por dia dentro do intervalo
     filteredRows.forEach(row => {
       const raw = (row[colFech] || '').trim();
       const m = raw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
       if (!m) return;
-      const day = parseInt(m[1], 10);
-      if (day >= 1 && day <= daysInMonth) daily[day - 1]++;
+      const key = m[3] + '-' + m[2].padStart(2, '0') + '-' + m[1].padStart(2, '0');
+      if (dateMap[key] !== undefined) daily[dateMap[key]]++;
     });
 
     const total = daily.reduce((a, b) => a + b, 0);
-    const avg   = daysInMonth > 0 ? total / daysInMonth : 0;
-    const labels = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+    const avg   = totalDays > 0 ? total / totalDays : 0;
 
     const annotationsPlugin = {
       id: `annot_${canvasId}`,
@@ -2585,7 +2844,7 @@
           {
             type: 'line',
             label: 'Média diária',
-            data: new Array(daysInMonth).fill(avg),
+            data: new Array(totalDays).fill(avg),
             borderColor: '#E53E3E',
             borderWidth: 2,
             borderDash: [6, 4],
@@ -2769,14 +3028,7 @@
 
   /* ── atualiza badges das seções com o mês atual ────────────── */
   (function setBadges() {
-    const now  = new Date();
-    const mes  = MESES_PT[now.getMonth()];
-    const ano  = now.getFullYear();
-    const lbl  = `${mes} ${ano}`;
-    ['com-badge', 'acor-badge'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.textContent = lbl;
-    });
+    _updateSectionBadges();
   })();
 
 </script>
@@ -2784,3 +3036,4 @@
 <div id="map-tooltip"></div>
 </body>
 </html>
+
